@@ -2,7 +2,7 @@
 
 AI Athletic Coaching Agent for Samsung Solve for Tomorrow competition.
 
-**Team:** [Your School Name]  
+**Team:** Riga State Gymnasium N3.  
 **Category:** Sports & Technology
 
 ## Quick Links
