@@ -2,6 +2,15 @@ import { callClaudeAgent } from '@/lib/claude-agent';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey || apiKey === 'placeholder') {
+    return NextResponse.json({
+      success: true,
+      response:
+        "Great! I'd love to help you with your training plan. Let's start with a few questions to understand your fitness level and goals.",
+    });
+  }
+
   try {
     const { message } = await request.json();
 
