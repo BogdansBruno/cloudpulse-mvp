@@ -45,7 +45,7 @@ export default function ChatPage() {
 
       const data = await res.json();
       // Берём точное поле `response`, которое отдаёт route.ts
-      const botReply = data.response || data.reply || data.message || data.text || JSON.stringify(data);
+      const botReply = data.content || data.response || data.reply || data.message || data.text || 'Ответ получен';
 
       setMessages((prev) => [...prev, { role: 'assistant', content: botReply }]);
     } catch (error) {
