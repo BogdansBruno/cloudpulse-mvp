@@ -36,7 +36,16 @@ export default function ChatPage() {
     setLoading(true);
 
     try {
-      const response = await callClaudeAgent(userMessage);
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: userMessage }),
+      });
+
+      if (!res.ok) throw new Error('API error');
+      const data = await res.json();
+      const response = data.response;
+
       setMessages((prev) => [...prev, { role: 'assistant', content: response }]);
     } catch (error) {
       console.error('Chat error:', error);
