@@ -39,3 +39,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# dev-mode local data store (see lib/dev-store.ts) — never real user data
+.dev-store.json
