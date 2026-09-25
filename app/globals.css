@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #07080a;
+  --foreground: #f2f3f5;
   --primary: #2563eb;
   --primary-dark: #1d4ed8;
 }
@@ -16,9 +16,43 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0f172a;
-    --foreground: #f1f5f9;
+    --background: #07080a;
+    --foreground: #f2f3f5;
   }
+}
+
+/* Spring-like entrance used for chat bubbles, the hero card, and prompt
+   chips. Deliberately a plain CSS keyframe (no framer-motion) so it needs
+   no new dependency and can't conflict with a parallel design pass. */
+@keyframes spring-in {
+  0% {
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+  }
+  60% {
+    opacity: 1;
+    transform: translateY(-2px) scale(1.004);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-spring-in {
+  animation: spring-in 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-spring-in {
+    animation: none;
+  }
+}
+
+/* Ultra-subtle dot grid for depth on dark surfaces. */
+.bg-grid-dots {
+  background-image: radial-gradient(circle, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+  background-size: 28px 28px;
 }
 
 * {
@@ -35,7 +69,7 @@ html, body {
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: system-ui, -apple-system, sans-serif;
+  font-family: var(--font-geist-sans), system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -66,5 +100,15 @@ body {
 
   ::-webkit-scrollbar-thumb:hover {
     background: #64748b;
+  }
+}
+
+/* Glass surfaces fall back to solid fills when the OS asks for less transparency. */
+@media (prefers-reduced-transparency: reduce) {
+  .backdrop-blur-2xl,
+  .backdrop-blur-xl {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    background-color: #0d0f13 !important;
   }
 }

@@ -1,85 +1,251 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { motion, useReducedMotion } from 'motion/react';
+import {
+  Info,
+  Warning,
+  Sparkle,
+  WarningOctagon,
+  ArrowUpRight,
+  ArrowDownRight,
+  ArrowRight,
+} from '@phosphor-icons/react';
 import { supabase } from '@/lib/supabase';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
+import type { Lang } from '@/lib/i18n/translations';
 import { generateInsight, insightMessage } from '@/lib/generate-insight';
 import type { ReadinessHistoryPoint } from '@/lib/types/readiness';
+import { ReadinessRing, zoneMeta, HUB } from '@/components/PerformancePanel';
 
 type HistoryPoint = ReadinessHistoryPoint;
 
-const ZONE_BAR: Record<HistoryPoint['zone'], string> = {
-  green: 'bg-emerald-500',
-  yellow: 'bg-yellow-500',
-  red: 'bg-red-500',
-};
+const LOCALE: Record<Lang, string> = { ru: 'ru-RU', lv: 'lv-LV', en: 'en-GB' };
+const SPRING = { type: 'spring', bounce: 0, duration: 0.5 } as const;
 
-const ZONE_DOT: Record<HistoryPoint['zone'], string> = {
-  green: 'bg-emerald-400',
-  yellow: 'bg-yellow-400',
-  red: 'bg-red-400',
-};
+// Zone thresholds from lib/readiness-engine.ts: red < 50, yellow < 75.
+const ZONE_LINES = [50, 75];
 
-const ZONE_TEXT: Record<HistoryPoint['zone'], string> = {
-  green: 'text-emerald-400',
-  yellow: 'text-yellow-400',
-  red: 'text-red-400',
-};
-
-const INSIGHT_STYLES: Record<'warning' | 'info' | 'positive', { border: string; bg: string; text: string; icon: string }> = {
-  warning: { border: 'border-red-800', bg: 'bg-red-950/40', text: 'text-red-200', icon: '⚠️' },
-  positive: { border: 'border-emerald-800', bg: 'bg-emerald-950/40', text: 'text-emerald-200', icon: '✨' },
-  info: { border: 'border-slate-700', bg: 'bg-slate-800/60', text: 'text-gray-300', icon: '💡' },
-};
-
-function formatDayLabel(iso: string): string {
-  const d = new Date(iso);
-  return d.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit' });
+function formatDay(iso: string, lang: Lang) {
+  return new Date(`${iso}T12:00:00`).toLocaleDateString(LOCALE[lang], { day: 'numeric', month: 'short' });
 }
 
-// Lightweight inline SVG line chart for the ACWR trend — no charting
-// library needed for one line + a shaded "safe zone" band.
+function average(points: HistoryPoint[]) {
+  const withData = points.filter((p) => p.hasCheckin);
+  if (withData.length === 0) return null;
+  return Math.round(withData.reduce((s, p) => s + p.score, 0) / withData.length);
+}
+
+const INSIGHT_STYLE = {
+  warning: { Icon: Warning, color: HUB.amber },
+  positive: { Icon: Sparkle, color: HUB.lime },
+  info: { Icon: Info, color: '#A1A1AA' },
+} as const;
+
+// ---------------------------------------------------------------------------
+// 30-day readiness histogram. Bars coloured by zone (legend + tooltip carry
+// the label, so identity is never colour alone). Days without a check-in are
+// drawn as neutral ghosts: the engine has a number for them, but no signal.
+// ---------------------------------------------------------------------------
+function ReadinessBars({ history }: { history: HistoryPoint[] }) {
+  const { t, lang } = useLanguage();
+  const reduce = useReducedMotion();
+  const [hover, setHover] = useState<number | null>(null);
+  const zoneLabel = (z: HistoryPoint['zone']) =>
+    z === 'green' ? t.progress.zoneGreen : z === 'yellow' ? t.progress.zoneYellow : t.progress.zoneRed;
+  const hp = hover !== null ? history[hover] : null;
+
+  return (
+    <div>
+      <div className="relative h-48" onMouseLeave={() => setHover(null)}>
+        {/* Zone threshold guides */}
+        {ZONE_LINES.map((v) => (
+          <div key={v} className="pointer-events-none absolute inset-x-0" style={{ bottom: `${v}%` }}>
+            <div className="border-t border-dashed border-white/[0.07]" />
+            <span className="absolute right-0 -translate-y-full pb-0.5 font-mono text-[10px] tabular-nums text-zinc-600">
+              {v}
+            </span>
+          </div>
+        ))}
+
+        {/* Soft floor glow under the bars */}
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-[#CCFF00]/[0.05] to-transparent" />
+
+        <div className="relative flex h-full items-end gap-[2px]">
+          {history.map((p, i) => {
+            const color = p.hasCheckin ? zoneMeta(p.zone).color : 'rgba(255,255,255,0.12)';
+            const dimmed = hover !== null && hover !== i;
+            return (
+              <div
+                key={p.date}
+                className="flex h-full flex-1 items-end focus:outline-none"
+                onMouseEnter={() => setHover(i)}
+                onFocus={() => setHover(i)}
+                onBlur={() => setHover(null)}
+                tabIndex={0}
+                aria-label={`${formatDay(p.date, lang)}: ${p.hasCheckin ? `${p.score}, ${zoneLabel(p.zone)}` : t.progress.noCheckinDay}`}
+              >
+                <motion.div
+                  className="w-full origin-bottom rounded-t-[4px] transition-[opacity,transform] duration-150"
+                  style={{
+                    backgroundColor: color,
+                    opacity: dimmed ? 0.35 : p.hasCheckin ? 0.9 : 1,
+                    scaleY: hover === i ? 1.04 : 1,
+                  }}
+                  initial={reduce ? false : { height: 0 }}
+                  animate={{ height: `${Math.max(p.score, 3)}%` }}
+                  transition={reduce ? { duration: 0 } : { ...SPRING, delay: i * 0.015 }}
+                />
+              </div>
+            );
+          })}
+        </div>
+
+        {hp && hover !== null && (
+          <div
+            className="pointer-events-none absolute z-10 -translate-x-1/2 whitespace-nowrap rounded-xl bg-zinc-900/95 px-3 py-2 text-xs ring-1 ring-white/10 backdrop-blur"
+            style={{
+              left: `${Math.min(92, Math.max(8, ((hover + 0.5) / history.length) * 100))}%`,
+              bottom: `calc(${Math.max(hp.score, 3)}% + 10px)`,
+            }}
+          >
+            <p className="text-zinc-400">{formatDay(hp.date, lang)}</p>
+            {hp.hasCheckin ? (
+              <p className="mt-0.5 flex items-center gap-1.5">
+                <span className="font-mono text-sm tabular-nums text-zinc-50">{hp.score}</span>
+                <span style={{ color: zoneMeta(hp.zone).color }}>{zoneLabel(hp.zone)}</span>
+              </p>
+            ) : (
+              <p className="mt-0.5 text-zinc-300">{t.progress.noCheckinDay}</p>
+            )}
+          </div>
+        )}
+      </div>
+
+      <div className="mt-2 flex justify-between font-mono text-[11px] tabular-nums text-zinc-500">
+        <span>{formatDay(history[0].date, lang)}</span>
+        <span>{formatDay(history[history.length - 1].date, lang)}</span>
+      </div>
+
+      <div className="mt-4 flex flex-wrap gap-4 text-xs text-zinc-400">
+        {(['green', 'yellow', 'red'] as const).map((z) => {
+          const { color, Icon } = zoneMeta(z);
+          return (
+            <span key={z} className="inline-flex items-center gap-1.5">
+              <Icon size={14} weight="fill" style={{ color }} />
+              {zoneLabel(z)}
+            </span>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// ACWR trend with the 0.8-1.3 safe band and a crosshair tooltip.
+// ---------------------------------------------------------------------------
 function AcwrChart({ history }: { history: HistoryPoint[] }) {
-  const { t } = useLanguage();
-  const points = history.filter((p) => p.acwr !== null) as (HistoryPoint & { acwr: number })[];
+  const { t, lang } = useLanguage();
+  const [hover, setHover] = useState<number | null>(null);
+  const points = history.filter((p) => p.acwr !== null);
 
   if (points.length < 2) {
-    return <div className="text-sm text-gray-500 py-8 text-center">{t.progress.insightNotEnoughData}</div>;
+    return <p className="py-10 text-center text-sm text-zinc-500">{t.progress.insightNotEnoughData}</p>;
   }
 
   const W = 600;
   const H = 160;
-  const maxVal = Math.max(2, ...points.map((p) => p.acwr)) * 1.1;
-  const xStep = W / (history.length - 1 || 1);
-
+  const maxVal = Math.max(2, ...points.map((p) => p.acwr as number)) * 1.05;
+  const xFor = (i: number) => (i / (history.length - 1 || 1)) * W;
   const yFor = (v: number) => H - (v / maxVal) * H;
-  const bandTop = yFor(1.3);
-  const bandBottom = yFor(0.8);
 
-  const coords = history.map((p, i) => {
-    if (p.acwr === null) return null;
-    return { x: i * xStep, y: yFor(p.acwr) };
-  });
-
-  const pathD = coords
-    .map((c, i) => (c ? `${coords[i - 1] === null || i === 0 ? 'M' : 'L'}${c.x.toFixed(1)},${c.y.toFixed(1)}` : null))
+  const d = history
+    .map((p, i) => {
+      if (p.acwr === null) return null;
+      const prev = history[i - 1];
+      return `${i === 0 || !prev || prev.acwr === null ? 'M' : 'L'}${xFor(i).toFixed(1)},${yFor(p.acwr).toFixed(1)}`;
+    })
     .filter(Boolean)
     .join(' ');
 
+  const hp = hover !== null ? history[hover] : null;
+  const showHover = hp !== null && hover !== null && hp.acwr !== null;
+
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" className="w-full h-40">
-      <rect x={0} y={bandTop} width={W} height={bandBottom - bandTop} fill="#10b981" opacity={0.12} />
-      <line x1={0} x2={W} y1={yFor(1)} y2={yFor(1)} stroke="#10b981" strokeOpacity={0.35} strokeDasharray="4 4" />
-      <path d={pathD} fill="none" stroke="#34d399" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" />
-      {coords.map((c, i) =>
-        c ? <circle key={i} cx={c.x} cy={c.y} r={2.5} fill="#34d399" /> : null
+    <div className="relative">
+      <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" className="h-40 w-full" onMouseLeave={() => setHover(null)}>
+        <rect x={0} y={yFor(1.3)} width={W} height={yFor(0.8) - yFor(1.3)} fill={HUB.lime} opacity={0.08} />
+        <line
+          x1={0}
+          x2={W}
+          y1={yFor(1)}
+          y2={yFor(1)}
+          stroke="rgba(255,255,255,0.12)"
+          strokeDasharray="4 4"
+          vectorEffect="non-scaling-stroke"
+        />
+        <path
+          d={d}
+          fill="none"
+          stroke={HUB.lime}
+          strokeWidth={2}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          vectorEffect="non-scaling-stroke"
+        />
+        {showHover && hover !== null && (
+          <line x1={xFor(hover)} x2={xFor(hover)} y1={0} y2={H} stroke="rgba(255,255,255,0.25)" vectorEffect="non-scaling-stroke" />
+        )}
+        {history.map((p, i) => (
+          <rect
+            key={p.date}
+            x={xFor(i) - W / history.length / 2}
+            y={0}
+            width={W / history.length}
+            height={H}
+            fill="transparent"
+            onMouseEnter={() => setHover(i)}
+          />
+        ))}
+      </svg>
+      {showHover && hp && hover !== null && hp.acwr !== null && (
+        <>
+          <span
+            className="pointer-events-none absolute h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full ring-2 ring-[#0D0F13]"
+            style={{ left: `${(xFor(hover) / W) * 100}%`, top: `${(yFor(hp.acwr) / H) * 100}%`, backgroundColor: HUB.lime }}
+          />
+          <div
+            className="pointer-events-none absolute top-0 z-10 -translate-x-1/2 -translate-y-full whitespace-nowrap rounded-xl bg-zinc-900/95 px-3 py-2 text-xs ring-1 ring-white/10"
+            style={{ left: `${Math.min(92, Math.max(8, (xFor(hover) / W) * 100))}%` }}
+          >
+            <span className="text-zinc-400">{formatDay(hp.date, lang)}</span>{' '}
+            <span className="font-mono tabular-nums text-zinc-50">{hp.acwr.toFixed(2)}</span>
+          </div>
+        </>
       )}
-    </svg>
+    </div>
+  );
+}
+
+function Skeleton() {
+  return (
+    <div className="space-y-3" aria-busy>
+      <div className="h-16 animate-pulse rounded-3xl bg-white/[0.03]" />
+      <div className="grid gap-3 sm:grid-cols-3">
+        {[0, 1, 2].map((i) => (
+          <div key={i} className="h-32 animate-pulse rounded-3xl bg-white/[0.03]" />
+        ))}
+      </div>
+      <div className="h-72 animate-pulse rounded-3xl bg-white/[0.03]" />
+    </div>
   );
 }
 
 export default function ProgressPage() {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
+  const reduce = useReducedMotion();
   const [history, setHistory] = useState<HistoryPoint[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -110,118 +276,172 @@ export default function ProgressPage() {
   }, []);
 
   const last7 = history?.slice(-7) ?? [];
+  const prev7 = history?.slice(-14, -7) ?? [];
   const today = history?.[history.length - 1] ?? null;
-  const avgScore7d = last7.length ? Math.round(last7.reduce((s, p) => s + p.score, 0) / last7.length) : null;
-  const redDaysLast7 = last7.filter((p) => p.zone === 'red').length;
+  const avg7 = average(last7);
+  const avgPrev = average(prev7);
+  const delta = avg7 !== null && avgPrev !== null ? avg7 - avgPrev : null;
+  const redDaysLast7 = last7.filter((p) => p.hasCheckin && p.zone === 'red').length;
   const insight = history ? generateInsight(history) : null;
-  const insightStyle = insight ? INSIGHT_STYLES[insight.severity] : null;
+  const insightStyle = insight ? INSIGHT_STYLE[insight.severity] : null;
+  const todayZone = today ? zoneMeta(today.zone) : null;
+
+  const card = 'rounded-3xl bg-white/[0.03] p-5 ring-1 ring-inset ring-white/[0.08] backdrop-blur-2xl';
+  const rise = (i: number) => ({
+    initial: reduce ? false : ({ opacity: 0, y: 10 } as const),
+    animate: { opacity: 1, y: 0 },
+    transition: { ...SPRING, delay: reduce ? 0 : i * 0.06 },
+  });
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] bg-gradient-to-br from-slate-900 to-slate-800 p-6">
-      <div className="max-w-2xl mx-auto">
-        <h1 className="text-3xl font-bold text-white mb-2">{t.progress.title}</h1>
-        <p className="text-gray-400 mb-6">{t.progress.subtitle}</p>
+    <div className="relative min-h-[calc(100dvh-4.5rem)] shrink-0 overflow-x-clip bg-[#07080A] px-4 py-8 md:py-12">
+      <div className="pointer-events-none absolute -left-40 -top-40 h-[480px] w-[480px] rounded-full bg-[#CCFF00]/[0.05] blur-[140px]" />
+
+      <div className="relative mx-auto max-w-3xl">
+        <header className="mb-6 flex flex-wrap items-end justify-between gap-3">
+          <h1 className="text-[30px] font-semibold leading-[1.1] tracking-[-0.03em] text-zinc-50 md:text-4xl">
+            {t.progress.title}
+          </h1>
+          <span
+            title={t.progress.subtitle}
+            className="inline-flex cursor-help items-center gap-1.5 rounded-full bg-white/[0.04] px-3 py-1 text-xs text-zinc-400 ring-1 ring-inset ring-white/[0.08]"
+          >
+            <Info size={13} />
+            {t.progress.badge}
+          </span>
+        </header>
 
         {error && (
-          <div className="rounded-lg bg-red-950/60 border border-red-800 p-4 text-sm text-red-300 mb-6">{error}</div>
-        )}
-
-        {!history && !error && <div className="text-gray-400">{t.common.loading}</div>}
-
-        {history && history.length > 0 && insight && insightStyle && (
-          <div className={`mb-6 rounded-lg border ${insightStyle.border} ${insightStyle.bg} p-4 flex gap-3`}>
-            <span className="text-lg leading-none">{insightStyle.icon}</span>
-            <p className={`text-sm ${insightStyle.text}`}>{insightMessage(insight, t.progress)}</p>
+          <div className="mb-6 flex gap-3 rounded-2xl bg-[#FF4D5E]/[0.08] p-4 text-sm text-zinc-200 ring-1 ring-inset ring-[#FF4D5E]/30">
+            <WarningOctagon size={18} weight="fill" className="mt-0.5 shrink-0 text-[#FF4D5E]" />
+            <span>{error}</span>
           </div>
         )}
 
+        {!history && !error && <Skeleton />}
+
         {history && history.length > 0 && (
-          <>
-            <div className="grid grid-cols-3 gap-4 mb-8">
-              <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
-                <p className="text-gray-400 text-sm mb-2">{t.progress.today}</p>
-                <p className={`text-4xl font-bold ${today ? ZONE_TEXT[today.zone] : 'text-gray-500'}`}>
-                  {today?.score ?? '—'}
-                </p>
-                <p className="text-gray-500 text-xs mt-1">Readiness Score</p>
-              </div>
+          <div className="space-y-3">
+            {insight && insightStyle && (
+              <motion.div {...rise(0)} className={`${card} flex gap-3`}>
+                <insightStyle.Icon size={20} weight="fill" className="mt-0.5 shrink-0" style={{ color: insightStyle.color }} />
+                <p className="text-[15px] leading-relaxed text-zinc-200">{insightMessage(insight, t.progress)}</p>
+              </motion.div>
+            )}
 
-              <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
-                <p className="text-gray-400 text-sm mb-2">{t.progress.avg7d}</p>
-                <p className="text-4xl font-bold text-blue-400">{avgScore7d ?? '—'}</p>
-              </div>
-
-              <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
-                <p className="text-gray-400 text-sm mb-2">{t.progress.redDays}</p>
-                <p className="text-4xl font-bold text-red-400">{redDaysLast7}</p>
-                <p className="text-gray-500 text-xs mt-1">{t.progress.perWeek}</p>
-              </div>
-            </div>
-
-            <div className="bg-slate-800 rounded-lg p-6 border border-slate-700 mb-6">
-              <h2 className="text-xl font-bold text-white mb-4">{t.progress.last30}</h2>
-              <div className="flex items-end gap-1 h-40">
-                {history.map((point) => (
-                  <div
-                    key={point.date}
-                    className="flex-1 h-full flex flex-col justify-end group relative"
-                    title={`${formatDayLabel(point.date)} · ${point.score}`}
-                  >
-                    <div
-                      className={`${ZONE_BAR[point.zone]} rounded-t transition-all opacity-80 group-hover:opacity-100`}
-                      style={{ height: `${Math.max(point.score, 4)}%` }}
-                    />
-                    <div className="absolute -top-6 left-1/2 -translate-x-1/2 hidden group-hover:block bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-white whitespace-nowrap z-10">
-                      {formatDayLabel(point.date)}: {point.score}
+            <div className="grid gap-3 sm:grid-cols-3">
+              {/* Today */}
+              <motion.div {...rise(1)} className={card}>
+                <p className="text-xs text-zinc-400">{t.progress.today}</p>
+                {today && today.hasCheckin && todayZone ? (
+                  <div className="mt-3 flex items-center gap-3">
+                    <ReadinessRing score={today.score} zone={today.zone} size={60} />
+                    <div>
+                      <p className="font-mono text-4xl font-light leading-none tabular-nums tracking-[-0.04em] text-zinc-50">
+                        {today.score}
+                      </p>
+                      <p className="mt-1.5 inline-flex items-center gap-1 text-xs" style={{ color: todayZone.color }}>
+                        <todayZone.Icon size={12} weight="fill" />
+                        {today.zone === 'green'
+                          ? t.progress.zoneGreen
+                          : today.zone === 'yellow'
+                            ? t.progress.zoneYellow
+                            : t.progress.zoneRed}
+                      </p>
                     </div>
                   </div>
-                ))}
-              </div>
-              <div className="flex justify-between text-xs text-gray-500 mt-2">
-                <span>{formatDayLabel(history[0].date)}</span>
-                <span>{formatDayLabel(history[history.length - 1].date)}</span>
-              </div>
-              <div className="flex gap-4 mt-4 text-xs text-gray-400">
-                <span className="flex items-center gap-1">
-                  <span className={`w-2 h-2 rounded-full ${ZONE_DOT.green}`} /> {t.progress.zoneGreen}
-                </span>
-                <span className="flex items-center gap-1">
-                  <span className={`w-2 h-2 rounded-full ${ZONE_DOT.yellow}`} /> {t.progress.zoneYellow}
-                </span>
-                <span className="flex items-center gap-1">
-                  <span className={`w-2 h-2 rounded-full ${ZONE_DOT.red}`} /> {t.progress.zoneRed}
-                </span>
-              </div>
+                ) : (
+                  <Link href="/checkin" className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-[#CCFF00]">
+                    {t.hub.doCheckin}
+                    <ArrowRight size={14} weight="bold" />
+                  </Link>
+                )}
+              </motion.div>
+
+              {/* 7-day average */}
+              <motion.div {...rise(2)} className={card}>
+                <p className="text-xs text-zinc-400">{t.progress.avg7d}</p>
+                <p className="mt-3 font-mono text-4xl font-light leading-none tabular-nums tracking-[-0.04em] text-zinc-50">
+                  {avg7 ?? '--'}
+                </p>
+                {delta !== null && (
+                  <p className="mt-2 inline-flex items-center gap-1 text-xs text-zinc-400">
+                    {delta >= 0 ? (
+                      <ArrowUpRight size={13} weight="bold" style={{ color: HUB.lime }} />
+                    ) : (
+                      <ArrowDownRight size={13} weight="bold" style={{ color: HUB.amber }} />
+                    )}
+                    <span className="font-mono tabular-nums text-zinc-200">
+                      {delta > 0 ? '+' : ''}
+                      {delta}
+                    </span>
+                    {t.progress.vsPrevWeek}
+                  </p>
+                )}
+              </motion.div>
+
+              {/* Red days */}
+              <motion.div {...rise(3)} className={card}>
+                <p className="text-xs text-zinc-400">{t.progress.redDays}</p>
+                <p className="mt-3 font-mono text-4xl font-light leading-none tabular-nums tracking-[-0.04em] text-zinc-50">
+                  {redDaysLast7}
+                  <span className="ml-1 text-base text-zinc-500">/7</span>
+                </p>
+                <div className="mt-3 flex gap-1" aria-hidden>
+                  {last7.map((p) => (
+                    <span
+                      key={p.date}
+                      className="h-2 flex-1 rounded-full"
+                      style={{
+                        backgroundColor: p.hasCheckin ? zoneMeta(p.zone).color : 'rgba(255,255,255,0.08)',
+                        opacity: p.hasCheckin ? 0.9 : 1,
+                      }}
+                    />
+                  ))}
+                </div>
+                <p className="mt-2 text-[11px] text-zinc-500">{t.progress.perWeek}</p>
+              </motion.div>
             </div>
 
-            <div className="bg-slate-800 rounded-lg p-6 border border-slate-700 mb-6">
-              <div className="flex items-baseline justify-between mb-4">
-                <h2 className="text-xl font-bold text-white">{t.progress.acwrTitle}</h2>
-                <span className="text-xs text-gray-500">{t.progress.acwrSweetSpot}</span>
+            <motion.section {...rise(4)} className={card}>
+              <h2 className="mb-5 text-base font-semibold tracking-[-0.01em] text-zinc-50">{t.progress.last30}</h2>
+              <ReadinessBars history={history} />
+            </motion.section>
+
+            <motion.section {...rise(5)} className={card}>
+              <div className="mb-5 flex flex-wrap items-baseline justify-between gap-2">
+                <h2 className="text-base font-semibold tracking-[-0.01em] text-zinc-50">{t.progress.acwrTitle}</h2>
+                <span className="text-xs text-zinc-500">{t.progress.acwrSweetSpot}</span>
               </div>
               <AcwrChart history={history} />
-              <div className="flex justify-between text-xs text-gray-500 mt-2">
-                <span>{formatDayLabel(history[0].date)}</span>
-                <span>{formatDayLabel(history[history.length - 1].date)}</span>
+              <div className="mt-2 flex justify-between font-mono text-[11px] tabular-nums text-zinc-500">
+                <span>{formatDay(history[0].date, lang)}</span>
+                <span>{formatDay(history[history.length - 1].date, lang)}</span>
               </div>
-            </div>
+            </motion.section>
 
             {redDaysLast7 >= 2 && (
-              <div className="mt-6 bg-red-950/40 border border-red-800 rounded-lg p-6">
-                <h2 className="text-lg font-bold text-red-300 mb-2">{t.progress.slowDownTitle}</h2>
-                <p className="text-red-200/80 text-sm">{t.progress.slowDownBody(redDaysLast7)}</p>
-              </div>
+              <motion.div {...rise(6)} className="flex gap-3 rounded-3xl bg-[#FF4D5E]/[0.08] p-5 ring-1 ring-inset ring-[#FF4D5E]/30">
+                <WarningOctagon size={20} weight="fill" className="mt-0.5 shrink-0 text-[#FF4D5E]" />
+                <div>
+                  <h2 className="text-base font-semibold text-zinc-50">{t.progress.slowDownTitle}</h2>
+                  <p className="mt-1 text-sm leading-relaxed text-zinc-300">{t.progress.slowDownBody(redDaysLast7)}</p>
+                </div>
+              </motion.div>
             )}
-          </>
+          </div>
         )}
 
         {history && history.length === 0 && (
-          <div className="bg-slate-800 rounded-lg p-6 border border-slate-700 text-gray-400">
-            {t.progress.empty}{' '}
-            <a href="/checkin" className="text-emerald-400 underline">
-              {t.progress.emptyLink}
-            </a>
-            .
+          <div className={`${card} text-center`}>
+            <p className="text-sm text-zinc-300">{t.hub.noCheckinTitle}</p>
+            <Link
+              href="/checkin"
+              className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-[#CCFF00] px-4 py-2 text-sm font-medium text-zinc-950"
+            >
+              {t.hub.doCheckin}
+              <ArrowRight size={14} weight="bold" />
+            </Link>
           </div>
         )}
       </div>

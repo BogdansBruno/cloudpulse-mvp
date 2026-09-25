@@ -17,12 +17,14 @@ type Dict = {
   chat: {
     title: string;
     subtitle: string;
+    heroTag: string;
     welcome: string;
     placeholder: string;
     send: string;
     addToCalendar: string;
     connectionError: string;
     genericError: string;
+    promptChips: string[];
   };
   checkin: {
     title: string;
@@ -44,6 +46,10 @@ type Dict = {
     trainedToday: string;
     submit: string;
     toPlan: string;
+    whyScore: string;
+    duration: string;
+    rpe: string;
+    rpeHint: string;
   };
   progress: {
     title: string;
@@ -70,10 +76,42 @@ type Dict = {
     insightGreatShape: string;
     insightNotEnoughData: string;
     insightNeutral: string;
+    badge: string;
+    noCheckinDay: string;
+    vsPrevWeek: string;
   };
   onboarding: {
     title: string;
     subtitle: string;
+  };
+  hub: {
+    readiness: string;
+    readinessHint: string;
+    load: string;
+    loadSafe: string;
+    loadLow: string;
+    loadOk: string;
+    loadHigh: string;
+    notEnoughData: string;
+    streak: string;
+    sleep: string;
+    calm: string;
+    energy: string;
+    muscles: string;
+    trend: string;
+    noCheckinTitle: string;
+    noCheckinBody: string;
+    doCheckin: string;
+    coachSees: string;
+    modeRecovery: string;
+    modeStrength: string;
+    modeCardio: string;
+    attach: string;
+    voice: string;
+    listening: string;
+    metricsSnippet: (score: number | null, acwr: number | null, sleep: number | null) => string;
+    planTitle: string;
+    min: string;
   };
   common: {
     loading: string;
@@ -86,13 +124,15 @@ export const translations: Record<Lang, Dict> = {
     chat: {
       title: 'CloudPulse Coach',
       subtitle: 'Твой AI-партнёр по тренировкам',
+      heroTag: 'AI Athletic Coach',
       welcome:
-        '👋 Привет! Я CloudPulse — твой AI-коуч. Составим классный план тренировок?\n\nРасскажи о своих целях, любимых видах спорта, или спроси что угодно про тренировки, восстановление и активность!',
+        'Привет! Я CloudPulse, твой AI-коуч. Составим классный план тренировок?\n\nРасскажи о своих целях, любимых видах спорта, или спроси что угодно про тренировки, восстановление и активность!',
       placeholder: 'Спроси о тренировках, целях, восстановлении...',
       send: 'Отправить',
       addToCalendar: 'Добавить в календарь',
       connectionError: 'Проблема с подключением. Проверь интернет и попробуй снова.',
       genericError: 'Что-то пошло не так. Попробуй ещё раз.',
+      promptChips: ['Составь план на неделю', 'Как мне восстановиться?', 'Что съесть перед тренировкой?'],
     },
     checkin: {
       title: 'Как ты сегодня?',
@@ -114,6 +154,10 @@ export const translations: Record<Lang, Dict> = {
       trainedToday: 'Уже тренировался сегодня',
       submit: 'Узнать готовность',
       toPlan: 'К плану тренировок',
+      whyScore: 'Почему такой балл',
+      duration: 'Длительность',
+      rpe: 'Тяжесть тренировки (RPE)',
+      rpeHint: '1 очень легко, 10 максимум',
     },
     progress: {
       title: 'Твоя готовность',
@@ -144,8 +188,41 @@ export const translations: Record<Lang, Dict> = {
       insightGreatShape: 'Последняя неделя стабильно в зелёной зоне — организм хорошо восстанавливается. Можно постепенно наращивать нагрузку.',
       insightNotEnoughData: 'Ещё мало чек-инов, чтобы увидеть тренд — заполняй ежедневно, и здесь появятся более точные наблюдения.',
       insightNeutral: 'Готовность в норме, явных сигналов риска не видно. Продолжай ежедневные чек-ины.',
+      badge: 'Считается кодом, не ИИ',
+      noCheckinDay: 'нет чек-ина',
+      vsPrevWeek: 'к прошлой неделе',
     },
     onboarding: { title: 'Настроим твой профиль', subtitle: 'CloudPulse' },
+    hub: {
+      readiness: 'Готовность',
+      readinessHint: 'Считается кодом по чек-ину, не ИИ',
+      load: 'Нагрузка (ACWR)',
+      loadSafe: 'Безопасно 0.8-1.3',
+      loadLow: 'Недогруз',
+      loadOk: 'В норме',
+      loadHigh: 'Резкий рост',
+      notEnoughData: 'Мало данных',
+      streak: 'Дней подряд',
+      sleep: 'Сон',
+      calm: 'Спокойствие',
+      energy: 'Энергия',
+      muscles: 'Мышцы',
+      trend: 'Последние 7 дней',
+      noCheckinTitle: 'Сегодня ещё нет чек-ина',
+      noCheckinBody: 'Без него коуч не знает, как ты восстановился.',
+      doCheckin: 'Пройти чек-ин',
+      coachSees: 'Коуч видит',
+      modeRecovery: 'Восстановление',
+      modeStrength: 'Силовая',
+      modeCardio: 'Кардио',
+      attach: 'Вставить мои показатели',
+      voice: 'Голосовой ввод',
+      listening: 'Слушаю...',
+      metricsSnippet: (score, acwr, sleep) =>
+        `Мои показатели сегодня: готовность ${score ?? 'нет'}/100, ACWR ${acwr !== null ? acwr.toFixed(2) : 'нет данных'}, сон ${sleep ?? '-'}/7.`,
+      planTitle: 'План тренировок',
+      min: 'мин',
+    },
     common: { loading: 'Загружаю…' },
   },
   lv: {
@@ -153,13 +230,15 @@ export const translations: Record<Lang, Dict> = {
     chat: {
       title: 'CloudPulse Coach',
       subtitle: 'Tavs AI treniņu partneris',
+      heroTag: 'AI Athletic Coach',
       welcome:
-        '👋 Sveiks! Es esmu CloudPulse — tavs AI treneris. Izveidosim lielisku treniņu plānu?\n\nPastāsti par saviem mērķiem, iecienītākajiem sporta veidiem, vai jautā jebko par treniņiem, atveseļošanos un aktivitāti!',
+        'Sveiks! Es esmu CloudPulse, tavs AI treneris. Izveidosim lielisku treniņu plānu?\n\nPastāsti par saviem mērķiem, iecienītākajiem sporta veidiem, vai jautā jebko par treniņiem, atveseļošanos un aktivitāti!',
       placeholder: 'Jautā par treniņiem, mērķiem, atveseļošanos...',
       send: 'Sūtīt',
       addToCalendar: 'Pievienot kalendāram',
       connectionError: 'Savienojuma problēma. Pārbaudi internetu un mēģini vēlreiz.',
       genericError: 'Kaut kas nogāja greizi. Mēģini vēlreiz.',
+      promptChips: ['Izveido plānu nedēļai', 'Kā man atgūties?', 'Ko ēst pirms treniņa?'],
     },
     checkin: {
       title: 'Kā tu jūties šodien?',
@@ -181,6 +260,10 @@ export const translations: Record<Lang, Dict> = {
       trainedToday: 'Jau trenējos šodien',
       submit: 'Uzzināt gatavību',
       toPlan: 'Uz treniņu plānu',
+      whyScore: 'Kāpēc tāds rezultāts',
+      duration: 'Ilgums',
+      rpe: 'Treniņa smagums (RPE)',
+      rpeHint: '1 ļoti viegli, 10 maksimums',
     },
     progress: {
       title: 'Tava gatavība',
@@ -211,8 +294,41 @@ export const translations: Record<Lang, Dict> = {
       insightGreatShape: 'Pēdējā nedēļa stabili zaļajā zonā — organisms labi atveseļojas. Var pakāpeniski palielināt slodzi.',
       insightNotEnoughData: 'Vēl par maz pārbaužu, lai redzētu tendenci — aizpildi katru dienu, un šeit parādīsies precīzāki novērojumi.',
       insightNeutral: 'Gatavība ir normā, skaidru riska signālu nav. Turpini ikdienas pārbaudes.',
+      badge: 'Aprēķina kods, nevis MI',
+      noCheckinDay: 'nav pārbaudes',
+      vsPrevWeek: 'pret iepriekšējo nedēļu',
     },
     onboarding: { title: 'Iestatīsim tavu profilu', subtitle: 'CloudPulse' },
+    hub: {
+      readiness: 'Gatavība',
+      readinessHint: 'Aprēķina kods pēc pārbaudes, nevis MI',
+      load: 'Slodze (ACWR)',
+      loadSafe: 'Droši 0.8-1.3',
+      loadLow: 'Par maz',
+      loadOk: 'Normā',
+      loadHigh: 'Straujš kāpums',
+      notEnoughData: 'Par maz datu',
+      streak: 'Dienas pēc kārtas',
+      sleep: 'Miegs',
+      calm: 'Miers',
+      energy: 'Enerģija',
+      muscles: 'Muskuļi',
+      trend: 'Pēdējās 7 dienas',
+      noCheckinTitle: 'Šodien vēl nav pārbaudes',
+      noCheckinBody: 'Bez tās treneris nezina, kā tu esi atguvies.',
+      doCheckin: 'Aizpildīt pārbaudi',
+      coachSees: 'Treneris redz',
+      modeRecovery: 'Atgūšanās',
+      modeStrength: 'Spēks',
+      modeCardio: 'Kardio',
+      attach: 'Ievietot manus rādītājus',
+      voice: 'Balss ievade',
+      listening: 'Klausos...',
+      metricsSnippet: (score, acwr, sleep) =>
+        `Mani šodienas rādītāji: gatavība ${score ?? 'nav'}/100, ACWR ${acwr !== null ? acwr.toFixed(2) : 'nav datu'}, miegs ${sleep ?? '-'}/7.`,
+      planTitle: 'Treniņu plāns',
+      min: 'min',
+    },
     common: { loading: 'Ielādē…' },
   },
   en: {
@@ -220,13 +336,15 @@ export const translations: Record<Lang, Dict> = {
     chat: {
       title: 'CloudPulse Coach',
       subtitle: 'Your AI fitness partner for better training',
+      heroTag: 'AI Athletic Coach',
       welcome:
-        "👋 Hey! I'm CloudPulse, your AI fitness coach. Ready to build an awesome training plan?\n\nTell me about your fitness goals, what sports you like, or ask me anything about training, recovery, or staying active!",
+        "Hey! I'm CloudPulse, your AI fitness coach. Ready to build an awesome training plan?\n\nTell me about your fitness goals, what sports you like, or ask me anything about training, recovery, or staying active!",
       placeholder: 'Ask anything about your training, goals, recovery...',
       send: 'Send',
       addToCalendar: 'Add to Calendar',
       connectionError: 'Connection problem. Check your internet and try again.',
       genericError: 'Something went wrong. Try again.',
+      promptChips: ['Plan my week', 'How should I recover?', 'What should I eat before training?'],
     },
     checkin: {
       title: 'How are you today?',
@@ -248,6 +366,10 @@ export const translations: Record<Lang, Dict> = {
       trainedToday: 'Already trained today',
       submit: 'Check my readiness',
       toPlan: 'Go to training plan',
+      whyScore: 'Why this score',
+      duration: 'Duration',
+      rpe: 'Session effort (RPE)',
+      rpeHint: '1 very easy, 10 all-out',
     },
     progress: {
       title: 'Your readiness',
@@ -278,8 +400,41 @@ export const translations: Record<Lang, Dict> = {
       insightGreatShape: "The last week has stayed steadily in the green zone — recovery is working well. You can gradually build up load.",
       insightNotEnoughData: "Not enough check-ins yet to see a trend — keep filling it in daily and sharper insights will show up here.",
       insightNeutral: 'Readiness looks normal, no clear risk signals right now. Keep up the daily check-ins.',
+      badge: 'Calculated by code, not AI',
+      noCheckinDay: 'no check-in',
+      vsPrevWeek: 'vs last week',
     },
     onboarding: { title: "Let's set up your profile", subtitle: 'CloudPulse' },
+    hub: {
+      readiness: 'Readiness',
+      readinessHint: 'Calculated by code from your check-in, not by AI',
+      load: 'Workload (ACWR)',
+      loadSafe: 'Safe 0.8-1.3',
+      loadLow: 'Underloaded',
+      loadOk: 'On track',
+      loadHigh: 'Sharp spike',
+      notEnoughData: 'Not enough data',
+      streak: 'Days in a row',
+      sleep: 'Sleep',
+      calm: 'Calm',
+      energy: 'Energy',
+      muscles: 'Muscles',
+      trend: 'Last 7 days',
+      noCheckinTitle: 'No check-in yet today',
+      noCheckinBody: "Without it your coach can't tell how you've recovered.",
+      doCheckin: 'Do check-in',
+      coachSees: 'Coach sees',
+      modeRecovery: 'Recovery',
+      modeStrength: 'Strength',
+      modeCardio: 'Cardio',
+      attach: 'Insert my metrics',
+      voice: 'Voice input',
+      listening: 'Listening...',
+      metricsSnippet: (score, acwr, sleep) =>
+        `My numbers today: readiness ${score ?? 'none'}/100, ACWR ${acwr !== null ? acwr.toFixed(2) : 'no data'}, sleep ${sleep ?? '-'}/7.`,
+      planTitle: 'Training plan',
+      min: 'min',
+    },
     common: { loading: 'Loading…' },
   },
 };

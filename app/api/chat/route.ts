@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { callClaudeAgent, type ChatTurn, type ReadinessContext } from '@/lib/claude-agent';
+import { callClaudeAgent, type ChatTurn, type CoachMode, type ReadinessContext } from '@/lib/claude-agent';
 import { getUserFromToken } from '@/lib/supabase-server';
 import { getTodayReadiness } from '@/lib/get-today-readiness';
 
@@ -47,14 +47,14 @@ export async function POST(req: Request) {
     const devMode = process.env.NODE_ENV === 'development' && !token;
     const mockUser = devMode ? { id: 'dev-test-user', email: 'test@dev.local' } : null;
 
-    if (!user && !mockUser) {
+    // Declared before the check so TypeScript can narrow it to non-null.
+    const currentUser = user ?? mockUser;
+    if (!currentUser) {
       return NextResponse.json(
         { error: 'Not signed in', content: 'Please sign in to chat with your coach.' },
         { status: 401 }
       );
     }
-
-    const currentUser = user || mockUser;
 
     // 2. Rate limit per user.
     const limit = rateLimit(currentUser.id);
@@ -85,6 +85,8 @@ export async function POST(req: Request) {
     }
 
     const lang: 'ru' | 'lv' | 'en' = body?.lang === 'lv' || body?.lang === 'en' ? body.lang : 'ru';
+    const mode: CoachMode | undefined =
+      body?.mode === 'recovery' || body?.mode === 'strength' || body?.mode === 'cardio' ? body.mode : undefined;
 
     const history: ChatTurn[] = Array.isArray(body?.history)
       ? body.history
@@ -120,7 +122,7 @@ export async function POST(req: Request) {
     }
 
     // 5. Real Claude call.
-    const content = await callClaudeAgent(message.trim(), history, readiness, lang);
+    const content = await callClaudeAgent(message.trim(), history, readiness, lang, mode);
 
     return NextResponse.json({ role: 'assistant', content });
   } catch (error) {

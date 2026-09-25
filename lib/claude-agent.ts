@@ -71,6 +71,22 @@ ${blockActive
 - Never state a score, zone, or ACWR value that differs from the numbers above.`;
 }
 
+export type CoachMode = 'recovery' | 'strength' | 'cardio';
+
+const MODE_DESCRIPTION: Record<CoachMode, string> = {
+  recovery: 'recovery (mobility, sleep, light aerobic work, stress relief)',
+  strength: 'strength (resistance training, technique, progressive overload)',
+  cardio: 'cardio (running, cycling, swimming, aerobic base and intervals)',
+};
+
+// The athlete can pick a focus in the chat's command bar. It only biases the
+// coach's suggestions: the deterministic Readiness rules above always win.
+function formatModeBlock(mode?: CoachMode): string {
+  if (!mode) return '';
+  return `COACHING FOCUS (picked by the athlete in the app): ${MODE_DESCRIPTION[mode]}.
+Lean your suggestions and clarifying questions toward this focus. The Readiness hard rules above still win: if the zone is red or a block-severity violation is active, recommend recovery work regardless of the chosen focus, and say briefly why.`;
+}
+
 const UI_LANG_NAME: Record<'ru' | 'lv' | 'en', string> = {
   ru: 'Russian',
   lv: 'Latvian',
@@ -83,12 +99,50 @@ const SCHEDULE_DAY_EXAMPLE: Record<'ru' | 'lv' | 'en', { day1: string; day2: str
   en: { day1: 'Monday', day2: 'Wednesday', exampleExercise: 'Exercise' },
 };
 
-function getSystemPrompt(readiness?: ReadinessContext, uiLang: 'ru' | 'lv' | 'en' = 'ru'): string {
+const QUESTIONS_EXAMPLE: Record<
+  'ru' | 'lv' | 'en',
+  { lead: string; q1: string; q1opts: string; q2: string; q2unit: string; q3: string; q3opts: string }
+> = {
+  ru: {
+    lead: 'Расскажи чуть больше:',
+    q1: 'Какие виды активности тебе нравятся?',
+    q1opts: 'Бег | Зал | Командные игры | Плавание | Другое',
+    q2: 'Сколько дней в неделю реально готов(а) тренироваться?',
+    q2unit: 'дней',
+    q3: 'Есть ли где-то дискомфорт или усталость, о которой стоит знать?',
+    q3opts: 'Нет | Немного | Да, есть проблема',
+  },
+  lv: {
+    lead: 'Pastāsti nedaudz vairāk:',
+    q1: 'Kāda veida aktivitātes tev patīk?',
+    q1opts: 'Skriešana | Zāle | Komandu spēles | Peldēšana | Cits',
+    q2: 'Cik dienas nedēļā tu reāli vari trenēties?',
+    q2unit: 'dienas',
+    q3: 'Vai ir kāda diskomforta vai noguruma sajūta, par ko vajadzētu zināt?',
+    q3opts: 'Nē | Nedaudz | Jā, ir problēma',
+  },
+  en: {
+    lead: "Tell me a bit more:",
+    q1: 'What kinds of activity do you enjoy?',
+    q1opts: 'Running | Gym | Team sports | Swimming | Other',
+    q2: 'How many days a week can you realistically train?',
+    q2unit: 'days',
+    q3: 'Any discomfort or fatigue I should know about?',
+    q3opts: 'None | A little | Yes, there is an issue',
+  },
+};
+
+function getSystemPrompt(
+  readiness?: ReadinessContext,
+  uiLang: 'ru' | 'lv' | 'en' = 'ru',
+  mode?: CoachMode
+): string {
   const today = new Date();
   const todayFormatted = `${today.getDate()}.${String(today.getMonth() + 1).padStart(2, '0')}.${today.getFullYear()}`;
   const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
   const dayName = dayNames[today.getDay()];
   const ex = SCHEDULE_DAY_EXAMPLE[uiLang];
+  const qx = QUESTIONS_EXAMPLE[uiLang];
 
   return `You are CloudPulse, an AI Athletic & Lifestyle Coaching Agent.
 Your role: build adaptive training plans and guide students (13-18)
@@ -99,6 +153,8 @@ Today is ${dayName}, ${todayFormatted}. Use this as the reference point for all 
 If the user mentions a date with a typo (e.g., "20226" or "22026"), automatically correct it to 2026.
 
 ${formatReadinessBlock(readiness)}
+
+${formatModeBlock(mode)}
 
 CORE PERSONALITY:
 - Supportive, not pushy. Celebrate effort, not aesthetics.
@@ -129,6 +185,39 @@ The Readiness Data block above is a second, independent safety layer computed
 by code, not by you — both must be respected, and neither one substitutes
 for the other.
 
+STRUCTURED QUICK-REPLY QUESTIONS FORMAT (IMPORTANT):
+Whenever you need to ask the athlete 2 or more clarifying questions before building
+a plan (preferred activities, weekly availability, pain/discomfort, intensity
+preference, etc.), do NOT write them as a plain text list. A student reading this
+on their phone should be able to tap buttons or drag a slider instead of typing —
+wrap the questions in a <questions> block so the app renders them that way,
+one question at a time.
+
+Format — one question per paragraph, separated by a blank line, in ${UI_LANG_NAME[uiLang]}:
+
+<questions>
+Q: ${qx.q1}
+TYPE: choice
+OPTIONS: ${qx.q1opts}
+
+Q: ${qx.q2}
+TYPE: slider
+RANGE: 1-7
+UNIT: ${qx.q2unit}
+
+Q: ${qx.q3}
+TYPE: choice
+OPTIONS: ${qx.q3opts}
+</questions>
+
+Rules:
+- TYPE: choice — for anything with a small set of discrete answers (2-5 options).
+- TYPE: slider — for anything numeric with a natural range (days per week, hours, RPE 1-10). RANGE is always "min-max" (whole numbers).
+- Ask at most 3-4 questions in one block.
+- Write ONE short friendly lead-in sentence BEFORE the block (e.g. "${qx.lead}"). Write NOTHING after the closing </questions> tag — the app collects the athlete's answers and sends them back to you automatically as their next message, in the same order as the questions.
+- Never put a <questions> block and a <schedule> block in the same reply. Ask first, wait for their answers (sent back to you as a new user message), THEN build the plan using <schedule> in your next reply.
+- Plain yes/no or single quick questions ("Did today's session feel hard?") don't need this format — use it specifically when you're about to ask a short batch of intake-style questions.
+
 STRUCTURED SCHEDULE FORMAT (IMPORTANT):
 When the user asks for a training plan or workout schedule, ALWAYS format the response with a <schedule> block.
 Start from the next available date (after today: ${todayFormatted}). Write the day names in ${UI_LANG_NAME[uiLang]} (matching whatever language you are replying in for this message), keep the rest of the block's structure (dates, times, dashes) exactly as shown:
@@ -155,14 +244,15 @@ export async function callClaudeAgent(
   userMessage: string,
   history: ChatTurn[] = [],
   readiness?: ReadinessContext,
-  uiLang: 'ru' | 'lv' | 'en' = 'ru'
+  uiLang: 'ru' | 'lv' | 'en' = 'ru',
+  mode?: CoachMode
 ): Promise<string> {
   const recent = history.slice(-10).filter((m) => m.content?.trim());
 
   const response = await client.messages.create({
     model: MODEL,
     max_tokens: 1024,
-    system: getSystemPrompt(readiness, uiLang),
+    system: getSystemPrompt(readiness, uiLang, mode),
     messages: [...recent, { role: 'user' as const, content: userMessage }],
   });
 
