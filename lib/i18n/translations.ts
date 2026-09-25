@@ -182,6 +182,54 @@ type Dict = {
     notAllowed: string;
     saveError: string;
   };
+  theme: {
+    label: string;
+    light: string;
+    dark: string;
+    system: string;
+    scheduled: string;
+    lightHint: string;
+    darkHint: string;
+    systemHint: string;
+    scheduledHint: string;
+    darkFrom: string;
+    darkTo: string;
+    nowDark: string;
+    nowLight: string;
+  };
+  plan: {
+    steps: string;
+    protocol: string;
+    tempo: string;
+    breathing: string;
+    heartRate: string;
+    safety: string;
+    zone: string;
+    light: string;
+    moderate: string;
+    hard: string;
+    details: string;
+    hideDetails: string;
+  };
+  exportCal: {
+    title: string;
+    subtitle: string;
+    google: string;
+    googleHint: string;
+    apple: string;
+    appleHint: string;
+    outlook: string;
+    outlookHint: string;
+    pickDay: string;
+    open: string;
+    downloadAll: string;
+    importTip: string;
+    reminderIcs: string;
+    reminderWeb: string;
+    downloaded: string;
+    back: string;
+    close: string;
+  };
   common: {
     loading: string;
   };
@@ -372,6 +420,54 @@ export const translations: Record<Lang, Dict> = {
       notAllowed: 'Эта страница только для владельца аккаунта.',
       saveError: 'Не удалось сохранить изменение',
     },
+    theme: {
+      label: 'Тема',
+      light: 'Светлая',
+      dark: 'Тёмная',
+      system: 'Как в системе',
+      scheduled: 'По расписанию',
+      lightHint: 'Всегда светлая',
+      darkHint: 'Всегда тёмная',
+      systemHint: 'Следует настройкам устройства',
+      scheduledHint: 'Тёмная вечером, светлая днём',
+      darkFrom: 'Тёмная с',
+      darkTo: 'до',
+      nowDark: 'Сейчас включена тёмная',
+      nowLight: 'Сейчас включена светлая',
+    },
+    plan: {
+      steps: 'Пошаговый план',
+      protocol: 'Протокол',
+      tempo: 'Темп',
+      breathing: 'Дыхание',
+      heartRate: 'Пульс',
+      safety: 'Безопасность',
+      zone: 'Зона',
+      light: 'Лёгкая',
+      moderate: 'Средняя',
+      hard: 'Высокая',
+      details: 'Подробнее',
+      hideDetails: 'Свернуть',
+    },
+    exportCal: {
+      title: 'Добавить в календарь',
+      subtitle: 'Выбери, куда отправить план',
+      google: 'Google Календарь',
+      googleHint: 'По одной тренировке',
+      apple: 'Apple Календарь',
+      appleHint: 'Все тренировки одним файлом .ics',
+      outlook: 'Outlook',
+      outlookHint: 'Outlook.com, по одной тренировке',
+      pickDay: 'Выбери тренировку',
+      open: 'Открыть',
+      downloadAll: 'Скачать все (.ics)',
+      importTip: 'Чтобы добавить все тренировки сразу, скачай .ics и импортируй его в календарь.',
+      reminderIcs: 'В файле .ics есть напоминание за 15 минут до начала.',
+      reminderWeb: 'По ссылке сработает напоминание по умолчанию из твоего календаря.',
+      downloaded: 'Файл скачан. Открой его, чтобы добавить тренировки в календарь.',
+      back: 'Назад',
+      close: 'Закрыть',
+    },
     common: { loading: 'Загружаю…' },
   },
   lv: {
@@ -558,6 +654,54 @@ export const translations: Record<Lang, Dict> = {
       notAllowed: 'Šī lapa ir pieejama tikai konta īpašniekam.',
       saveError: 'Neizdevās saglabāt izmaiņas',
     },
+    theme: {
+      label: 'Tēma',
+      light: 'Gaiša',
+      dark: 'Tumša',
+      system: 'Kā sistēmā',
+      scheduled: 'Pēc grafika',
+      lightHint: 'Vienmēr gaiša',
+      darkHint: 'Vienmēr tumša',
+      systemHint: 'Seko ierīces iestatījumiem',
+      scheduledHint: 'Vakarā tumša, dienā gaiša',
+      darkFrom: 'Tumša no',
+      darkTo: 'līdz',
+      nowDark: 'Tagad ieslēgta tumšā',
+      nowLight: 'Tagad ieslēgta gaišā',
+    },
+    plan: {
+      steps: 'Soli pa solim',
+      protocol: 'Protokols',
+      tempo: 'Temps',
+      breathing: 'Elpošana',
+      heartRate: 'Pulss',
+      safety: 'Drošība',
+      zone: 'Zona',
+      light: 'Viegla',
+      moderate: 'Vidēja',
+      hard: 'Augsta',
+      details: 'Sīkāk',
+      hideDetails: 'Sakļaut',
+    },
+    exportCal: {
+      title: 'Pievienot kalendāram',
+      subtitle: 'Izvēlies, kur nosūtīt plānu',
+      google: 'Google kalendārs',
+      googleHint: 'Pa vienam treniņam',
+      apple: 'Apple kalendārs',
+      appleHint: 'Visi treniņi vienā .ics failā',
+      outlook: 'Outlook',
+      outlookHint: 'Outlook.com, pa vienam treniņam',
+      pickDay: 'Izvēlies treniņu',
+      open: 'Atvērt',
+      downloadAll: 'Lejupielādēt visus (.ics)',
+      importTip: 'Lai pievienotu visus treniņus uzreiz, lejupielādē .ics un importē to kalendārā.',
+      reminderIcs: '.ics failā ir atgādinājums 15 minūtes pirms sākuma.',
+      reminderWeb: 'Saite izmantos tava kalendāra noklusējuma atgādinājumu.',
+      downloaded: 'Fails lejupielādēts. Atver to, lai pievienotu treniņus kalendāram.',
+      back: 'Atpakaļ',
+      close: 'Aizvērt',
+    },
     common: { loading: 'Ielādē…' },
   },
   en: {
@@ -743,6 +887,54 @@ export const translations: Record<Lang, Dict> = {
       navLabel: 'Admin',
       notAllowed: 'This page is for the account owner only.',
       saveError: 'Could not save that change',
+    },
+    theme: {
+      label: 'Theme',
+      light: 'Light',
+      dark: 'Dark',
+      system: 'System',
+      scheduled: 'Scheduled',
+      lightHint: 'Always light',
+      darkHint: 'Always dark',
+      systemHint: 'Follows your device',
+      scheduledHint: 'Dark in the evening, light by day',
+      darkFrom: 'Dark from',
+      darkTo: 'to',
+      nowDark: 'Dark is on right now',
+      nowLight: 'Light is on right now',
+    },
+    plan: {
+      steps: 'Step by step',
+      protocol: 'Protocol',
+      tempo: 'Tempo',
+      breathing: 'Breathing',
+      heartRate: 'Heart rate',
+      safety: 'Safety',
+      zone: 'Zone',
+      light: 'Light',
+      moderate: 'Moderate',
+      hard: 'Hard',
+      details: 'Details',
+      hideDetails: 'Collapse',
+    },
+    exportCal: {
+      title: 'Add to calendar',
+      subtitle: 'Choose where to send your plan',
+      google: 'Google Calendar',
+      googleHint: 'One workout at a time',
+      apple: 'Apple Calendar',
+      appleHint: 'All workouts in one .ics file',
+      outlook: 'Outlook',
+      outlookHint: 'Outlook.com, one workout at a time',
+      pickDay: 'Pick a workout',
+      open: 'Open',
+      downloadAll: 'Download all (.ics)',
+      importTip: 'To add every workout at once, download the .ics and import it into your calendar.',
+      reminderIcs: 'The .ics file includes a reminder 15 minutes before each start.',
+      reminderWeb: 'Web links use your calendar’s default reminder.',
+      downloaded: 'File downloaded. Open it to add the workouts to your calendar.',
+      back: 'Back',
+      close: 'Close',
     },
     common: { loading: 'Loading…' },
   },

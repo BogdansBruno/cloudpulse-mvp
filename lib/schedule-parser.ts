@@ -3,7 +3,26 @@
  * Extracts structured workout schedules from AI responses
  */
 
-import type { WorkoutEvent } from './ics-generator';
+import type { WorkoutEvent, WorkoutPhase } from './ics-generator';
+
+// Optional detail lines under each day header. Keys are always English
+// (like the <questions> block), values are in the athlete's language.
+// Plans written before this format existed simply have none of them.
+const FIELD_RE = /^(TITLE|GOAL|RPE|ZONE|PHASES|TEMPO|BREATHING|HR|SAFETY)\s*:\s*(.+)$/i;
+
+/** "Разминка 5 | Основной блок 10 | Заминка 5" -> [{name, minutes}, ...] */
+function parsePhases(value: string): WorkoutPhase[] {
+  return value
+    .split('|')
+    .map((seg) => {
+      const m = /^(.*?)[\s:—-]*(\d+)\s*\D*$/.exec(seg.trim());
+      if (!m) return null;
+      const name = m[1].trim();
+      const minutes = parseInt(m[2], 10);
+      return name && minutes > 0 ? { name, minutes } : null;
+    })
+    .filter((p): p is WorkoutPhase => p !== null);
+}
 
 export interface ParsedSchedule {
   events: WorkoutEvent[];
@@ -61,10 +80,18 @@ export function parseScheduleFromAI(response: string): ParsedSchedule {
       : scheduleText.length;
 
     const dayContent = scheduleText.substring(position + fullMatch.length, endPosition);
-    const exerciseLines = dayContent
-      .split('\n')
-      .filter((line) => line.trim().startsWith('-'))
-      .map((line) => line.replace(/^-\s*/, '').trim());
+    const exerciseLines: string[] = [];
+    const fields: Record<string, string> = {};
+    for (const raw of dayContent.split('\n')) {
+      const line = raw.trim();
+      if (line.startsWith('-')) {
+        exerciseLines.push(line.replace(/^-\s*/, '').trim());
+        continue;
+      }
+      const f = FIELD_RE.exec(line);
+      if (f) fields[f[1].toUpperCase()] = f[2].trim();
+    }
+    const phases = fields.PHASES ? parsePhases(fields.PHASES) : [];
 
     // Create date object
     const monthNum = parseInt(month, 10);
@@ -81,6 +108,15 @@ export function parseScheduleFromAI(response: string): ParsedSchedule {
         date: eventDate,
         duration: parseInt(duration, 10),
         exercises: exerciseLines,
+        sessionTitle: fields.TITLE,
+        goal: fields.GOAL,
+        rpe: fields.RPE?.replace(/^RPE\s*/i, ''),
+        zone: fields.ZONE?.replace(/^(zone|зона|zona)\s*/i, ''),
+        phases: phases.length ? phases : undefined,
+        tempo: fields.TEMPO,
+        breathing: fields.BREATHING,
+        heartRate: fields.HR,
+        safety: fields.SAFETY,
       });
     }
   }

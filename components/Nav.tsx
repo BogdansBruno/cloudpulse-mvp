@@ -8,6 +8,7 @@ import { LANGS } from '@/lib/i18n/translations';
 import { supabase, signOut } from '@/lib/supabase';
 import { isAdminEmail } from '@/lib/access-control';
 import { Lightning, ShieldCheck } from '@phosphor-icons/react';
+import ThemeSwitcher from '@/components/ThemeSwitcher';
 
 export default function Nav() {
   const pathname = usePathname();
@@ -63,7 +64,8 @@ export default function Nav() {
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <ThemeSwitcher />
             <div className="flex items-center gap-0.5 bg-black/20 rounded-full p-1 border border-white/5 text-xs">
               {LANGS.map((l) => (
                 <button

@@ -99,6 +99,62 @@ const SCHEDULE_DAY_EXAMPLE: Record<'ru' | 'lv' | 'en', { day1: string; day2: str
   en: { day1: 'Monday', day2: 'Wednesday', exampleExercise: 'Exercise' },
 };
 
+// One fully detailed example day per language for the richer <schedule>
+// format. Keys (TITLE:, GOAL:, ...) stay English so the parser is
+// language-independent; values are written in the athlete's language.
+const SCHEDULE_DETAIL_EXAMPLE: Record<
+  'ru' | 'lv' | 'en',
+  {
+    title: string;
+    goal: string;
+    phases: string;
+    step1: string;
+    step2: string;
+    step3: string;
+    tempo: string;
+    breathing: string;
+    hr: string;
+    safety: string;
+  }
+> = {
+  ru: {
+    title: 'Спокойная прогулка и дыхание',
+    goal: 'Восстановление',
+    phases: 'Разминка 5 | Основной блок 10 | Заминка 5',
+    step1: 'Разминка: круговые движения плечами и голеностопами, медленный шаг',
+    step2: 'Основной блок: прогулка в спокойном темпе, дыхание 4-4',
+    step3: 'Заминка: лёгкая растяжка икр и бёдер по 30 секунд',
+    tempo: 'Спокойный шаг, можно свободно разговаривать',
+    breathing: 'Вдох носом на 4 шага, выдох на 4 шага',
+    hr: 'Зона 1: говоришь полными предложениями без одышки',
+    safety: 'При боли в колене или спине остановись и не продолжай через боль',
+  },
+  lv: {
+    title: 'Mierīga pastaiga un elpošana',
+    goal: 'Atgūšanās',
+    phases: 'Iesildīšanās 5 | Pamatdaļa 10 | Atsildīšanās 5',
+    step1: 'Iesildīšanās: plecu un potīšu apļi, lēns solis',
+    step2: 'Pamatdaļa: pastaiga mierīgā tempā, elpošana 4-4',
+    step3: 'Atsildīšanās: viegla ikru un augšstilbu stiepšana pa 30 sekundēm',
+    tempo: 'Mierīgs solis, vari brīvi runāt',
+    breathing: 'Ieelpa caur degunu 4 soļos, izelpa 4 soļos',
+    hr: '1. zona: runā pilnos teikumos bez elsošanas',
+    safety: 'Ja sāp celis vai mugura, apstājies un neturpini caur sāpēm',
+  },
+  en: {
+    title: 'Easy walk and breathing',
+    goal: 'Recovery',
+    phases: 'Warm-up 5 | Main block 10 | Cool-down 5',
+    step1: 'Warm-up: shoulder and ankle circles, slow walk',
+    step2: 'Main block: easy-pace walk, 4-4 breathing',
+    step3: 'Cool-down: gentle calf and hip stretch, 30 seconds each',
+    tempo: 'Easy pace, you can talk freely',
+    breathing: 'Inhale through the nose for 4 steps, exhale for 4 steps',
+    hr: 'Zone 1: you can speak in full sentences without gasping',
+    safety: 'If your knee or back hurts, stop and do not push through pain',
+  },
+};
+
 const QUESTIONS_EXAMPLE: Record<
   'ru' | 'lv' | 'en',
   { lead: string; q1: string; q1opts: string; q2: string; q2unit: string; q3: string; q3opts: string }
@@ -142,7 +198,9 @@ function getSystemPrompt(
   const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
   const dayName = dayNames[today.getDay()];
   const ex = SCHEDULE_DAY_EXAMPLE[uiLang];
+  const dx = SCHEDULE_DETAIL_EXAMPLE[uiLang];
   const qx = QUESTIONS_EXAMPLE[uiLang];
+  const minWord = uiLang === 'lv' ? 'minūtes' : uiLang === 'en' ? 'minutes' : 'минут';
 
   return `You are CloudPulse, an AI Athletic & Lifestyle Coaching Agent.
 Your role: build adaptive training plans and guide students (13-18)
@@ -223,17 +281,43 @@ When the user asks for a training plan or workout schedule, ALWAYS format the re
 Start from the next available date (after today: ${todayFormatted}). Write the day names in ${UI_LANG_NAME[uiLang]} (matching whatever language you are replying in for this message), keep the rest of the block's structure (dates, times, dashes) exactly as shown:
 
 <schedule>
-${ex.day1}, DD.MM.YYYY, HH:MM, NN ${uiLang === 'lv' ? 'minūtes' : uiLang === 'en' ? 'minutes' : 'минут'}
+${ex.day1}, DD.MM.YYYY, HH:MM, 20 ${minWord}
+TITLE: ${dx.title}
+GOAL: ${dx.goal}
+RPE: 2-3
+ZONE: 1
+PHASES: ${dx.phases}
+- ${dx.step1}
+- ${dx.step2}
+- ${dx.step3}
+TEMPO: ${dx.tempo}
+BREATHING: ${dx.breathing}
+HR: ${dx.hr}
+SAFETY: ${dx.safety}
+
+${ex.day2}, DD.MM.YYYY, HH:MM, NN ${minWord}
+TITLE: ...
+GOAL: ...
+RPE: ...
+ZONE: ...
+PHASES: ...
 - ${ex.exampleExercise} 1 (sets x reps)
 - ${ex.exampleExercise} 2 (sets x reps)
-- ${ex.exampleExercise} 3 (sets x reps)
-
-${ex.day2}, DD.MM.YYYY, HH:MM, NN ${uiLang === 'lv' ? 'minūtes' : uiLang === 'en' ? 'minutes' : 'минут'}
-- ${ex.exampleExercise} 4
-- ${ex.exampleExercise} 5
+TEMPO: ...
+BREATHING: ...
+HR: ...
 </schedule>
 
-Note: the parser that reads this block looks for the literal word "минут" (Russian) or "min"/"minūtes" (English/Latvian) right after the number — always include one of those, in the language you're writing the block in.
+Rules for the detail lines (the app turns them into rich workout cards and calendar events):
+- The keys TITLE, GOAL, RPE, ZONE, PHASES, TEMPO, BREATHING, HR, SAFETY stay in English exactly as written; their values are in ${UI_LANG_NAME[uiLang]}. One line each.
+- TITLE: a short session name (2-5 words). GOAL: one or two words (e.g. recovery, breathing, easy cardio, strength).
+- RPE: a range on the 1-10 scale. It MUST respect the Readiness Data above: red zone -> RPE 3 or lower and only recovery work; yellow zone -> RPE 6 or lower; green -> normal progression. ZONE: heart-rate zone 1-5 matching that RPE.
+- PHASES: warm-up, main block and cool-down as "Name minutes | Name minutes | Name minutes". The minutes MUST add up exactly to the session length in the header.
+- The "- " lines are the step-by-step instructions, in order, concrete enough to follow alone.
+- HR: describe effort with the talk test or zone ("you can speak in full sentences"). Do NOT invent exact beats-per-minute numbers — the athlete has no heart-rate monitor data in this app.
+- SAFETY: REQUIRED when the athlete mentioned pain, discomfort, back or joint issues, or when readiness is red; otherwise include it only if genuinely useful. Never diagnose — it is a stop/adjust rule, not medical advice.
+
+Note: the parser that reads this block looks for the literal word "минут" (Russian) or "min"/"minūtes" (English/Latvian) right after the number in the day header — always include one of those, in the language you're writing the block in.
 Then add your usual supportive text AFTER the schedule block.
 The user's app will automatically detect this block and offer to add it to their calendar.`;
 }
@@ -251,7 +335,10 @@ export async function callClaudeAgent(
 
   const response = await client.messages.create({
     model: MODEL,
-    max_tokens: 1024,
+    // Detailed <schedule> plans (phases, RPE, protocol, safety per day) run
+    // well past 1024 tokens in Russian/Latvian; a cut-off reply loses its
+    // closing </schedule> tag and the whole plan silently fails to render.
+    max_tokens: 2500,
     system: getSystemPrompt(readiness, uiLang, mode),
     messages: [...recent, { role: 'user' as const, content: userMessage }],
   });
