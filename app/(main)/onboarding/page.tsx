@@ -21,6 +21,7 @@ import {
 import type { Icon } from '@phosphor-icons/react';
 import { supabase } from '@/lib/supabase';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
+import DatePicker, { formatDisplayDate } from '@/components/DatePicker';
 
 type SportKey = 'football' | 'basketball' | 'athletics' | 'swimming' | 'gym' | 'other';
 
@@ -70,6 +71,7 @@ function DateList({
   addLabel: string;
   removeLabel: string;
 }) {
+  const { lang } = useLanguage();
   const [draft, setDraft] = useState('');
   const add = () => {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(draft) || dates.includes(draft)) return;
@@ -84,13 +86,9 @@ function DateList({
         {label}
       </p>
       <div className="flex gap-2">
-        <input
-          type="date"
-          value={draft}
-          onChange={(e) => setDraft(e.target.value)}
-          aria-label={label}
-          className="min-w-0 flex-1 rounded-xl bg-white/[0.05] px-3.5 py-2.5 font-mono text-sm tabular-nums text-zinc-50 ring-1 ring-inset ring-white/10 [color-scheme:dark] focus:outline-none focus:ring-[#CCFF00]/50"
-        />
+        <div className="min-w-0 flex-1">
+          <DatePicker value={draft} onChange={setDraft} placeholder={label} lang={lang} />
+        </div>
         <button
           type="button"
           onClick={add}
@@ -102,18 +100,19 @@ function DateList({
         </button>
       </div>
       {dates.length > 0 && (
-        <div className="mt-2 flex flex-wrap gap-1.5">
+        <div className="mt-2.5 flex flex-wrap gap-1.5">
           {dates.map((d) => (
             <span
               key={d}
-              className="inline-flex items-center gap-1 rounded-full bg-white/[0.05] py-1 pl-3 pr-1 font-mono text-xs tabular-nums text-zinc-200 ring-1 ring-inset ring-white/10"
+              className="inline-flex items-center gap-1.5 rounded-full bg-[#CCFF00]/[0.08] py-1.5 pl-3 pr-1.5 text-xs font-medium text-zinc-100 ring-1 ring-inset ring-[#CCFF00]/20"
             >
-              {d.split('-').reverse().join('.')}
+              <IconCmp size={12} weight="fill" className="text-[#CCFF00]" />
+              {formatDisplayDate(d, lang)}
               <button
                 type="button"
                 onClick={() => onChange(dates.filter((x) => x !== d))}
                 aria-label={`${removeLabel} ${d}`}
-                className="flex h-5 w-5 items-center justify-center rounded-full text-zinc-400 hover:bg-white/10 hover:text-zinc-100"
+                className="flex h-5 w-5 items-center justify-center rounded-full text-zinc-400 transition-colors hover:bg-white/10 hover:text-zinc-100"
               >
                 <X size={11} weight="bold" />
               </button>
