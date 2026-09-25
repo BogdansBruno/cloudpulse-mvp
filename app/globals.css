@@ -121,3 +121,19 @@ body {
     background-color: #0d0f13 !important;
   }
 }
+
+/* Chrome/Safari paint autofilled inputs with their own white/yellow
+   background via an internal UA style that beats any of our classes.
+   This repaints that background dark again (huge inset box-shadow is
+   the only override strong enough) so autofilled email/password fields
+   stay on-brand instead of flashing white. */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0px 1000px #0a0a0d inset !important;
+  box-shadow: 0 0 0px 1000px #0a0a0d inset !important;
+  -webkit-text-fill-color: #f2f3f5 !important;
+  caret-color: #f2f3f5 !important;
+  transition: background-color 9999s ease-in-out 0s;
+}
