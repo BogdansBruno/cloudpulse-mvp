@@ -94,6 +94,30 @@ export default function DatePicker({ value, onChange, placeholder, lang }: Props
     };
   }, [open]);
 
+  // The estimate `place()` used to open the popover is only a guess (it
+  // has to run before the popover exists in the DOM, so it can't know its
+  // real height). Once it's actually rendered, measure it for real and
+  // clamp it fully inside the viewport — this is what stops the calendar
+  // from running off the bottom of the screen on a shorter window.
+  useEffect(() => {
+    if (!open) return;
+    const raf = requestAnimationFrame(() => {
+      const el = popoverRef.current;
+      const trigger = triggerRef.current;
+      if (!el || !trigger) return;
+      const triggerRect = trigger.getBoundingClientRect();
+      const height = el.getBoundingClientRect().height;
+      const left = Math.min(Math.max(triggerRect.left, 12), window.innerWidth - POPOVER_WIDTH - 12);
+      let top = triggerRect.bottom + 8;
+      if (top + height > window.innerHeight - 8) {
+        top = triggerRect.top - height - 8; // doesn't fit below — try above
+      }
+      top = Math.min(Math.max(top, 8), Math.max(8, window.innerHeight - height - 8));
+      setCoords({ top, left });
+    });
+    return () => cancelAnimationFrame(raf);
+  }, [open, level]);
+
   const year = viewDate.getFullYear();
   const month = viewDate.getMonth();
   const today = new Date();
@@ -160,8 +184,9 @@ export default function DatePicker({ value, onChange, placeholder, lang }: Props
                   bottom: coords.bottom,
                   left: coords.left,
                   width: POPOVER_WIDTH,
+                  maxHeight: 'calc(100vh - 24px)',
                 }}
-                className="z-[100] rounded-2xl border border-white/10 bg-zinc-900/90 p-4 shadow-2xl shadow-black/50 backdrop-blur-xl"
+                className="z-[100] overflow-y-auto rounded-2xl border border-white/10 bg-zinc-900/90 p-4 shadow-2xl shadow-black/50 backdrop-blur-xl"
               >
                 {level === 'days' && (
                   <>
