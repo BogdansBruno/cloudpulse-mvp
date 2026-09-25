@@ -61,9 +61,18 @@
 
 html, body {
   width: 100%;
-  height: 100%;
   margin: 0;
   padding: 0;
+}
+
+/* html is the viewport; body grows with its content. A fixed body height
+   made flex-column pages shrink to the window and clip their bottom. */
+html {
+  height: 100%;
+}
+
+body {
+  min-height: 100%;
 }
 
 body {

@@ -83,6 +83,25 @@ type Dict = {
   onboarding: {
     title: string;
     subtitle: string;
+    stepOf: (i: number, n: number) => string;
+    ageQ: string;
+    ageUnit: string;
+    sportQ: string;
+    sports: Record<'football' | 'basketball' | 'athletics' | 'swimming' | 'gym' | 'other', string>;
+    datesTitle: string;
+    datesBody: string;
+    matchDates: string;
+    examDates: string;
+    add: string;
+    remove: string;
+    next: string;
+    back: string;
+    start: string;
+    saving: string;
+    errAge: string;
+    errSport: string;
+    errSave: string;
+    errGeneric: string;
   };
   hub: {
     readiness: string;
@@ -192,7 +211,37 @@ export const translations: Record<Lang, Dict> = {
       noCheckinDay: 'нет чек-ина',
       vsPrevWeek: 'к прошлой неделе',
     },
-    onboarding: { title: 'Настроим твой профиль', subtitle: 'CloudPulse' },
+    onboarding: {
+      title: 'Настроим твой профиль',
+      subtitle: 'CloudPulse',
+      stepOf: (i, n) => `Шаг ${i} из ${n}`,
+      ageQ: 'Сколько тебе лет?',
+      ageUnit: 'лет',
+      sportQ: 'Каким спортом занимаешься?',
+      sports: {
+        football: 'Футбол',
+        basketball: 'Баскетбол',
+        athletics: 'Лёгкая атлетика',
+        swimming: 'Плавание',
+        gym: 'Зал / общая физподготовка',
+        other: 'Другое',
+      },
+      datesTitle: 'Матчи и экзамены',
+      datesBody:
+        'Необязательно, но так CloudPulse сможет снижать нагрузку перед экзаменами и беречь тебя вокруг матчей. Можно пропустить и добавить позже.',
+      matchDates: 'Даты матчей',
+      examDates: 'Даты экзаменов',
+      add: 'Добавить',
+      remove: 'Удалить',
+      next: 'Далее',
+      back: 'Назад',
+      start: 'Начать',
+      saving: 'Сохраняю...',
+      errAge: 'Выбери возраст',
+      errSport: 'Выбери вид спорта',
+      errSave: 'Не удалось сохранить профиль',
+      errGeneric: 'Что-то пошло не так',
+    },
     hub: {
       readiness: 'Готовность',
       readinessHint: 'Считается кодом по чек-ину, не ИИ',
@@ -298,7 +347,37 @@ export const translations: Record<Lang, Dict> = {
       noCheckinDay: 'nav pārbaudes',
       vsPrevWeek: 'pret iepriekšējo nedēļu',
     },
-    onboarding: { title: 'Iestatīsim tavu profilu', subtitle: 'CloudPulse' },
+    onboarding: {
+      title: 'Iestatīsim tavu profilu',
+      subtitle: 'CloudPulse',
+      stepOf: (i, n) => `${i}. solis no ${n}`,
+      ageQ: 'Cik tev ir gadu?',
+      ageUnit: 'gadi',
+      sportQ: 'Ar kādu sportu tu nodarbojies?',
+      sports: {
+        football: 'Futbols',
+        basketball: 'Basketbols',
+        athletics: 'Vieglatlētika',
+        swimming: 'Peldēšana',
+        gym: 'Zāle / vispārējā fiziskā sagatavotība',
+        other: 'Cits',
+      },
+      datesTitle: 'Spēles un eksāmeni',
+      datesBody:
+        'Nav obligāti, bet tā CloudPulse var samazināt slodzi pirms eksāmeniem un sargāt tevi ap spēlēm. Vari izlaist un pievienot vēlāk.',
+      matchDates: 'Spēļu datumi',
+      examDates: 'Eksāmenu datumi',
+      add: 'Pievienot',
+      remove: 'Noņemt',
+      next: 'Tālāk',
+      back: 'Atpakaļ',
+      start: 'Sākt',
+      saving: 'Saglabāju...',
+      errAge: 'Izvēlies vecumu',
+      errSport: 'Izvēlies sporta veidu',
+      errSave: 'Neizdevās saglabāt profilu',
+      errGeneric: 'Kaut kas nogāja greizi',
+    },
     hub: {
       readiness: 'Gatavība',
       readinessHint: 'Aprēķina kods pēc pārbaudes, nevis MI',
@@ -404,7 +483,37 @@ export const translations: Record<Lang, Dict> = {
       noCheckinDay: 'no check-in',
       vsPrevWeek: 'vs last week',
     },
-    onboarding: { title: "Let's set up your profile", subtitle: 'CloudPulse' },
+    onboarding: {
+      title: "Let's set up your profile",
+      subtitle: 'CloudPulse',
+      stepOf: (i, n) => `Step ${i} of ${n}`,
+      ageQ: 'How old are you?',
+      ageUnit: 'years',
+      sportQ: 'What sport do you do?',
+      sports: {
+        football: 'Football',
+        basketball: 'Basketball',
+        athletics: 'Athletics',
+        swimming: 'Swimming',
+        gym: 'Gym / general fitness',
+        other: 'Other',
+      },
+      datesTitle: 'Matches and exams',
+      datesBody:
+        'Optional, but it lets CloudPulse ease your load before exams and protect you around match days. You can skip this and add it later.',
+      matchDates: 'Match dates',
+      examDates: 'Exam dates',
+      add: 'Add',
+      remove: 'Remove',
+      next: 'Next',
+      back: 'Back',
+      start: 'Start',
+      saving: 'Saving...',
+      errAge: 'Pick your age',
+      errSport: 'Pick your sport',
+      errSave: 'Could not save your profile',
+      errGeneric: 'Something went wrong',
+    },
     hub: {
       readiness: 'Readiness',
       readinessHint: 'Calculated by code from your check-in, not by AI',
