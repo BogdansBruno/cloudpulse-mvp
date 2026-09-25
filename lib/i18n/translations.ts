@@ -132,6 +132,56 @@ type Dict = {
     planTitle: string;
     min: string;
   };
+  auth: {
+    brandTag: string;
+    encrypted: string;
+    signInTitle: string;
+    signInSubtitle: string;
+    signUpTitle: string;
+    signUpSubtitle: string;
+    email: string;
+    password: string;
+    confirmPassword: string;
+    forgotPassword: string;
+    signIn: string;
+    signingIn: string;
+    signUp: string;
+    creatingAccount: string;
+    noAccount: string;
+    haveAccount: string;
+    orContinueWith: string;
+    continueGoogle: string;
+    continueApple: string;
+    passwordMismatch: string;
+    passwordTooShort: string;
+    accountCreated: string;
+    enterEmailFirst: string;
+    resetSent: string;
+  };
+  access: {
+    lockdownTitle: string;
+    lockdownBody: string;
+    bannedTitle: string;
+    bannedBody: string;
+    backToLogin: string;
+  };
+  admin: {
+    title: string;
+    subtitle: string;
+    lockdownLabel: string;
+    lockdownOn: string;
+    lockdownOff: string;
+    lockdownHint: string;
+    banListTitle: string;
+    banPlaceholderEmail: string;
+    banPlaceholderReason: string;
+    banButton: string;
+    unbanButton: string;
+    noBans: string;
+    navLabel: string;
+    notAllowed: string;
+    saveError: string;
+  };
   common: {
     loading: string;
   };
@@ -272,6 +322,56 @@ export const translations: Record<Lang, Dict> = {
       planTitle: 'План тренировок',
       min: 'мин',
     },
+    auth: {
+      brandTag: 'Performance Auth',
+      encrypted: '256-bit шифрование',
+      signInTitle: 'С возвращением',
+      signInSubtitle: 'Войди, чтобы продолжить тренировки',
+      signUpTitle: 'Создать аккаунт',
+      signUpSubtitle: 'Начни отслеживать готовность уже сегодня',
+      email: 'Email',
+      password: 'Пароль',
+      confirmPassword: 'Повтори пароль',
+      forgotPassword: 'Забыли пароль?',
+      signIn: 'Войти',
+      signingIn: 'Входим...',
+      signUp: 'Создать аккаунт',
+      creatingAccount: 'Создаём аккаунт...',
+      noAccount: 'Нет аккаунта?',
+      haveAccount: 'Уже есть аккаунт?',
+      orContinueWith: 'или продолжить с',
+      continueGoogle: 'Google',
+      continueApple: 'Apple',
+      passwordMismatch: 'Пароли не совпадают',
+      passwordTooShort: 'Пароль должен быть от 6 символов',
+      accountCreated: 'Аккаунт создан! Перенаправляем...',
+      enterEmailFirst: 'Сначала введи свой email',
+      resetSent: 'Проверь почту — мы отправили ссылку для сброса пароля.',
+    },
+    access: {
+      lockdownTitle: 'Сайт временно недоступен',
+      lockdownBody: 'Владелец CloudPulse временно закрыл доступ для всех, кроме команды. Попробуй зайти чуть позже.',
+      bannedTitle: 'Доступ закрыт',
+      bannedBody: 'Владелец CloudPulse ограничил доступ для этого аккаунта. Если это ошибка, свяжись с командой.',
+      backToLogin: 'К странице входа',
+    },
+    admin: {
+      title: 'Панель управления',
+      subtitle: 'Доступ только для владельца',
+      lockdownLabel: 'Заблокировать доступ всем',
+      lockdownOn: 'Сайт закрыт для всех, кроме тебя',
+      lockdownOff: 'Сайт открыт для всех',
+      lockdownHint: 'Мгновенно закрывает /chat, /checkin, /progress и /onboarding для всех, кроме твоего аккаунта.',
+      banListTitle: 'Забаненные email',
+      banPlaceholderEmail: 'email нарушителя',
+      banPlaceholderReason: 'причина (необязательно)',
+      banButton: 'Забанить',
+      unbanButton: 'Разбанить',
+      noBans: 'Пока никого не забанили',
+      navLabel: 'Админ',
+      notAllowed: 'Эта страница только для владельца аккаунта.',
+      saveError: 'Не удалось сохранить изменение',
+    },
     common: { loading: 'Загружаю…' },
   },
   lv: {
@@ -408,6 +508,56 @@ export const translations: Record<Lang, Dict> = {
       planTitle: 'Treniņu plāns',
       min: 'min',
     },
+    auth: {
+      brandTag: 'Performance Auth',
+      encrypted: '256-bitu šifrēšana',
+      signInTitle: 'Ar atgriešanos',
+      signInSubtitle: 'Pieslēdzies, lai turpinātu treniņus',
+      signUpTitle: 'Izveidot kontu',
+      signUpSubtitle: 'Sāc sekot savai gatavībai jau šodien',
+      email: 'E-pasts',
+      password: 'Parole',
+      confirmPassword: 'Atkārto paroli',
+      forgotPassword: 'Aizmirsi paroli?',
+      signIn: 'Pieslēgties',
+      signingIn: 'Pieslēdzas...',
+      signUp: 'Izveidot kontu',
+      creatingAccount: 'Veido kontu...',
+      noAccount: 'Nav konta?',
+      haveAccount: 'Jau ir konts?',
+      orContinueWith: 'vai turpini ar',
+      continueGoogle: 'Google',
+      continueApple: 'Apple',
+      passwordMismatch: 'Paroles nesakrīt',
+      passwordTooShort: 'Parolei jābūt vismaz 6 rakstzīmes',
+      accountCreated: 'Konts izveidots! Novirzām...',
+      enterEmailFirst: 'Vispirms ievadi savu e-pastu',
+      resetSent: 'Pārbaudi e-pastu — nosūtījām saiti paroles atiestatīšanai.',
+    },
+    access: {
+      lockdownTitle: 'Vietne īslaicīgi nav pieejama',
+      lockdownBody: 'CloudPulse īpašnieks īslaicīgi slēdzis piekļuvi visiem, izņemot komandu. Mēģini vēlreiz pēc brīža.',
+      bannedTitle: 'Piekļuve liegta',
+      bannedBody: 'CloudPulse īpašnieks ierobežojis piekļuvi šim kontam. Ja tā ir kļūda, sazinies ar komandu.',
+      backToLogin: 'Uz pieslēgšanās lapu',
+    },
+    admin: {
+      title: 'Vadības panelis',
+      subtitle: 'Pieejams tikai īpašniekam',
+      lockdownLabel: 'Bloķēt piekļuvi visiem',
+      lockdownOn: 'Vietne slēgta visiem, izņemot tevi',
+      lockdownOff: 'Vietne atvērta visiem',
+      lockdownHint: 'Nekavējoties slēdz /chat, /checkin, /progress un /onboarding visiem, izņemot tavu kontu.',
+      banListTitle: 'Bloķētie e-pasti',
+      banPlaceholderEmail: 'pārkāpēja e-pasts',
+      banPlaceholderReason: 'iemesls (nav obligāts)',
+      banButton: 'Bloķēt',
+      unbanButton: 'Atbloķēt',
+      noBans: 'Pagaidām neviens nav bloķēts',
+      navLabel: 'Admins',
+      notAllowed: 'Šī lapa ir pieejama tikai konta īpašniekam.',
+      saveError: 'Neizdevās saglabāt izmaiņas',
+    },
     common: { loading: 'Ielādē…' },
   },
   en: {
@@ -543,6 +693,56 @@ export const translations: Record<Lang, Dict> = {
         `My numbers today: readiness ${score ?? 'none'}/100, ACWR ${acwr !== null ? acwr.toFixed(2) : 'no data'}, sleep ${sleep ?? '-'}/7.`,
       planTitle: 'Training plan',
       min: 'min',
+    },
+    auth: {
+      brandTag: 'Performance Auth',
+      encrypted: '256-bit encrypted',
+      signInTitle: 'Welcome back',
+      signInSubtitle: 'Sign in to keep training',
+      signUpTitle: 'Create your account',
+      signUpSubtitle: 'Start tracking your readiness today',
+      email: 'Email',
+      password: 'Password',
+      confirmPassword: 'Confirm password',
+      forgotPassword: 'Forgot password?',
+      signIn: 'Sign In',
+      signingIn: 'Signing in...',
+      signUp: 'Create account',
+      creatingAccount: 'Creating account...',
+      noAccount: "Don't have an account?",
+      haveAccount: 'Already have an account?',
+      orContinueWith: 'or continue with',
+      continueGoogle: 'Google',
+      continueApple: 'Apple',
+      passwordMismatch: 'Passwords do not match',
+      passwordTooShort: 'Password must be at least 6 characters',
+      accountCreated: 'Account created! Redirecting...',
+      enterEmailFirst: 'Enter your email first',
+      resetSent: 'Check your inbox for a reset link.',
+    },
+    access: {
+      lockdownTitle: 'Site temporarily unavailable',
+      lockdownBody: "The CloudPulse owner has temporarily closed access to everyone but the team. Please check back shortly.",
+      bannedTitle: 'Access revoked',
+      bannedBody: 'The CloudPulse owner has restricted access for this account. If this seems wrong, reach out to the team.',
+      backToLogin: 'Back to sign in',
+    },
+    admin: {
+      title: 'Control panel',
+      subtitle: 'Owner access only',
+      lockdownLabel: 'Lock access for everyone',
+      lockdownOn: 'Site is locked for everyone but you',
+      lockdownOff: 'Site is open to everyone',
+      lockdownHint: 'Instantly closes /chat, /checkin, /progress and /onboarding to everyone except your account.',
+      banListTitle: 'Banned emails',
+      banPlaceholderEmail: "offender's email",
+      banPlaceholderReason: 'reason (optional)',
+      banButton: 'Ban',
+      unbanButton: 'Unban',
+      noBans: 'No one is banned yet',
+      navLabel: 'Admin',
+      notAllowed: 'This page is for the account owner only.',
+      saveError: 'Could not save that change',
     },
     common: { loading: 'Loading…' },
   },

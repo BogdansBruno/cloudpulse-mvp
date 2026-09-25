@@ -1,20 +1,30 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
 import { LANGS } from '@/lib/i18n/translations';
-import { signOut } from '@/lib/supabase';
-import { Lightning } from '@phosphor-icons/react';
+import { supabase, signOut } from '@/lib/supabase';
+import { isAdminEmail } from '@/lib/access-control';
+import { Lightning, ShieldCheck } from '@phosphor-icons/react';
 
 export default function Nav() {
   const pathname = usePathname();
   const { lang, setLang, t } = useLanguage();
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      setIsAdmin(isAdminEmail(data.session?.user?.email));
+    });
+  }, []);
 
   const links = [
     { href: '/chat', label: t.nav.chat },
     { href: '/checkin', label: t.nav.checkin },
     { href: '/progress', label: t.nav.progress },
+    ...(isAdmin ? [{ href: '/admin', label: t.admin.navLabel }] : []),
   ];
 
   const handleSignOut = async () => {
@@ -41,10 +51,11 @@ export default function Nav() {
                   <Link
                     key={link.href}
                     href={link.href}
-                    className={`relative px-3.5 py-1.5 rounded-full text-sm font-medium transition-all duration-300 ${
+                    className={`relative px-3.5 py-1.5 rounded-full text-sm font-medium transition-all duration-300 inline-flex items-center gap-1.5 ${
                       active ? 'bg-white/10 text-white shadow-sm' : 'text-zinc-400 hover:text-zinc-200'
                     }`}
                   >
+                    {link.href === '/admin' && <ShieldCheck size={13} weight="fill" />}
                     {link.label}
                   </Link>
                 );
