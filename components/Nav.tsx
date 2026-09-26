@@ -7,17 +7,26 @@ import { useLanguage } from '@/lib/i18n/LanguageContext';
 import { LANGS } from '@/lib/i18n/translations';
 import { supabase, signOut } from '@/lib/supabase';
 import { isAdminEmail } from '@/lib/access-control';
-import { Lightning, ShieldCheck } from '@phosphor-icons/react';
+import { Lightning, ShieldCheck, Users } from '@phosphor-icons/react';
 import ThemeSwitcher from '@/components/ThemeSwitcher';
 
 export default function Nav() {
   const pathname = usePathname();
   const { lang, setLang, t } = useLanguage();
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isCoach, setIsCoach] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
+      const userId = data.session?.user?.id;
       setIsAdmin(isAdminEmail(data.session?.user?.email));
+      if (!userId) return;
+      supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', userId)
+        .maybeSingle()
+        .then(({ data: profile }) => setIsCoach(profile?.role === 'coach'));
     });
   }, []);
 
@@ -25,6 +34,7 @@ export default function Nav() {
     { href: '/chat', label: t.nav.chat },
     { href: '/checkin', label: t.nav.checkin },
     { href: '/progress', label: t.nav.progress },
+    ...(isCoach ? [{ href: '/coach', label: t.coach.navLabel }] : []),
     ...(isAdmin ? [{ href: '/admin', label: t.admin.navLabel }] : []),
   ];
 
@@ -57,6 +67,7 @@ export default function Nav() {
                     }`}
                   >
                     {link.href === '/admin' && <ShieldCheck size={13} weight="fill" />}
+                    {link.href === '/coach' && <Users size={13} weight="fill" />}
                     {link.label}
                   </Link>
                 );

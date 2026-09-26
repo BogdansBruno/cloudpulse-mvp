@@ -165,6 +165,33 @@ type Dict = {
     bannedBody: string;
     backToLogin: string;
   };
+  coach: {
+    navLabel: string;
+    title: string;
+    subtitle: string;
+    emptyTitle: string;
+    emptyBody: string;
+    loadingRoster: string;
+    errorRoster: string;
+    pickAthlete: string;
+    athleteFallback: (id: string) => string;
+    loadingReadiness: string;
+    errorReadiness: string;
+    noCheckinToday: string;
+    hasCheckinToday: string;
+    scoreLabel: string;
+    loadLabel: string;
+    hooperLabel: string;
+    hooperHint: string;
+    monotonyLabel: string;
+    streakLabel: string;
+    penaltiesTitle: string;
+    noPenalties: string;
+    safetyTitle: string;
+    noSafety: string;
+    inconsistencyTitle: string;
+    forbidden: string;
+  };
   admin: {
     title: string;
     subtitle: string;
@@ -403,6 +430,34 @@ export const translations: Record<Lang, Dict> = {
       bannedBody: 'Владелец CloudPulse ограничил доступ для этого аккаунта. Если это ошибка, свяжись с командой.',
       backToLogin: 'К странице входа',
     },
+    coach: {
+      navLabel: 'Тренер',
+      title: 'Панель тренера',
+      subtitle: 'Готовность атлетов твоей команды',
+      emptyTitle: 'Пока нет привязанных атлетов',
+      emptyBody:
+        'Связь тренер—атлет пока создаётся вручную через базу данных (таблица team_members). Как только появится первая запись, атлет отобразится здесь.',
+      loadingRoster: 'Загружаю список атлетов...',
+      errorRoster: 'Не удалось загрузить список атлетов',
+      pickAthlete: 'Выбери атлета',
+      athleteFallback: (id: string) => `Атлет #${id}`,
+      loadingReadiness: 'Считаю готовность...',
+      errorReadiness: 'Не удалось получить данные атлета',
+      noCheckinToday: 'Сегодня атлет ещё не отправил чек-ин',
+      hasCheckinToday: 'Чек-ин на сегодня получен',
+      scoreLabel: 'Готовность',
+      loadLabel: 'Нагрузка (ACWR)',
+      hooperLabel: 'Индекс самочувствия',
+      hooperHint: 'Чем ниже, тем лучше (из 28)',
+      monotonyLabel: 'Однообразность нагрузки',
+      streakLabel: 'Дней подряд без отдыха',
+      penaltiesTitle: 'Из чего сложился балл',
+      noPenalties: 'Штрафов нет — чистый результат',
+      safetyTitle: 'Safety Guard',
+      noSafety: 'Ограничений нет',
+      inconsistencyTitle: 'Несостыковки в самооценке',
+      forbidden: 'Нет доступа к данным этого атлета',
+    },
     admin: {
       title: 'Панель управления',
       subtitle: 'Доступ только для владельца',
@@ -637,6 +692,34 @@ export const translations: Record<Lang, Dict> = {
       bannedBody: 'CloudPulse īpašnieks ierobežojis piekļuvi šim kontam. Ja tā ir kļūda, sazinies ar komandu.',
       backToLogin: 'Uz pieslēgšanās lapu',
     },
+    coach: {
+      navLabel: 'Treneris',
+      title: 'Trenera panelis',
+      subtitle: 'Tavas komandas atlētu gatavība',
+      emptyTitle: 'Vēl nav piesaistītu atlētu',
+      emptyBody:
+        'Treneris—atlēts saikne pagaidām tiek izveidota manuāli datubāzē (tabula team_members). Tiklīdz parādīsies pirmais ieraksts, atlēts būs redzams šeit.',
+      loadingRoster: 'Ielādēju atlētu sarakstu...',
+      errorRoster: 'Neizdevās ielādēt atlētu sarakstu',
+      pickAthlete: 'Izvēlies atlētu',
+      athleteFallback: (id: string) => `Atlēts #${id}`,
+      loadingReadiness: 'Aprēķinu gatavību...',
+      errorReadiness: 'Neizdevās iegūt atlēta datus',
+      noCheckinToday: 'Atlēts šodien vēl nav iesniedzis pārbaudi',
+      hasCheckinToday: 'Šodienas pārbaude saņemta',
+      scoreLabel: 'Gatavība',
+      loadLabel: 'Slodze (ACWR)',
+      hooperLabel: 'Pašsajūtas indekss',
+      hooperHint: 'Jo zemāk, jo labāk (no 28)',
+      monotonyLabel: 'Slodzes vienveidība',
+      streakLabel: 'Dienas pēc kārtas bez atpūtas',
+      penaltiesTitle: 'No kā veidojas rezultāts',
+      noPenalties: 'Sodu nav — tīrs rezultāts',
+      safetyTitle: 'Safety Guard',
+      noSafety: 'Ierobežojumu nav',
+      inconsistencyTitle: 'Neatbilstības pašnovērtējumā',
+      forbidden: 'Nav piekļuves šī atlēta datiem',
+    },
     admin: {
       title: 'Vadības panelis',
       subtitle: 'Pieejams tikai īpašniekam',
@@ -870,6 +953,34 @@ export const translations: Record<Lang, Dict> = {
       bannedTitle: 'Access revoked',
       bannedBody: 'The CloudPulse owner has restricted access for this account. If this seems wrong, reach out to the team.',
       backToLogin: 'Back to sign in',
+    },
+    coach: {
+      navLabel: 'Coach',
+      title: 'Coach panel',
+      subtitle: "Your team's athlete readiness",
+      emptyTitle: 'No athletes linked yet',
+      emptyBody:
+        'Coach-athlete links are currently created manually in the database (the team_members table). Once the first link exists, the athlete will show up here.',
+      loadingRoster: 'Loading your roster...',
+      errorRoster: 'Could not load the athlete roster',
+      pickAthlete: 'Pick an athlete',
+      athleteFallback: (id: string) => `Athlete #${id}`,
+      loadingReadiness: 'Calculating readiness...',
+      errorReadiness: "Could not load this athlete's data",
+      noCheckinToday: "This athlete hasn't checked in today",
+      hasCheckinToday: "Today's check-in received",
+      scoreLabel: 'Readiness',
+      loadLabel: 'Load (ACWR)',
+      hooperLabel: 'Wellness index',
+      hooperHint: 'Lower is better (out of 28)',
+      monotonyLabel: 'Load monotony',
+      streakLabel: 'Days in a row without rest',
+      penaltiesTitle: 'What shaped the score',
+      noPenalties: 'No penalties — clean score',
+      safetyTitle: 'Safety Guard',
+      noSafety: 'No restrictions',
+      inconsistencyTitle: 'Self-report inconsistencies',
+      forbidden: "No access to this athlete's data",
     },
     admin: {
       title: 'Control panel',

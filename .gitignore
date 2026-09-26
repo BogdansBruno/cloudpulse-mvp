@@ -42,3 +42,9 @@ next-env.d.ts
 
 # dev-mode local data store (see lib/dev-store.ts) — never real user data
 .dev-store.json
+
+# supabase CLI local state (project ref, pooler url)
+supabase/.temp/
+
+# scratch files from Claude sessions (final SQL lives in supabase/sql)
+Claude outputs/
