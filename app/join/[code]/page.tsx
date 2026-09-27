@@ -147,6 +147,8 @@ function JoinFlow() {
     OWN_TEAM: inv.errOwnTeam,
     BAD_LABEL: inv.errLabel,
     NOT_AUTHENTICATED: inv.signInToJoin,
+    DEMO_ACCOUNT: inv.errDemoAccount,
+    DEMO_TEAM: inv.errDemoTeam,
     UNKNOWN: inv.errGeneric,
   };
 

@@ -43,11 +43,27 @@ export function safeNextPath(next: string | null | undefined): string | null {
   return joinPath(m[1]);
 }
 
-export type JoinErrorCode = 'INVALID_CODE' | 'NOT_ATHLETE' | 'OWN_TEAM' | 'BAD_LABEL' | 'NOT_AUTHENTICATED' | 'UNKNOWN';
+export type JoinErrorCode =
+  | 'INVALID_CODE'
+  | 'NOT_ATHLETE'
+  | 'OWN_TEAM'
+  | 'BAD_LABEL'
+  | 'NOT_AUTHENTICATED'
+  | 'DEMO_ACCOUNT'
+  | 'DEMO_TEAM'
+  | 'UNKNOWN';
 
 /** join_team() raises short codes; map the Postgres error message back to one. */
 export function joinErrorCode(message: string | null | undefined): JoinErrorCode {
-  const known: JoinErrorCode[] = ['INVALID_CODE', 'NOT_ATHLETE', 'OWN_TEAM', 'BAD_LABEL', 'NOT_AUTHENTICATED'];
+  const known: JoinErrorCode[] = [
+    'INVALID_CODE',
+    'NOT_ATHLETE',
+    'OWN_TEAM',
+    'BAD_LABEL',
+    'NOT_AUTHENTICATED',
+    'DEMO_ACCOUNT',
+    'DEMO_TEAM',
+  ];
   return known.find((k) => message?.includes(k)) ?? 'UNKNOWN';
 }
 

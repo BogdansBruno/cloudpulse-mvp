@@ -347,6 +347,29 @@ type Dict = {
     codeEntryLabel: string;
     codeEntryButton: string;
     codeEntryInvalid: string;
+    errDemoAccount: string;
+    errDemoTeam: string;
+  };
+  demo: {
+    title: string;
+    subtitle: string;
+    note: string;
+    athleteTitle: string;
+    athleteDesc: string;
+    coachTitle: string;
+    coachDesc: string;
+    parentTitle: string;
+    parentDesc: string;
+    enter: string;
+    entering: string;
+    disabled: string;
+    error: string;
+    realDataNote: string;
+    bannerText: string;
+    reset: string;
+    resetting: string;
+    resetError: string;
+    switchRole: string;
   };
   engine: {
     penaltyAcwrSpike: (acwr: string) => string;
@@ -809,6 +832,29 @@ export const translations: Record<Lang, Dict> = {
       codeEntryLabel: 'Есть код от тренера?',
       codeEntryButton: 'Вступить',
       codeEntryInvalid: 'Код — 8 символов, например MS49-U5P4.',
+      errDemoAccount: 'Это демо-аккаунт: вступать в настоящие команды из демо нельзя.',
+      errDemoTeam: 'Это демонстрационная команда — в неё нельзя вступить. Попроси у своего тренера настоящий код.',
+    },
+    demo: {
+      title: 'Демо CloudPulse',
+      subtitle: 'Попробуйте приложение за любую роль — в один клик, без регистрации.',
+      note: 'Все люди и данные здесь вымышленные. Демо-данные сбрасываются каждый день и по кнопке «Сбросить демо» — нажимайте что угодно.',
+      athleteTitle: 'Спортсмен',
+      athleteDesc: '«Скрытая травма»: болит колено, а завтра матч. Посмотрите, как Safety Guard блокирует нагрузку и выдаёт пропуск с QR-кодом.',
+      coachTitle: 'Тренер',
+      coachDesc: 'Команда из 4 спортсменов — от «звезды в зоне риска» до «новичка». Готовность, ACWR и причина каждого балла.',
+      parentTitle: 'Родитель',
+      parentDesc: 'Видит только цвет дня — и только если спортсмен сам разрешит. Никаких ответов о самочувствии.',
+      enter: 'Войти',
+      entering: 'Вхожу…',
+      disabled: 'Демо-режим сейчас выключен.',
+      error: 'Не удалось войти. Попробуйте ещё раз через минуту.',
+      realDataNote: 'Данные настоящих тестеров к демо не относятся и отсюда недоступны.',
+      bannerText: 'Демо-режим — все данные вымышленные',
+      reset: 'Сбросить демо',
+      resetting: 'Сбрасываю…',
+      resetError: 'Не удалось сбросить',
+      switchRole: 'Сменить роль',
     },
     engine: {
       penaltyAcwrSpike: (acwr) => `ACWR ${acwr} — резкий скачок нагрузки (риск травмы)`,
@@ -1256,6 +1302,29 @@ export const translations: Record<Lang, Dict> = {
       codeEntryLabel: 'Ir kods no trenera?',
       codeEntryButton: 'Pievienoties',
       codeEntryInvalid: 'Kods — 8 rakstzīmes, piemēram, MS49-U5P4.',
+      errDemoAccount: 'Šis ir demo konts: no demo nevar pievienoties īstām komandām.',
+      errDemoTeam: 'Šī ir demonstrācijas komanda — tai nevar pievienoties. Palūdz savam trenerim īsto kodu.',
+    },
+    demo: {
+      title: 'CloudPulse demo',
+      subtitle: 'Izmēģiniet lietotni jebkurā lomā — ar vienu klikšķi, bez reģistrācijas.',
+      note: 'Visi cilvēki un dati šeit ir izdomāti. Demo dati tiek atiestatīti katru dienu un ar pogu «Atiestatīt demo» — droši spiediet jebko.',
+      athleteTitle: 'Sportists',
+      athleteDesc: '«Slēptā trauma»: sāp celis, bet rīt ir spēle. Apskatiet, kā Safety Guard bloķē slodzi un izsniedz caurlaidi ar QR kodu.',
+      coachTitle: 'Treneris',
+      coachDesc: 'Komanda no 4 sportistiem — no «zvaigznes riska zonā» līdz «iesācējam». Gatavība, ACWR un katra rezultāta iemesls.',
+      parentTitle: 'Vecāks',
+      parentDesc: 'Redz tikai dienas krāsu — un tikai tad, ja sportists pats to atļauj. Nekādu atbilžu par pašsajūtu.',
+      enter: 'Ieiet',
+      entering: 'Ieeju…',
+      disabled: 'Demo režīms pašlaik ir izslēgts.',
+      error: 'Neizdevās ieiet. Mēģiniet vēlreiz pēc minūtes.',
+      realDataNote: 'Īsto testētāju dati ar demo nav saistīti un no šejienes nav pieejami.',
+      bannerText: 'Demo režīms — visi dati ir izdomāti',
+      reset: 'Atiestatīt demo',
+      resetting: 'Atiestatu…',
+      resetError: 'Neizdevās atiestatīt',
+      switchRole: 'Mainīt lomu',
     },
     engine: {
       penaltyAcwrSpike: (acwr) => `ACWR ${acwr} — straujš slodzes lēciens (traumas risks)`,
@@ -1700,6 +1769,29 @@ export const translations: Record<Lang, Dict> = {
       codeEntryLabel: 'Got a code from your coach?',
       codeEntryButton: 'Join',
       codeEntryInvalid: 'The code is 8 characters, e.g. MS49-U5P4.',
+      errDemoAccount: 'This is a demo account: it can’t join real teams.',
+      errDemoTeam: 'This is a demo team — it can’t be joined. Ask your coach for the real code.',
+    },
+    demo: {
+      title: 'CloudPulse demo',
+      subtitle: 'Try the app in any role — one click, no sign-up.',
+      note: 'Every person and number here is made up. Demo data resets every day and with the “Reset demo” button — click anything you like.',
+      athleteTitle: 'Athlete',
+      athleteDesc: '“Hidden injury”: knee pain and a match tomorrow. See Safety Guard block heavy training and issue a pass with a QR code.',
+      coachTitle: 'Coach',
+      coachDesc: 'A team of 4 athletes — from “star at risk” to “rookie”. Readiness, ACWR and the reason behind every score.',
+      parentTitle: 'Parent',
+      parentDesc: 'Sees only the colour of the day — and only if the athlete allows it. No wellness answers.',
+      enter: 'Enter',
+      entering: 'Signing in…',
+      disabled: 'Demo mode is currently switched off.',
+      error: 'Could not sign in. Try again in a minute.',
+      realDataNote: 'Real testers’ data is separate from the demo and cannot be reached from here.',
+      bannerText: 'Demo mode — all data is made up',
+      reset: 'Reset demo',
+      resetting: 'Resetting…',
+      resetError: 'Reset failed',
+      switchRole: 'Switch role',
     },
     engine: {
       penaltyAcwrSpike: (acwr) => `ACWR ${acwr} — sharp load spike (injury risk)`,

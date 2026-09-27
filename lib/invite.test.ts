@@ -54,6 +54,8 @@ describe('join errors and labels', () => {
   it('maps database error messages to codes', () => {
     expect(joinErrorCode('INVALID_CODE')).toBe('INVALID_CODE');
     expect(joinErrorCode('ERROR: NOT_ATHLETE')).toBe('NOT_ATHLETE');
+    expect(joinErrorCode('DEMO_TEAM')).toBe('DEMO_TEAM');
+    expect(joinErrorCode('DEMO_ACCOUNT')).toBe('DEMO_ACCOUNT');
     expect(joinErrorCode('network down')).toBe('UNKNOWN');
     expect(joinErrorCode(undefined)).toBe('UNKNOWN');
   });
