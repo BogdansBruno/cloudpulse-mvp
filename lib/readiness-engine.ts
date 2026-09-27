@@ -39,7 +39,21 @@ export type UserContext = {
 
 export type ReadinessZone = 'green' | 'yellow' | 'red';
 
-export type Penalty = { reason: string; points: number };
+export type PenaltyCode =
+  | 'ACWR_SPIKE'
+  | 'ACWR_RISING'
+  | 'ACWR_LOW'
+  | 'WELLNESS_WORSE'
+  | 'NO_REST_STREAK'
+  | 'EXAM_SOON'
+  | 'MONOTONY_HIGH';
+
+// `reason` stays a Russian sentence — it's what the existing unit tests
+// assert on (see readiness-engine.test.ts) and what the AI coach prompt
+// (lib/claude-agent.ts) reads as ground-truth context, not UI copy. The
+// UI itself renders `code` + `params` through lib/i18n so every language
+// shows the same penalty in the athlete's own language.
+export type Penalty = { code: PenaltyCode; reason: string; points: number; params?: Record<string, number | string> };
 
 export type ReadinessResult = {
   score: number; // 0-100
@@ -52,7 +66,7 @@ export type ReadinessResult = {
   hooperBaseline: number | null;
   trainingStreak: number; // consecutive days with a session, ending today
   penalties: Penalty[];
-  inconsistencyFlags: string[];
+  inconsistencyFlags: InconsistencyFlag[];
   isPainBlocked: boolean;
 };
 
@@ -198,28 +212,33 @@ export function calculateTrainingStreak(sessions: SessionEntry[], today: string,
   return streak;
 }
 
+export type InconsistencyCode = 'FATIGUE_VS_ACWR' | 'FATIGUE_VS_STREAK';
+
+export type InconsistencyFlag = { code: InconsistencyCode; params: Record<string, number | string> };
+
 /**
  * Flags cases where the athlete's self-report contradicts objective load
  * data — teenagers systematically under-report fatigue because they want
  * to play. This does NOT change the score; it's surfaced to the AI layer
  * so it can ask a follow-up question instead of silently trusting either
  * signal.
+ *
+ * Returns codes + params rather than finished sentences so the UI can
+ * render them in whichever of RU/LV/EN the athlete has selected.
  */
 export function detectInconsistency(
   checkin: DailyCheckin,
   acwr: number | null,
   trainingStreak: number
-): string[] {
-  const flags: string[] = [];
+): InconsistencyFlag[] {
+  const flags: InconsistencyFlag[] = [];
 
   if (checkin.fatigue >= 6 && acwr !== null && acwr > 1.5) {
-    flags.push(
-      `Самооценка усталости низкая (${checkin.fatigue}/7 = "почти свеж"), но ACWR = ${acwr.toFixed(2)} — острая нагрузка резко выше обычной.`
-    );
+    flags.push({ code: 'FATIGUE_VS_ACWR', params: { fatigue: checkin.fatigue, acwr: acwr.toFixed(2) } });
   }
 
   if (checkin.fatigue >= 6 && trainingStreak >= 7) {
-    flags.push(`Самооценка усталости низкая, но это ${trainingStreak}-й день подряд без отдыха.`);
+    flags.push({ code: 'FATIGUE_VS_STREAK', params: { streak: trainingStreak } });
   }
 
   return flags;
@@ -258,11 +277,26 @@ export function calculateReadiness(
 
   if (acwr !== null) {
     if (acwr > 1.5) {
-      penalties.push({ reason: `ACWR ${acwr.toFixed(2)} — резкий скачок нагрузки (риск травмы)`, points: 35 });
+      penalties.push({
+        code: 'ACWR_SPIKE',
+        reason: `ACWR ${acwr.toFixed(2)} — резкий скачок нагрузки (риск травмы)`,
+        points: 35,
+        params: { acwr: acwr.toFixed(2) },
+      });
     } else if (acwr > 1.3) {
-      penalties.push({ reason: `ACWR ${acwr.toFixed(2)} — нагрузка растёт быстрее обычного`, points: 15 });
+      penalties.push({
+        code: 'ACWR_RISING',
+        reason: `ACWR ${acwr.toFixed(2)} — нагрузка растёт быстрее обычного`,
+        points: 15,
+        params: { acwr: acwr.toFixed(2) },
+      });
     } else if (acwr < 0.8) {
-      penalties.push({ reason: `ACWR ${acwr.toFixed(2)} — нагрузка заметно ниже обычной`, points: 10 });
+      penalties.push({
+        code: 'ACWR_LOW',
+        reason: `ACWR ${acwr.toFixed(2)} — нагрузка заметно ниже обычной`,
+        points: 10,
+        params: { acwr: acwr.toFixed(2) },
+      });
     }
   }
 
@@ -271,23 +305,35 @@ export function calculateReadiness(
     const points = Math.min(25, Math.round(diff * 4));
     if (points > 0) {
       penalties.push({
+        code: 'WELLNESS_WORSE',
         reason: `Самочувствие хуже обычного (индекс ${hooperScore} против базы ${hooperBaseline.toFixed(1)})`,
         points,
+        params: { score: hooperScore, baseline: hooperBaseline.toFixed(1) },
       });
     }
   }
 
   if (trainingStreak > 6) {
     const points = Math.min(20, (trainingStreak - 6) * 5);
-    penalties.push({ reason: `${trainingStreak} дней подряд без отдыха`, points });
+    penalties.push({
+      code: 'NO_REST_STREAK',
+      reason: `${trainingStreak} дней подряд без отдыха`,
+      points,
+      params: { days: trainingStreak },
+    });
   }
 
   if (isNearExam(today, context.examDates)) {
-    penalties.push({ reason: 'Экзамен в ближайшие 3 дня', points: 15 });
+    penalties.push({ code: 'EXAM_SOON', reason: 'Экзамен в ближайшие 3 дня', points: 15 });
   }
 
   if (monotony !== null && monotony > 2.0) {
-    penalties.push({ reason: `Однообразная нагрузка (монотонность ${monotony.toFixed(2)})`, points: 10 });
+    penalties.push({
+      code: 'MONOTONY_HIGH',
+      reason: `Однообразная нагрузка (монотонность ${monotony.toFixed(2)})`,
+      points: 10,
+      params: { monotony: monotony.toFixed(2) },
+    });
   }
 
   const totalPenalty = penalties.reduce((sum, p) => sum + p.points, 0);
@@ -340,6 +386,8 @@ export type SafetyViolation = {
   message: string;
   /** 'block' = heavy/strength work is forbidden today. 'warning' = shown to the user, training still allowed. */
   severity: 'block' | 'warning';
+  /** UI-language params, e.g. { zone } for PAIN_REPORTED. See Penalty.params. */
+  params?: Record<string, string | null>;
 };
 
 /**
@@ -361,6 +409,7 @@ export function detectSafetyViolations(
       code: 'PAIN_REPORTED',
       message: `Заявлена боль${zone}. Силовые и высокоинтенсивные упражнения на сегодня заблокированы. Рекомендация: показаться врачу, школьной медсестре или физиотерапевту — не гадать самостоятельно.`,
       severity: 'block',
+      params: { zone: checkin.painZone ?? null },
     });
   }
 

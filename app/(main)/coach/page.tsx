@@ -6,6 +6,8 @@ import { WarningOctagon, Info, Flame, Users } from '@phosphor-icons/react';
 import { supabase } from '@/lib/supabase';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
 import { ReadinessRing, zoneMeta, loadStatus, HUB } from '@/components/PerformancePanel';
+import type { Penalty, SafetyViolation, InconsistencyFlag } from '@/lib/readiness-engine';
+import { translatePenalty, translateViolation, translateInconsistency } from '@/lib/engine-i18n';
 
 // ---------------------------------------------------------------------------
 // Coach view — the one screen in the app that actually uses the new
@@ -36,9 +38,6 @@ type RosterEntry = {
   age: number | null;
 };
 
-type Penalty = { reason: string; points: number };
-type SafetyViolation = { code: string; message: string; severity: 'block' | 'warning' };
-
 type ReadinessPayload = {
   hasCheckin: boolean;
   readiness: {
@@ -49,7 +48,7 @@ type ReadinessPayload = {
     hooperScore: number;
     trainingStreak: number;
     penalties: Penalty[];
-    inconsistencyFlags: string[];
+    inconsistencyFlags: InconsistencyFlag[];
     isPainBlocked: boolean;
   };
   safetyViolations: SafetyViolation[];
@@ -348,7 +347,7 @@ export default function CoachPage() {
                           className="flex gap-3 rounded-2xl bg-[#FF4D5E]/[0.08] p-3 text-sm text-zinc-200 ring-1 ring-inset ring-[#FF4D5E]/30"
                         >
                           <WarningOctagon size={16} weight="fill" className="mt-0.5 shrink-0 text-[#FF4D5E]" />
-                          <span>{v.message}</span>
+                          <span>{translateViolation(t, v)}</span>
                         </div>
                       ))}
                     </div>
@@ -366,7 +365,7 @@ export default function CoachPage() {
                     <ul className="space-y-1.5 text-sm text-zinc-300">
                       {data.readiness.penalties.map((p, i) => (
                         <li key={i} className="flex items-center justify-between gap-3">
-                          <span>{p.reason}</span>
+                          <span>{translatePenalty(t, p)}</span>
                           <span className="shrink-0 font-mono tabular-nums text-zinc-500">-{p.points}</span>
                         </li>
                       ))}
@@ -382,7 +381,7 @@ export default function CoachPage() {
                       <h2 className="text-base font-semibold text-zinc-50">{t.coach.inconsistencyTitle}</h2>
                       <ul className="mt-1 space-y-1 text-sm leading-relaxed text-zinc-300">
                         {data.readiness.inconsistencyFlags.map((f, i) => (
-                          <li key={i}>{f}</li>
+                          <li key={i}>{translateInconsistency(t, f)}</li>
                         ))}
                       </ul>
                     </div>

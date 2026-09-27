@@ -7,7 +7,7 @@
 // Keeping them apart means the engine can be reused (e.g. in a coach
 // dashboard aggregation job) without dragging HTTP-shape assumptions along.
 
-import type { ReadinessZone, Penalty, SafetyViolation } from '@/lib/readiness-engine';
+import type { ReadinessZone, Penalty, SafetyViolation, InconsistencyFlag } from '@/lib/readiness-engine';
 
 // ---- POST /api/checkin ----------------------------------------------------
 
@@ -46,7 +46,7 @@ export type CheckinResponseBody = {
     hooperBaseline: number | null;
     trainingStreak: number;
     penalties: Penalty[];
-    inconsistencyFlags: string[];
+    inconsistencyFlags: InconsistencyFlag[];
     isPainBlocked: boolean;
   };
   safetyViolations: SafetyViolation[];

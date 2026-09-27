@@ -286,6 +286,21 @@ type Dict = {
     parentFallback: string;
     errSave: string;
   };
+  engine: {
+    penaltyAcwrSpike: (acwr: string) => string;
+    penaltyAcwrRising: (acwr: string) => string;
+    penaltyAcwrLow: (acwr: string) => string;
+    penaltyWellnessWorse: (score: number, baseline: string) => string;
+    penaltyNoRestStreak: (days: number) => string;
+    penaltyExamSoon: string;
+    penaltyMonotonyHigh: (value: string) => string;
+    violationPain: (zone: string | null) => string;
+    violationMatchDay: string;
+    violationPreMatch: string;
+    violationPostMatch: string;
+    inconsistencyFatigueVsAcwr: (fatigue: number, acwr: string) => string;
+    inconsistencyFatigueVsStreak: (streak: number) => string;
+  };
   admin: {
     title: string;
     subtitle: string;
@@ -655,6 +670,23 @@ export const translations: Record<Lang, Dict> = {
       parentFallback: 'Родитель',
       errSave: 'Не удалось сохранить. Попробуй ещё раз.',
     },
+    engine: {
+      penaltyAcwrSpike: (acwr) => `ACWR ${acwr} — резкий скачок нагрузки (риск травмы)`,
+      penaltyAcwrRising: (acwr) => `ACWR ${acwr} — нагрузка растёт быстрее обычного`,
+      penaltyAcwrLow: (acwr) => `ACWR ${acwr} — нагрузка заметно ниже обычной`,
+      penaltyWellnessWorse: (score, baseline) => `Самочувствие хуже обычного (индекс ${score} против базы ${baseline})`,
+      penaltyNoRestStreak: (days) => `${days} дней подряд без отдыха`,
+      penaltyExamSoon: 'Экзамен в ближайшие 3 дня',
+      penaltyMonotonyHigh: (value) => `Однообразная нагрузка (монотонность ${value})`,
+      violationPain: (zone) =>
+        `Заявлена боль${zone ? ` (зона: ${zone})` : ''}. Силовые и высокоинтенсивные упражнения на сегодня заблокированы. Рекомендация: показаться врачу, школьной медсестре или физиотерапевту — не гадать самостоятельно.`,
+      violationMatchDay: 'Сегодня день матча — только активация и лёгкая разминка, без силовой работы.',
+      violationPreMatch: 'Завтра матч — тяжёлые силовые и высокоинтенсивные интервалы под запретом, только техника и лёгкий объём.',
+      violationPostMatch: 'Вчера был матч — сегодня восстановление (растяжка, лёгкое кардио), не силовая.',
+      inconsistencyFatigueVsAcwr: (fatigue, acwr) =>
+        `Самооценка усталости низкая (${fatigue}/7 = "почти свеж"), но ACWR = ${acwr} — острая нагрузка резко выше обычной.`,
+      inconsistencyFatigueVsStreak: (streak) => `Самооценка усталости низкая, но это ${streak}-й день подряд без отдыха.`,
+    },
     admin: {
       title: 'Панель управления',
       subtitle: 'Доступ только для владельца',
@@ -1015,6 +1047,23 @@ export const translations: Record<Lang, Dict> = {
       parentFallback: 'Vecāks',
       errSave: 'Neizdevās saglabāt. Mēģini vēlreiz.',
     },
+    engine: {
+      penaltyAcwrSpike: (acwr) => `ACWR ${acwr} — straujš slodzes lēciens (traumas risks)`,
+      penaltyAcwrRising: (acwr) => `ACWR ${acwr} — slodze pieaug straujāk nekā parasti`,
+      penaltyAcwrLow: (acwr) => `ACWR ${acwr} — slodze manāmi zemāka nekā parasti`,
+      penaltyWellnessWorse: (score, baseline) => `Pašsajūta sliktāka nekā parasti (indekss ${score} pret bāzi ${baseline})`,
+      penaltyNoRestStreak: (days) => `${days} dienas pēc kārtas bez atpūtas`,
+      penaltyExamSoon: 'Eksāmens tuvāko 3 dienu laikā',
+      penaltyMonotonyHigh: (value) => `Vienmuļa slodze (monotonija ${value})`,
+      violationPain: (zone) =>
+        `Ziņots par sāpēm${zone ? ` (zona: ${zone})` : ''}. Spēka un augstas intensitātes vingrinājumi šodien ir bloķēti. Ieteikums: dodies pie ārsta, skolas medmāsas vai fizioterapeita — nemini pats.`,
+      violationMatchDay: 'Šodien ir spēles diena — tikai aktivizācija un viegla iesildīšanās, bez spēka darba.',
+      violationPreMatch: 'Rīt spēle — smags spēka darbs un augstas intensitātes intervāli aizliegti, tikai tehnika un neliels apjoms.',
+      violationPostMatch: 'Vakar bija spēle — šodien atveseļošanās (stiepšanās, viegls kardio), ne spēka treniņš.',
+      inconsistencyFatigueVsAcwr: (fatigue, acwr) =>
+        `Pašnovērtētais nogurums zems (${fatigue}/7 = "gandrīz svaigs"), bet ACWR = ${acwr} — akūtā slodze strauji augstāka nekā parasti.`,
+      inconsistencyFatigueVsStreak: (streak) => `Pašnovērtētais nogurums zems, bet šī ir ${streak}. diena pēc kārtas bez atpūtas.`,
+    },
     admin: {
       title: 'Vadības panelis',
       subtitle: 'Pieejams tikai īpašniekam',
@@ -1374,6 +1423,23 @@ export const translations: Record<Lang, Dict> = {
       changed: (date) => `Changed ${date}`,
       parentFallback: 'Parent',
       errSave: 'Could not save. Try again.',
+    },
+    engine: {
+      penaltyAcwrSpike: (acwr) => `ACWR ${acwr} — sharp load spike (injury risk)`,
+      penaltyAcwrRising: (acwr) => `ACWR ${acwr} — load rising faster than usual`,
+      penaltyAcwrLow: (acwr) => `ACWR ${acwr} — load noticeably below usual`,
+      penaltyWellnessWorse: (score, baseline) => `Feeling worse than usual (index ${score} vs baseline ${baseline})`,
+      penaltyNoRestStreak: (days) => `${days} days in a row without rest`,
+      penaltyExamSoon: 'Exam within the next 3 days',
+      penaltyMonotonyHigh: (value) => `Monotonous load (monotony ${value})`,
+      violationPain: (zone) =>
+        `Pain reported${zone ? ` (area: ${zone})` : ''}. Strength and high-intensity exercise is blocked for today. Recommendation: see a doctor, school nurse or physiotherapist — don't guess on your own.`,
+      violationMatchDay: "Today is match day — activation and light warm-up only, no strength work.",
+      violationPreMatch: 'Match tomorrow — heavy strength and high-intensity intervals are off-limits, technique and light volume only.',
+      violationPostMatch: 'There was a match yesterday — today is recovery (stretching, light cardio), not strength.',
+      inconsistencyFatigueVsAcwr: (fatigue, acwr) =>
+        `Self-reported fatigue is low (${fatigue}/7 = "almost fresh"), but ACWR = ${acwr} — acute load is sharply above usual.`,
+      inconsistencyFatigueVsStreak: (streak) => `Self-reported fatigue is low, but this is day ${streak} in a row without rest.`,
     },
     admin: {
       title: 'Control panel',

@@ -28,7 +28,7 @@ type DailyCheckin = {
 };
 type UserContext = { examDates?: string[]; matchDates?: string[] };
 type ReadinessZone = 'green' | 'yellow' | 'red';
-type Penalty = { reason: string; points: number };
+type Penalty = { code: string; reason: string; points: number; params?: Record<string, number | string> };
 
 // ---- Чистые функции движка — без изменений относительно lib/readiness-engine.ts
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -111,13 +111,15 @@ function calculateTrainingStreak(sessions: SessionEntry[], today: string, lookba
   return streak;
 }
 
-function detectInconsistency(checkin: DailyCheckin, acwr: number | null, trainingStreak: number): string[] {
-  const flags: string[] = [];
+type InconsistencyFlag = { code: string; params: Record<string, number | string> };
+
+function detectInconsistency(checkin: DailyCheckin, acwr: number | null, trainingStreak: number): InconsistencyFlag[] {
+  const flags: InconsistencyFlag[] = [];
   if (checkin.fatigue >= 6 && acwr !== null && acwr > 1.5) {
-    flags.push(`Самооценка усталости низкая (${checkin.fatigue}/7), но ACWR = ${acwr.toFixed(2)}.`);
+    flags.push({ code: 'FATIGUE_VS_ACWR', params: { fatigue: checkin.fatigue, acwr: acwr.toFixed(2) } });
   }
   if (checkin.fatigue >= 6 && trainingStreak >= 7) {
-    flags.push(`Самооценка усталости низкая, но это ${trainingStreak}-й день подряд без отдыха.`);
+    flags.push({ code: 'FATIGUE_VS_STREAK', params: { streak: trainingStreak } });
   }
   return flags;
 }
@@ -145,25 +147,35 @@ function calculateReadiness(
 
   const penalties: Penalty[] = [];
   if (acwr !== null) {
-    if (acwr > 1.5) penalties.push({ reason: `ACWR ${acwr.toFixed(2)} — резкий скачок нагрузки`, points: 35 });
-    else if (acwr > 1.3) penalties.push({ reason: `ACWR ${acwr.toFixed(2)} — нагрузка растёт быстрее обычного`, points: 15 });
-    else if (acwr < 0.8) penalties.push({ reason: `ACWR ${acwr.toFixed(2)} — нагрузка заметно ниже обычной`, points: 10 });
+    if (acwr > 1.5) penalties.push({ code: 'ACWR_SPIKE', reason: `ACWR ${acwr.toFixed(2)} — резкий скачок нагрузки`, points: 35, params: { acwr: acwr.toFixed(2) } });
+    else if (acwr > 1.3) penalties.push({ code: 'ACWR_RISING', reason: `ACWR ${acwr.toFixed(2)} — нагрузка растёт быстрее обычного`, points: 15, params: { acwr: acwr.toFixed(2) } });
+    else if (acwr < 0.8) penalties.push({ code: 'ACWR_LOW', reason: `ACWR ${acwr.toFixed(2)} — нагрузка заметно ниже обычной`, points: 10, params: { acwr: acwr.toFixed(2) } });
   }
   if (hooperBaseline !== null && hooperScore > hooperBaseline) {
     const diff = hooperScore - hooperBaseline;
     const points = Math.min(25, Math.round(diff * 4));
     if (points > 0) {
-      penalties.push({ reason: `Самочувствие хуже обычного (${hooperScore} против базы ${hooperBaseline.toFixed(1)})`, points });
+      penalties.push({
+        code: 'WELLNESS_WORSE',
+        reason: `Самочувствие хуже обычного (${hooperScore} против базы ${hooperBaseline.toFixed(1)})`,
+        points,
+        params: { score: hooperScore, baseline: hooperBaseline.toFixed(1) },
+      });
     }
   }
   if (trainingStreak > 6) {
-    penalties.push({ reason: `${trainingStreak} дней подряд без отдыха`, points: Math.min(20, (trainingStreak - 6) * 5) });
+    penalties.push({
+      code: 'NO_REST_STREAK',
+      reason: `${trainingStreak} дней подряд без отдыха`,
+      points: Math.min(20, (trainingStreak - 6) * 5),
+      params: { days: trainingStreak },
+    });
   }
   if (isNearExam(today, context.examDates)) {
-    penalties.push({ reason: 'Экзамен в ближайшие 3 дня', points: 15 });
+    penalties.push({ code: 'EXAM_SOON', reason: 'Экзамен в ближайшие 3 дня', points: 15 });
   }
   if (monotony !== null && monotony > 2.0) {
-    penalties.push({ reason: `Однообразная нагрузка (${monotony.toFixed(2)})`, points: 10 });
+    penalties.push({ code: 'MONOTONY_HIGH', reason: `Однообразная нагрузка (${monotony.toFixed(2)})`, points: 10, params: { monotony: monotony.toFixed(2) } });
   }
 
   const totalPenalty = penalties.reduce((sum, p) => sum + p.points, 0);
@@ -184,13 +196,14 @@ function detectSafetyViolations(
   today: string,
   context: UserContext = {}
 ) {
-  const violations: { code: string; message: string; severity: 'block' | 'warning' }[] = [];
+  const violations: { code: string; message: string; severity: 'block' | 'warning'; params?: Record<string, string | null> }[] = [];
   if (checkin?.painFlag) {
     const zone = checkin.painZone ? ` (зона: ${checkin.painZone})` : '';
     violations.push({
       code: 'PAIN_REPORTED',
       message: `Заявлена боль${zone}. Силовые и высокоинтенсивные упражнения заблокированы. Показаться врачу/физиотерапевту.`,
       severity: 'block',
+      params: { zone: checkin.painZone ?? null },
     });
   }
   for (const matchDate of context.matchDates ?? []) {

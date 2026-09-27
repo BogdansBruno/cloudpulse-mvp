@@ -8,6 +8,8 @@ import type { Icon } from '@phosphor-icons/react';
 import { supabase } from '@/lib/supabase';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
 import { ReadinessRing, zoneMeta, HUB } from '@/components/PerformancePanel';
+import type { Penalty, SafetyViolation, InconsistencyFlag } from '@/lib/readiness-engine';
+import { translatePenalty, translateViolation, translateInconsistency } from '@/lib/engine-i18n';
 
 type ScaleField = 'sleepQuality' | 'stress' | 'fatigue' | 'soreness';
 
@@ -15,12 +17,10 @@ type ReadinessResult = {
   score: number;
   zone: 'green' | 'yellow' | 'red';
   acwr: number | null;
-  penalties: { reason: string; points: number }[];
-  inconsistencyFlags: string[];
+  penalties: Penalty[];
+  inconsistencyFlags: InconsistencyFlag[];
   isPainBlocked: boolean;
 };
-
-type SafetyViolation = { code: string; message: string; severity: 'block' | 'warning' };
 
 type CheckinApiResponse = {
   readiness: ReadinessResult;
@@ -312,7 +312,7 @@ export default function CheckinForm({ onSubmitted }: { onSubmitted?: () => void 
                   className="flex gap-3 rounded-2xl bg-[#FF4D5E]/[0.08] p-4 text-sm leading-relaxed text-zinc-200 ring-1 ring-inset ring-[#FF4D5E]/30"
                 >
                   <WarningOctagon size={18} weight="fill" className="mt-0.5 shrink-0 text-[#FF4D5E]" />
-                  <span>{v.message}</span>
+                  <span>{translateViolation(t, v)}</span>
                 </div>
               ))}
             </div>
@@ -326,7 +326,7 @@ export default function CheckinForm({ onSubmitted }: { onSubmitted?: () => void 
                   className="flex gap-3 rounded-2xl bg-white/[0.03] p-4 text-sm leading-relaxed text-zinc-300 ring-1 ring-inset ring-white/[0.08]"
                 >
                   <Info size={18} className="mt-0.5 shrink-0 text-zinc-400" />
-                  <span>{flag}</span>
+                  <span>{translateInconsistency(t, flag)}</span>
                 </div>
               ))}
             </div>
@@ -338,7 +338,7 @@ export default function CheckinForm({ onSubmitted }: { onSubmitted?: () => void 
               <ul className="space-y-2">
                 {result.readiness.penalties.map((p, i) => (
                   <li key={i} className="flex items-start justify-between gap-4 text-sm">
-                    <span className="text-zinc-300">{p.reason}</span>
+                    <span className="text-zinc-300">{translatePenalty(t, p)}</span>
                     <span className="shrink-0 font-mono tabular-nums text-zinc-500">-{p.points}</span>
                   </li>
                 ))}
