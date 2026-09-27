@@ -1,9 +1,10 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { UsersThree, WarningOctagon } from '@phosphor-icons/react';
+import { UsersThree, WarningOctagon, ArrowRight } from '@phosphor-icons/react';
 import { supabase } from '@/lib/supabase';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
+import { isValidInviteCode, joinPath } from '@/lib/invite';
 
 // ---------------------------------------------------------------------------
 // Athlete side of team membership (on /progress): which team(s) the athlete
@@ -26,6 +27,19 @@ export default function TeamMembershipCard() {
   const [confirmId, setConfirmId] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [errorId, setErrorId] = useState<string | null>(null);
+  const [code, setCode] = useState('');
+  const [codeError, setCodeError] = useState(false);
+
+  // Typed code (read aloud by the coach, or no camera at hand) goes through
+  // the same /join page as the QR, so consent and name are asked the same way.
+  function submitCode(e: React.FormEvent) {
+    e.preventDefault();
+    if (!isValidInviteCode(code)) {
+      setCodeError(true);
+      return;
+    }
+    window.location.href = joinPath(code);
+  }
 
   useEffect(() => {
     let cancelled = false;
@@ -124,6 +138,38 @@ export default function TeamMembershipCard() {
           })}
         </ul>
       )}
+
+      <form onSubmit={submitCode} className="mt-4 border-t border-white/[0.06] pt-4">
+        <label htmlFor="team-code" className="text-xs text-zinc-400">
+          {inv.codeEntryLabel}
+        </label>
+        <div className="mt-1.5 flex gap-2">
+          <input
+            id="team-code"
+            type="text"
+            value={code}
+            onChange={(e) => {
+              setCode(e.target.value);
+              setCodeError(false);
+            }}
+            placeholder="ABCD-2345"
+            maxLength={12}
+            autoCapitalize="characters"
+            autoComplete="off"
+            spellCheck={false}
+            className="min-w-0 flex-1 rounded-xl bg-white/[0.05] px-3.5 py-2.5 font-mono text-sm uppercase tracking-[0.1em] text-zinc-50 placeholder-zinc-600 ring-1 ring-inset ring-white/10 focus:outline-none focus:ring-[#CCFF00]/50"
+          />
+          <button
+            type="submit"
+            disabled={!code.trim()}
+            className="inline-flex shrink-0 items-center gap-1.5 rounded-xl bg-[#CCFF00] px-4 text-sm font-semibold text-zinc-950 disabled:opacity-50"
+          >
+            {inv.codeEntryButton}
+            <ArrowRight size={14} weight="bold" />
+          </button>
+        </div>
+        {codeError && <p className="mt-2 text-xs text-[#FF4D5E]">{inv.codeEntryInvalid}</p>}
+      </form>
     </section>
   );
 }

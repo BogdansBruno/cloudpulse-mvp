@@ -344,6 +344,9 @@ type Dict = {
     leave: string;
     leaveConfirm: (team: string) => string;
     errLeave: string;
+    codeEntryLabel: string;
+    codeEntryButton: string;
+    codeEntryInvalid: string;
   };
   engine: {
     penaltyAcwrSpike: (acwr: string) => string;
@@ -797,12 +800,15 @@ export const translations: Record<Lang, Dict> = {
       errCreate: 'Не удалось создать команду. Попробуй ещё раз.',
       errAction: 'Не удалось сохранить. Попробуй ещё раз.',
       cardTitle: 'Моя команда',
-      cardNone: 'Ты пока не в команде. Попроси у тренера QR-код — вступление займёт полминуты.',
+      cardNone: 'Ты пока не в команде. Отсканируй QR-код у тренера или введи код ниже — это займёт полминуты.',
       cardLabel: (label) => `У тренера ты подписан как «${label}»`,
       cardCoachSees: 'Тренер видит твои чек-ины, тренировки и статус готовности.',
       leave: 'Выйти из команды',
       leaveConfirm: (team) => `Выйти из «${team}»? Тренер перестанет видеть твои данные.`,
       errLeave: 'Не удалось выйти из команды. Попробуй ещё раз.',
+      codeEntryLabel: 'Есть код от тренера?',
+      codeEntryButton: 'Вступить',
+      codeEntryInvalid: 'Код — 8 символов, например MS49-U5P4.',
     },
     engine: {
       penaltyAcwrSpike: (acwr) => `ACWR ${acwr} — резкий скачок нагрузки (риск травмы)`,
@@ -1241,12 +1247,15 @@ export const translations: Record<Lang, Dict> = {
       errCreate: 'Neizdevās izveidot komandu. Mēģini vēlreiz.',
       errAction: 'Neizdevās saglabāt. Mēģini vēlreiz.',
       cardTitle: 'Mana komanda',
-      cardNone: 'Tu vēl neesi komandā. Palūdz trenerim QR kodu — pievienošanās aizņems pusminūti.',
+      cardNone: 'Tu vēl neesi komandā. Noskenē trenera QR kodu vai ievadi kodu zemāk — tas aizņems pusminūti.',
       cardLabel: (label) => `Trenerim tu esi parakstīts kā «${label}»`,
       cardCoachSees: 'Treneris redz tavas pārbaudes, treniņus un gatavības statusu.',
       leave: 'Izstāties no komandas',
       leaveConfirm: (team) => `Izstāties no «${team}»? Treneris vairs neredzēs tavus datus.`,
       errLeave: 'Neizdevās izstāties no komandas. Mēģini vēlreiz.',
+      codeEntryLabel: 'Ir kods no trenera?',
+      codeEntryButton: 'Pievienoties',
+      codeEntryInvalid: 'Kods — 8 rakstzīmes, piemēram, MS49-U5P4.',
     },
     engine: {
       penaltyAcwrSpike: (acwr) => `ACWR ${acwr} — straujš slodzes lēciens (traumas risks)`,
@@ -1682,12 +1691,15 @@ export const translations: Record<Lang, Dict> = {
       errCreate: 'Could not create the team. Try again.',
       errAction: 'Could not save. Try again.',
       cardTitle: 'My team',
-      cardNone: "You're not on a team yet. Ask your coach for the QR code — joining takes 30 seconds.",
+      cardNone: "You're not on a team yet. Scan your coach's QR code or enter the code below — it takes 30 seconds.",
       cardLabel: (label) => `Your coach sees you as “${label}”`,
       cardCoachSees: 'Your coach sees your check-ins, training sessions and readiness status.',
       leave: 'Leave team',
       leaveConfirm: (team) => `Leave “${team}”? Your coach will no longer see your data.`,
       errLeave: 'Could not leave the team. Try again.',
+      codeEntryLabel: 'Got a code from your coach?',
+      codeEntryButton: 'Join',
+      codeEntryInvalid: 'The code is 8 characters, e.g. MS49-U5P4.',
     },
     engine: {
       penaltyAcwrSpike: (acwr) => `ACWR ${acwr} — sharp load spike (injury risk)`,
