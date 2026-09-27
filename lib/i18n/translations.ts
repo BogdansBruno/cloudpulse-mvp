@@ -192,6 +192,36 @@ type Dict = {
     inconsistencyTitle: string;
     forbidden: string;
   };
+  shield: {
+    title: string;
+    blockedHeading: string;
+    cautionHeading: string;
+    showToTeacher: string;
+    validUntil: (date: string) => string;
+    passId: string;
+    qrUnavailable: string;
+    loadError: string;
+    dirPain: (zone: string | null) => string;
+    dirMatchDay: string;
+    dirPreMatch: string;
+    dirPostMatch: string;
+    dirLoad: (acwr: string) => string;
+    verifyTitle: string;
+    verifyChecking: string;
+    verifyValid: string;
+    verifyInvalid: string;
+    verifyInvalidBody: string;
+    verifyExpired: (date: string) => string;
+    verifyStatusBlock: string;
+    verifyStatusCaution: string;
+    verifyDate: string;
+    rPain: string;
+    rMatchDay: string;
+    rPreMatch: string;
+    rPostMatch: string;
+    rLoad: string;
+    verifyNote: string;
+  };
   admin: {
     title: string;
     subtitle: string;
@@ -429,6 +459,38 @@ export const translations: Record<Lang, Dict> = {
       bannedTitle: 'Доступ закрыт',
       bannedBody: 'Владелец CloudPulse ограничил доступ для этого аккаунта. Если это ошибка, свяжись с командой.',
       backToLogin: 'К странице входа',
+    },
+    shield: {
+      title: 'Safety Pass',
+      blockedHeading: 'Нагрузки ограничены',
+      cautionHeading: 'Нужна осторожность',
+      showToTeacher: 'Покажи этот экран учителю физкультуры или тренеру. Он отсканирует QR-код и увидит подтверждённый статус.',
+      validUntil: (date: string) => `Действует только ${date}`,
+      passId: 'ID пропуска',
+      qrUnavailable: 'QR-код временно недоступен: сервер не настроен для подписи пропусков.',
+      loadError: 'Не удалось проверить статус пропуска',
+      dirPain: (zone: string | null) =>
+        `Зафиксирована боль${zone ? ` (${zone})` : ''}. Силовые и высокоинтенсивные нагрузки заблокированы. Покажись врачу, школьной медсестре или физиотерапевту.`,
+      dirMatchDay: 'Сегодня матч: только активация и лёгкая разминка, без силовой работы.',
+      dirPreMatch: 'Завтра матч: тяжёлые силовые и высокоинтенсивные интервалы под запретом.',
+      dirPostMatch: 'Вчера был матч: сегодня восстановление, не силовая.',
+      dirLoad: (acwr: string) =>
+        `Нагрузка за неделю в ${acwr} раза выше твоей обычной. Риск травмы повышен: снизь интенсивность.`,
+      verifyTitle: 'Проверка Safety Pass',
+      verifyChecking: 'Проверяю подпись…',
+      verifyValid: 'Подлинный пропуск CloudPulse',
+      verifyInvalid: 'Пропуск недействителен',
+      verifyInvalidBody: 'Подпись не совпадает: этот QR-код не выдан CloudPulse или был изменён.',
+      verifyExpired: (date: string) => `Пропуск был действителен ${date} и сегодня уже не действует.`,
+      verifyStatusBlock: 'Нагрузки ограничены',
+      verifyStatusCaution: 'Рекомендована осторожность',
+      verifyDate: 'Дата',
+      rPain: 'По состоянию здоровья: без силовых и высокоинтенсивных нагрузок',
+      rMatchDay: 'День матча: только разминка и активация',
+      rPreMatch: 'Накануне матча: без тяжёлых силовых нагрузок',
+      rPostMatch: 'После матча: только восстановительная нагрузка',
+      rLoad: 'Резкий рост нагрузки: рекомендовано снизить интенсивность',
+      verifyNote: 'Статус рассчитан системой CloudPulse по ежедневному чек-ину спортсмена. Подробности о здоровье не раскрываются.',
     },
     coach: {
       navLabel: 'Тренер',
@@ -692,6 +754,38 @@ export const translations: Record<Lang, Dict> = {
       bannedBody: 'CloudPulse īpašnieks ierobežojis piekļuvi šim kontam. Ja tā ir kļūda, sazinies ar komandu.',
       backToLogin: 'Uz pieslēgšanās lapu',
     },
+    shield: {
+      title: 'Safety Pass',
+      blockedHeading: 'Slodze ierobežota',
+      cautionHeading: 'Nepieciešama piesardzība',
+      showToTeacher: 'Parādi šo ekrānu sporta skolotājam vai trenerim. Viņš noskenēs QR kodu un redzēs apstiprinātu statusu.',
+      validUntil: (date: string) => `Derīgs tikai ${date}`,
+      passId: 'Caurlaides ID',
+      qrUnavailable: 'QR kods īslaicīgi nav pieejams: serveris nav iestatīts caurlaižu parakstīšanai.',
+      loadError: 'Neizdevās pārbaudīt caurlaides statusu',
+      dirPain: (zone: string | null) =>
+        `Reģistrētas sāpes${zone ? ` (${zone})` : ''}. Spēka un augstas intensitātes slodze ir bloķēta. Parādies ārstam, skolas medmāsai vai fizioterapeitam.`,
+      dirMatchDay: 'Šodien spēle: tikai aktivizācija un viegla iesildīšanās, bez spēka darba.',
+      dirPreMatch: 'Rīt spēle: smagi spēka un augstas intensitātes intervāli ir aizliegti.',
+      dirPostMatch: 'Vakar bija spēle: šodien atjaunošanās, nevis spēka treniņš.',
+      dirLoad: (acwr: string) =>
+        `Nedēļas slodze ir ${acwr} reizes lielāka par tavu parasto. Traumu risks ir paaugstināts: samazini intensitāti.`,
+      verifyTitle: 'Safety Pass pārbaude',
+      verifyChecking: 'Pārbaudu parakstu…',
+      verifyValid: 'Īsta CloudPulse caurlaide',
+      verifyInvalid: 'Caurlaide nav derīga',
+      verifyInvalidBody: 'Paraksts nesakrīt: šo QR kodu nav izsniedzis CloudPulse vai tas ir mainīts.',
+      verifyExpired: (date: string) => `Caurlaide bija derīga ${date} un šodien vairs nav derīga.`,
+      verifyStatusBlock: 'Slodze ierobežota',
+      verifyStatusCaution: 'Ieteicama piesardzība',
+      verifyDate: 'Datums',
+      rPain: 'Veselības dēļ: bez spēka un augstas intensitātes slodzes',
+      rMatchDay: 'Spēles diena: tikai iesildīšanās un aktivizācija',
+      rPreMatch: 'Dienu pirms spēles: bez smagas spēka slodzes',
+      rPostMatch: 'Pēc spēles: tikai atjaunojoša slodze',
+      rLoad: 'Straujš slodzes pieaugums: ieteicams samazināt intensitāti',
+      verifyNote: 'Statusu aprēķinājusi CloudPulse sistēma pēc sportista ikdienas pārbaudes. Veselības detaļas netiek atklātas.',
+    },
     coach: {
       navLabel: 'Treneris',
       title: 'Trenera panelis',
@@ -953,6 +1047,38 @@ export const translations: Record<Lang, Dict> = {
       bannedTitle: 'Access revoked',
       bannedBody: 'The CloudPulse owner has restricted access for this account. If this seems wrong, reach out to the team.',
       backToLogin: 'Back to sign in',
+    },
+    shield: {
+      title: 'Safety Pass',
+      blockedHeading: 'Training restricted',
+      cautionHeading: 'Caution advised',
+      showToTeacher: 'Show this screen to your PE teacher or coach. They scan the QR code and see a verified status.',
+      validUntil: (date: string) => `Valid only on ${date}`,
+      passId: 'Pass ID',
+      qrUnavailable: 'QR code temporarily unavailable: the server is not set up to sign passes.',
+      loadError: 'Could not check your pass status',
+      dirPain: (zone: string | null) =>
+        `Pain reported${zone ? ` (${zone})` : ''}. Strength and high-intensity work is blocked. See a doctor, the school nurse or a physiotherapist.`,
+      dirMatchDay: 'Match day: activation and a light warm-up only, no strength work.',
+      dirPreMatch: 'Match tomorrow: heavy strength and high-intensity intervals are off limits.',
+      dirPostMatch: 'Match yesterday: today is recovery, not strength work.',
+      dirLoad: (acwr: string) =>
+        `This week's load is ${acwr}× your usual. Injury risk is elevated: lower the intensity.`,
+      verifyTitle: 'Safety Pass check',
+      verifyChecking: 'Checking signature…',
+      verifyValid: 'Genuine CloudPulse pass',
+      verifyInvalid: 'Pass is not valid',
+      verifyInvalidBody: "The signature doesn't match: this QR code wasn't issued by CloudPulse or has been altered.",
+      verifyExpired: (date: string) => `This pass was valid on ${date} and is no longer valid today.`,
+      verifyStatusBlock: 'Training restricted',
+      verifyStatusCaution: 'Caution advised',
+      verifyDate: 'Date',
+      rPain: 'Health reasons: no strength or high-intensity work',
+      rMatchDay: 'Match day: warm-up and activation only',
+      rPreMatch: 'Day before a match: no heavy strength work',
+      rPostMatch: 'After a match: recovery load only',
+      rLoad: 'Sharp load increase: lower the intensity',
+      verifyNote: "Status calculated by CloudPulse from the athlete's daily check-in. No health details are disclosed.",
     },
     coach: {
       navLabel: 'Coach',

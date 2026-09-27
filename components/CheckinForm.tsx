@@ -185,7 +185,7 @@ function Toggle({
   );
 }
 
-export default function CheckinForm() {
+export default function CheckinForm({ onSubmitted }: { onSubmitted?: () => void } = {}) {
   const router = useRouter();
   const { t } = useLanguage();
   const reduce = useReducedMotion();
@@ -255,6 +255,7 @@ export default function CheckinForm() {
 
       const data: CheckinApiResponse = await res.json();
       setResult(data);
+      onSubmitted?.();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong');
     } finally {
