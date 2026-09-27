@@ -14,7 +14,7 @@ export default function Nav() {
   const pathname = usePathname();
   const { lang, setLang, t } = useLanguage();
   const [isAdmin, setIsAdmin] = useState(false);
-  const [isCoach, setIsCoach] = useState(false);
+  const [role, setRole] = useState<string | null>(null);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -26,15 +26,24 @@ export default function Nav() {
         .select('role')
         .eq('id', userId)
         .maybeSingle()
-        .then(({ data: profile }) => setIsCoach(profile?.role === 'coach'));
+        .then(({ data: profile }) => setRole(profile?.role ?? null));
     });
   }, []);
 
+  const isCoach = role === 'coach';
+  const isParent = role === 'parent';
+
+  // A parent only has the parent view: the athlete pages would show them
+  // an empty profile of their own, not their child's data.
   const links = [
-    { href: '/chat', label: t.nav.chat },
-    { href: '/checkin', label: t.nav.checkin },
-    { href: '/progress', label: t.nav.progress },
-    { href: '/calendar', label: t.nav.calendar },
+    ...(isParent
+      ? [{ href: '/parent', label: t.parent.navLabel }]
+      : [
+          { href: '/chat', label: t.nav.chat },
+          { href: '/checkin', label: t.nav.checkin },
+          { href: '/progress', label: t.nav.progress },
+          { href: '/calendar', label: t.nav.calendar },
+        ]),
     ...(isCoach ? [{ href: '/coach', label: t.coach.navLabel }] : []),
     ...(isAdmin ? [{ href: '/admin', label: t.admin.navLabel }] : []),
   ];
@@ -49,7 +58,7 @@ export default function Nav() {
       <nav className="max-w-5xl mx-auto rounded-2xl bg-[#0D0F13]/75 backdrop-blur-2xl border border-white/[0.08] shadow-xl shadow-black/20">
         <div className="px-4 md:px-6 h-14 flex items-center justify-between gap-4">
           <div className="flex items-center gap-6">
-            <Link href="/chat" className="flex items-center gap-2 shrink-0">
+            <Link href={isParent ? '/parent' : '/chat'} className="flex items-center gap-2 shrink-0">
               <div className="h-7 w-7 rounded-lg bg-[#CCFF00] text-zinc-950 flex items-center justify-center">
                 <Lightning size={15} weight="fill" />
               </div>

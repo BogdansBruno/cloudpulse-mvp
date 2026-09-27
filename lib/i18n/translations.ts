@@ -258,6 +258,34 @@ type Dict = {
     howExam: string;
     howMatch: string;
   };
+  parent: {
+    navLabel: string;
+    title: string;
+    subtitle: string;
+    loading: string;
+    errLoad: string;
+    empty: string;
+    athleteFallback: string;
+    noConsentTitle: string;
+    noConsentBody: (name: string) => string;
+    noCheckin: string;
+    statusGreen: string;
+    statusYellow: string;
+    statusRed: string;
+    restricted: string;
+    todayLabel: string;
+    privacyTitle: string;
+    privacyBody: string;
+  };
+  consent: {
+    title: string;
+    body: (parent: string) => string;
+    on: string;
+    off: string;
+    changed: (date: string) => string;
+    parentFallback: string;
+    errSave: string;
+  };
   admin: {
     title: string;
     subtitle: string;
@@ -596,6 +624,37 @@ export const translations: Record<Lang, Dict> = {
       howExam: 'Контрольная или экзамен: за 3 дня до даты и в сам день балл готовности снижается на 15. Учебный стресс тоже нагрузка.',
       howMatch: 'Матч: накануне, в день матча и на следующий день Safety Guard запрещает тяжёлые нагрузки.',
     },
+    parent: {
+      navLabel: 'Родителям',
+      title: 'Кабинет родителя',
+      subtitle: 'Общий статус готовности на сегодня.',
+      loading: 'Загружаю...',
+      errLoad: 'Не удалось загрузить статус.',
+      empty: 'К твоему аккаунту пока не привязан спортсмен. Связь создаёт школа или тренер.',
+      athleteFallback: 'Спортсмен',
+      noConsentTitle: 'Доступ закрыт',
+      noConsentBody: (name) =>
+        `${name} пока не открыл(а) доступ к своему статусу. Это можно сделать в приложении CloudPulse, раздел «Прогресс».`,
+      noCheckin: 'Сегодня чек-ина ещё не было.',
+      statusGreen: 'Готов(а) к тренировке',
+      statusYellow: 'Лучше тренироваться полегче',
+      statusRed: 'Сегодня нужен щадящий режим',
+      restricted: 'Тяжёлые нагрузки сегодня ограничены. Подробности знают сам спортсмен и тренер.',
+      todayLabel: 'Сегодня',
+      privacyTitle: 'Что ты видишь',
+      privacyBody:
+        'Только цвет дня и есть ли ограничения. Ответы о сне, стрессе и боли, баллы и тренировки остаются у спортсмена: так GDPR защищает данные о здоровье несовершеннолетних.',
+    },
+    consent: {
+      title: 'Доступ для родителей',
+      body: (parent) =>
+        `${parent} будет видеть только цвет твоего дня и есть ли ограничения. Ответы о самочувствии, боли и баллы остаются у тебя.`,
+      on: 'Доступ открыт',
+      off: 'Доступ закрыт',
+      changed: (date) => `Изменено ${date}`,
+      parentFallback: 'Родитель',
+      errSave: 'Не удалось сохранить. Попробуй ещё раз.',
+    },
     admin: {
       title: 'Панель управления',
       subtitle: 'Доступ только для владельца',
@@ -925,6 +984,37 @@ export const translations: Record<Lang, Dict> = {
       howExam: 'Kontroldarbs vai eksāmens: 3 dienas pirms datuma un pašā dienā gatavība samazinās par 15 punktiem. Mācību stress arī ir slodze.',
       howMatch: 'Spēle: dienu pirms, spēles dienā un nākamajā dienā Safety Guard aizliedz smagas slodzes.',
     },
+    parent: {
+      navLabel: 'Vecākiem',
+      title: 'Vecāku skats',
+      subtitle: 'Šodienas gatavības kopējais statuss.',
+      loading: 'Ielādēju...',
+      errLoad: 'Neizdevās ielādēt statusu.',
+      empty: 'Tavam kontam vēl nav piesaistīts sportists. Saiti izveido skola vai treneris.',
+      athleteFallback: 'Sportists',
+      noConsentTitle: 'Piekļuve slēgta',
+      noConsentBody: (name) =>
+        `${name} vēl nav atvēris(-usi) piekļuvi savam statusam. To var izdarīt CloudPulse lietotnē, sadaļā «Progress».`,
+      noCheckin: 'Šodien pārbaude vēl nav veikta.',
+      statusGreen: 'Gatavs(-a) treniņam',
+      statusYellow: 'Labāk trenēties vieglāk',
+      statusRed: 'Šodien vajadzīgs saudzīgs režīms',
+      restricted: 'Smagas slodzes šodien ir ierobežotas. Sīkāk zina pats sportists un treneris.',
+      todayLabel: 'Šodien',
+      privacyTitle: 'Ko tu redzi',
+      privacyBody:
+        'Tikai dienas krāsu un to, vai ir ierobežojumi. Atbildes par miegu, stresu un sāpēm, punkti un treniņi paliek pie sportista: tā GDPR aizsargā nepilngadīgo veselības datus.',
+    },
+    consent: {
+      title: 'Piekļuve vecākiem',
+      body: (parent) =>
+        `${parent} redzēs tikai tavas dienas krāsu un to, vai ir ierobežojumi. Atbildes par pašsajūtu, sāpēm un punkti paliek pie tevis.`,
+      on: 'Piekļuve atvērta',
+      off: 'Piekļuve slēgta',
+      changed: (date) => `Mainīts ${date}`,
+      parentFallback: 'Vecāks',
+      errSave: 'Neizdevās saglabāt. Mēģini vēlreiz.',
+    },
     admin: {
       title: 'Vadības panelis',
       subtitle: 'Pieejams tikai īpašniekam',
@@ -1253,6 +1343,37 @@ export const translations: Record<Lang, Dict> = {
       howTitle: 'How this affects your score',
       howExam: 'Test or exam: from 3 days before and on the day itself, readiness drops by 15. School stress is load too.',
       howMatch: 'Match: the day before, match day and the day after, Safety Guard blocks heavy training.',
+    },
+    parent: {
+      navLabel: 'Parents',
+      title: 'Parent view',
+      subtitle: "Today's overall readiness status.",
+      loading: 'Loading...',
+      errLoad: 'Could not load the status.',
+      empty: 'No athlete is linked to your account yet. The school or coach creates the link.',
+      athleteFallback: 'Athlete',
+      noConsentTitle: 'Access closed',
+      noConsentBody: (name) =>
+        `${name} hasn't shared their status yet. They can turn it on in the CloudPulse app, under "Progress".`,
+      noCheckin: 'No check-in yet today.',
+      statusGreen: 'Ready to train',
+      statusYellow: 'Better to train lighter',
+      statusRed: 'Needs an easy day today',
+      restricted: 'Heavy training is restricted today. The athlete and coach know the details.',
+      todayLabel: 'Today',
+      privacyTitle: 'What you can see',
+      privacyBody:
+        "Only the colour of the day and whether there are restrictions. Answers about sleep, stress and pain, scores and training stay with the athlete: that's how GDPR protects minors' health data.",
+    },
+    consent: {
+      title: 'Parent access',
+      body: (parent) =>
+        `${parent} will only see the colour of your day and whether there are restrictions. Your wellness answers, pain and scores stay with you.`,
+      on: 'Access on',
+      off: 'Access off',
+      changed: (date) => `Changed ${date}`,
+      parentFallback: 'Parent',
+      errSave: 'Could not save. Try again.',
     },
     admin: {
       title: 'Control panel',

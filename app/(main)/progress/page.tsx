@@ -18,6 +18,7 @@ import type { Lang } from '@/lib/i18n/translations';
 import { generateInsight, insightMessage } from '@/lib/generate-insight';
 import type { ReadinessHistoryPoint } from '@/lib/types/readiness';
 import { ReadinessRing, zoneMeta, HUB } from '@/components/PerformancePanel';
+import ParentAccessCard from '@/components/ParentAccessCard';
 
 type HistoryPoint = ReadinessHistoryPoint;
 
@@ -444,6 +445,8 @@ export default function ProgressPage() {
             </Link>
           </div>
         )}
+
+        <ParentAccessCard />
       </div>
     </div>
   );

@@ -29,8 +29,24 @@ export default function LoginPage() {
       setError(signInError.message);
       setLoading(false);
     } else {
-      window.location.href = '/onboarding';
+      window.location.href = await homeForRole();
     }
+  };
+
+  // Parents and coaches have their own start pages; athletes go through
+  // onboarding (it pre-fills from the saved profile, so nothing is lost).
+  const homeForRole = async () => {
+    try {
+      const { data } = await supabase.auth.getSession();
+      const userId = data.session?.user?.id;
+      if (!userId) return '/onboarding';
+      const { data: profile } = await supabase.from('profiles').select('role').eq('id', userId).maybeSingle();
+      if (profile?.role === 'parent') return '/parent';
+      if (profile?.role === 'coach') return '/coach';
+    } catch {
+      // fall through to the athlete default
+    }
+    return '/onboarding';
   };
 
   const handleForgotPassword = async () => {
