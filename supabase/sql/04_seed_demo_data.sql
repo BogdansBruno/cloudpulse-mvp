@@ -24,10 +24,11 @@
 
 BEGIN;
 
--- Тренер, к которому привязывается демо-команда: единственный аккаунт с
--- ролью coach (email в файл не вписываем — файл лежит в git).
+-- Тренер, к которому привязывается демо-команда: аккаунт с ролью coach и
+-- пометкой is_demo (ставится в 08_team_invites.sql; email в файл не вписываем —
+-- файл лежит в git). Настоящие тренеры-тестеры сюда не попадают.
 CREATE TEMP TABLE _demo_coach ON COMMIT DROP AS
-  SELECT id FROM profiles WHERE role = 'coach';
+  SELECT id FROM profiles WHERE role = 'coach' AND is_demo;
 
 CREATE TEMP TABLE _demo_athletes (
   email TEXT, team_name TEXT, age INT, sport TEXT, exam_dates DATE[], match_dates DATE[]
@@ -45,7 +46,7 @@ DECLARE
   v_missing TEXT;
 BEGIN
   IF (SELECT count(*) FROM _demo_coach) <> 1 THEN
-    RAISE EXCEPTION 'Нужен ровно один аккаунт с role = coach, найдено: %', (SELECT count(*) FROM _demo_coach);
+    RAISE EXCEPTION 'Нужен ровно один демо-тренер (role = coach и is_demo), найдено: %', (SELECT count(*) FROM _demo_coach);
   END IF;
   SELECT string_agg(a.email, ', ') INTO v_missing
     FROM _demo_athletes a LEFT JOIN auth.users u ON u.email = a.email
@@ -70,10 +71,10 @@ DELETE FROM team_members WHERE coach_id = athlete_id AND coach_id IN (SELECT id 
 -- ----------------------------------------------------------------------------
 -- Профили и привязка к тренеру.
 -- ----------------------------------------------------------------------------
-INSERT INTO profiles (id, role, age, sport, exam_dates, match_dates, training_schedule, injury_history)
-SELECT id, 'athlete', age, sport, exam_dates, match_dates, '[]', '[]' FROM _demo_ids
+INSERT INTO profiles (id, role, age, sport, exam_dates, match_dates, training_schedule, injury_history, is_demo)
+SELECT id, 'athlete', age, sport, exam_dates, match_dates, '[]', '[]', TRUE FROM _demo_ids
 ON CONFLICT (id) DO UPDATE
-  SET role = 'athlete', age = EXCLUDED.age, sport = EXCLUDED.sport,
+  SET role = 'athlete', is_demo = TRUE, age = EXCLUDED.age, sport = EXCLUDED.sport,
       exam_dates = EXCLUDED.exam_dates, match_dates = EXCLUDED.match_dates;
 
 INSERT INTO team_members (coach_id, athlete_id, team_name)

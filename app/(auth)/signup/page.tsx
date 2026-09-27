@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'motion/react';
 import { Envelope, LockSimple, ArrowRight, WarningCircle, CheckCircle } from '@phosphor-icons/react';
@@ -9,6 +9,13 @@ import { useLanguage } from '@/lib/i18n/LanguageContext';
 import AuthShell from '@/components/AuthShell';
 import AuthField from '@/components/AuthField';
 import { GoogleMark, AppleMark } from '@/components/BrandIcons';
+import { safeNextPath } from '@/lib/invite';
+
+// Same ?next= rule as /login: only team-invite links survive the round trip.
+function readNext(): string | null {
+  if (typeof window === 'undefined') return null;
+  return safeNextPath(new URLSearchParams(window.location.search).get('next'));
+}
 
 export default function SignupPage() {
   const { t } = useLanguage();
@@ -18,6 +25,11 @@ export default function SignupPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [next, setNext] = useState<string | null>(null);
+
+  useEffect(() => {
+    setNext(readNext());
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,7 +54,8 @@ export default function SignupPage() {
     } else {
       setSuccess(t.auth.accountCreated);
       setTimeout(() => {
-        window.location.href = '/login';
+        const n = readNext();
+        window.location.href = n ? `/login?next=${encodeURIComponent(n)}` : '/login';
       }, 1800);
     }
   };
@@ -50,7 +63,7 @@ export default function SignupPage() {
   const handleOAuth = async (provider: 'google' | 'apple') => {
     await supabase.auth.signInWithOAuth({
       provider,
-      options: { redirectTo: `${window.location.origin}/onboarding` },
+      options: { redirectTo: `${window.location.origin}${readNext() ?? '/onboarding'}` },
     });
   };
 
@@ -138,7 +151,10 @@ export default function SignupPage() {
 
       <p className="mt-6 text-center text-sm text-zinc-500">
         {t.auth.haveAccount}{' '}
-        <Link href="/login" className="text-[#CCFF00] hover:brightness-110 font-medium">
+        <Link
+          href={next ? `/login?next=${encodeURIComponent(next)}` : '/login'}
+          className="text-[#CCFF00] hover:brightness-110 font-medium"
+        >
           {t.auth.signIn}
         </Link>
       </p>

@@ -286,6 +286,65 @@ type Dict = {
     parentFallback: string;
     errSave: string;
   };
+  invite: {
+    joinTitle: string;
+    joinSubtitle: string;
+    checking: string;
+    teamLabel: string;
+    signInToJoin: string;
+    createAccount: string;
+    signIn: string;
+    signedInAs: (email: string) => string;
+    switchAccount: string;
+    labelField: string;
+    labelPlaceholder: string;
+    labelHint: string;
+    coachSeesTitle: string;
+    coachSees: string[];
+    leaveHint: string;
+    agree: string;
+    join: string;
+    joining: string;
+    joinedTitle: (team: string) => string;
+    joinedBody: string;
+    alreadyMember: (team: string) => string;
+    continue: string;
+    errInvalid: string;
+    errNotAthlete: string;
+    errOwnTeam: string;
+    errLabel: string;
+    errGeneric: string;
+    panelTitle: string;
+    panelHint: string;
+    teamName: string;
+    teamNamePlaceholder: string;
+    createTeam: string;
+    creating: string;
+    addTeam: string;
+    cancel: string;
+    members: (n: number) => string;
+    scanHint: string;
+    codeLabel: string;
+    copyLink: string;
+    copied: string;
+    fullscreen: string;
+    close: string;
+    accepting: string;
+    acceptingOn: string;
+    acceptingOff: string;
+    newCode: string;
+    newCodeConfirm: string;
+    confirm: string;
+    errCreate: string;
+    errAction: string;
+    cardTitle: string;
+    cardNone: string;
+    cardLabel: (label: string) => string;
+    cardCoachSees: string;
+    leave: string;
+    leaveConfirm: (team: string) => string;
+    errLeave: string;
+  };
   engine: {
     penaltyAcwrSpike: (acwr: string) => string;
     penaltyAcwrRising: (acwr: string) => string;
@@ -577,7 +636,7 @@ export const translations: Record<Lang, Dict> = {
       subtitle: 'Готовность атлетов твоей команды',
       emptyTitle: 'Пока нет привязанных атлетов',
       emptyBody:
-        'Связь тренер—атлет пока создаётся вручную через базу данных (таблица team_members). Как только появится первая запись, атлет отобразится здесь.',
+        'Создай команду выше и покажи спортсменам QR-код — как только кто-то вступит, он появится здесь.',
       loadingRoster: 'Загружаю список атлетов...',
       errorRoster: 'Не удалось загрузить список атлетов',
       pickAthlete: 'Выбери атлета',
@@ -669,6 +728,81 @@ export const translations: Record<Lang, Dict> = {
       changed: (date) => `Изменено ${date}`,
       parentFallback: 'Родитель',
       errSave: 'Не удалось сохранить. Попробуй ещё раз.',
+    },
+    invite: {
+      joinTitle: 'Приглашение в команду',
+      joinSubtitle: 'Тренер приглашает тебя в CloudPulse',
+      checking: 'Проверяю приглашение…',
+      teamLabel: 'Команда',
+      signInToJoin: 'Чтобы вступить, войди в аккаунт или создай новый — это займёт минуту.',
+      createAccount: 'Создать аккаунт',
+      signIn: 'У меня уже есть аккаунт',
+      signedInAs: (email) => `Ты вошёл как ${email}`,
+      switchAccount: 'Сменить аккаунт',
+      labelField: 'Как тебя подписать для тренера',
+      labelPlaceholder: 'Например: Макс К.',
+      labelHint: 'Имя или ник — его видит только твой тренер.',
+      coachSeesTitle: 'Что будет видеть тренер',
+      coachSees: [
+        'Твой балл готовности и зону дня',
+        'Ответы чек-ина: сон, стресс, усталость, мышцы, боль',
+        'Тренировки, даты экзаменов и матчей',
+        'Профиль: возраст, вид спорта, прошлые травмы',
+      ],
+      leaveHint: 'Выйти из команды можно в любой момент в разделе «Прогресс» — доступ тренера сразу закроется.',
+      agree: 'Понятно, согласен(на)',
+      join: 'Вступить в команду',
+      joining: 'Вступаю…',
+      joinedTitle: (team) => `Ты в команде «${team}»!`,
+      joinedBody: 'Тренер уже видит тебя в списке. Каждый твой чек-ин помогает ему вовремя заметить перегрузку.',
+      alreadyMember: (team) => `Ты уже состоишь в команде «${team}».`,
+      continue: 'Продолжить',
+      errInvalid: 'Приглашение недействительно: код устарел или тренер закрыл приём. Попроси у тренера новый QR-код.',
+      errNotAthlete: 'Вступить в команду может только аккаунт спортсмена. Сейчас ты вошёл как тренер или родитель.',
+      errOwnTeam: 'Это твоя собственная команда — вступать в неё не нужно.',
+      errLabel: 'Напиши, как тебя подписать (до 40 символов).',
+      errGeneric: 'Что-то пошло не так. Проверь интернет и попробуй ещё раз.',
+      panelTitle: 'Команды и приглашения',
+      panelHint: 'Покажи QR-код команде — спортсмены вступят сами за полминуты. Добавлять никого вручную не нужно.',
+      teamName: 'Название команды',
+      teamNamePlaceholder: 'Например: RFS U17',
+      createTeam: 'Создать команду',
+      creating: 'Создаю…',
+      addTeam: 'Ещё команда',
+      cancel: 'Отмена',
+      members: (n) => {
+        if (n === 0) return 'Пока никто не вступил';
+        const m10 = n % 10;
+        const m100 = n % 100;
+        const word =
+          m10 === 1 && m100 !== 11
+            ? 'спортсмен'
+            : m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14)
+              ? 'спортсмена'
+              : 'спортсменов';
+        return `${n} ${word}`;
+      },
+      scanHint: 'Наведи камеру телефона на код',
+      codeLabel: 'Код',
+      copyLink: 'Скопировать ссылку',
+      copied: 'Скопировано',
+      fullscreen: 'На весь экран',
+      close: 'Закрыть',
+      accepting: 'Приём в команду',
+      acceptingOn: 'Открыт',
+      acceptingOff: 'Закрыт — по коду вступить нельзя',
+      newCode: 'Новый код',
+      newCodeConfirm: 'Старый QR-код сразу перестанет работать. Уже вступившие останутся в команде.',
+      confirm: 'Создать новый код',
+      errCreate: 'Не удалось создать команду. Попробуй ещё раз.',
+      errAction: 'Не удалось сохранить. Попробуй ещё раз.',
+      cardTitle: 'Моя команда',
+      cardNone: 'Ты пока не в команде. Попроси у тренера QR-код — вступление займёт полминуты.',
+      cardLabel: (label) => `У тренера ты подписан как «${label}»`,
+      cardCoachSees: 'Тренер видит твои чек-ины, тренировки и статус готовности.',
+      leave: 'Выйти из команды',
+      leaveConfirm: (team) => `Выйти из «${team}»? Тренер перестанет видеть твои данные.`,
+      errLeave: 'Не удалось выйти из команды. Попробуй ещё раз.',
     },
     engine: {
       penaltyAcwrSpike: (acwr) => `ACWR ${acwr} — резкий скачок нагрузки (риск травмы)`,
@@ -959,7 +1093,7 @@ export const translations: Record<Lang, Dict> = {
       subtitle: 'Tavas komandas atlētu gatavība',
       emptyTitle: 'Vēl nav piesaistītu atlētu',
       emptyBody:
-        'Treneris—atlēts saikne pagaidām tiek izveidota manuāli datubāzē (tabula team_members). Tiklīdz parādīsies pirmais ieraksts, atlēts būs redzams šeit.',
+        'Izveido komandu augstāk un parādi sportistiem QR kodu — tiklīdz kāds pievienosies, viņš parādīsies šeit.',
       loadingRoster: 'Ielādēju atlētu sarakstu...',
       errorRoster: 'Neizdevās ielādēt atlētu sarakstu',
       pickAthlete: 'Izvēlies atlētu',
@@ -1046,6 +1180,73 @@ export const translations: Record<Lang, Dict> = {
       changed: (date) => `Mainīts ${date}`,
       parentFallback: 'Vecāks',
       errSave: 'Neizdevās saglabāt. Mēģini vēlreiz.',
+    },
+    invite: {
+      joinTitle: 'Uzaicinājums komandā',
+      joinSubtitle: 'Treneris aicina tevi pievienoties CloudPulse',
+      checking: 'Pārbaudu uzaicinājumu…',
+      teamLabel: 'Komanda',
+      signInToJoin: 'Lai pievienotos, ienāc kontā vai izveido jaunu — tas aizņems minūti.',
+      createAccount: 'Izveidot kontu',
+      signIn: 'Man jau ir konts',
+      signedInAs: (email) => `Tu esi ienācis kā ${email}`,
+      switchAccount: 'Mainīt kontu',
+      labelField: 'Kā tevi parakstīt trenerim',
+      labelPlaceholder: 'Piemēram: Maksis K.',
+      labelHint: 'Vārds vai segvārds — to redz tikai tavs treneris.',
+      coachSeesTitle: 'Ko redzēs treneris',
+      coachSees: [
+        'Tavu gatavības punktu skaitu un dienas zonu',
+        'Pārbaudes atbildes: miegs, stress, nogurums, muskuļi, sāpes',
+        'Treniņus, eksāmenu un spēļu datumus',
+        'Profilu: vecumu, sporta veidu, iepriekšējās traumas',
+      ],
+      leaveHint: 'Izstāties no komandas var jebkurā brīdī sadaļā «Progress» — trenera piekļuve uzreiz tiks slēgta.',
+      agree: 'Skaidrs, piekrītu',
+      join: 'Pievienoties komandai',
+      joining: 'Pievienojos…',
+      joinedTitle: (team) => `Tu esi komandā «${team}»!`,
+      joinedBody: 'Treneris tevi jau redz sarakstā. Katra tava pārbaude palīdz viņam laikus pamanīt pārslodzi.',
+      alreadyMember: (team) => `Tu jau esi komandā «${team}».`,
+      continue: 'Turpināt',
+      errInvalid: 'Uzaicinājums nav derīgs: kods ir novecojis vai treneris ir slēdzis pieteikšanos. Palūdz trenerim jaunu QR kodu.',
+      errNotAthlete: 'Komandai var pievienoties tikai sportista konts. Pašlaik tu esi ienācis kā treneris vai vecāks.',
+      errOwnTeam: 'Šī ir tava paša komanda — tai nav jāpievienojas.',
+      errLabel: 'Uzraksti, kā tevi parakstīt (līdz 40 rakstzīmēm).',
+      errGeneric: 'Kaut kas nogāja greizi. Pārbaudi internetu un mēģini vēlreiz.',
+      panelTitle: 'Komandas un uzaicinājumi',
+      panelHint: 'Parādi QR kodu komandai — sportisti pievienosies paši pusminūtes laikā. Nevienu nav jāpievieno manuāli.',
+      teamName: 'Komandas nosaukums',
+      teamNamePlaceholder: 'Piemēram: RFS U17',
+      createTeam: 'Izveidot komandu',
+      creating: 'Veidoju…',
+      addTeam: 'Vēl viena komanda',
+      cancel: 'Atcelt',
+      members: (n) => {
+        if (n === 0) return 'Vēl neviens nav pievienojies';
+        return `${n} ${n % 10 === 1 && n % 100 !== 11 ? 'sportists' : 'sportisti'}`;
+      },
+      scanHint: 'Notēmē telefona kameru uz kodu',
+      codeLabel: 'Kods',
+      copyLink: 'Kopēt saiti',
+      copied: 'Nokopēts',
+      fullscreen: 'Pilnekrāns',
+      close: 'Aizvērt',
+      accepting: 'Pieteikšanās komandā',
+      acceptingOn: 'Atvērta',
+      acceptingOff: 'Slēgta — ar kodu pievienoties nevar',
+      newCode: 'Jauns kods',
+      newCodeConfirm: 'Vecais QR kods uzreiz pārstās darboties. Jau pievienojušies paliks komandā.',
+      confirm: 'Izveidot jaunu kodu',
+      errCreate: 'Neizdevās izveidot komandu. Mēģini vēlreiz.',
+      errAction: 'Neizdevās saglabāt. Mēģini vēlreiz.',
+      cardTitle: 'Mana komanda',
+      cardNone: 'Tu vēl neesi komandā. Palūdz trenerim QR kodu — pievienošanās aizņems pusminūti.',
+      cardLabel: (label) => `Trenerim tu esi parakstīts kā «${label}»`,
+      cardCoachSees: 'Treneris redz tavas pārbaudes, treniņus un gatavības statusu.',
+      leave: 'Izstāties no komandas',
+      leaveConfirm: (team) => `Izstāties no «${team}»? Treneris vairs neredzēs tavus datus.`,
+      errLeave: 'Neizdevās izstāties no komandas. Mēģini vēlreiz.',
     },
     engine: {
       penaltyAcwrSpike: (acwr) => `ACWR ${acwr} — straujš slodzes lēciens (traumas risks)`,
@@ -1336,7 +1537,7 @@ export const translations: Record<Lang, Dict> = {
       subtitle: "Your team's athlete readiness",
       emptyTitle: 'No athletes linked yet',
       emptyBody:
-        'Coach-athlete links are currently created manually in the database (the team_members table). Once the first link exists, the athlete will show up here.',
+        'Create a team above and show your athletes the QR code — as soon as someone joins, they will appear here.',
       loadingRoster: 'Loading your roster...',
       errorRoster: 'Could not load the athlete roster',
       pickAthlete: 'Pick an athlete',
@@ -1423,6 +1624,70 @@ export const translations: Record<Lang, Dict> = {
       changed: (date) => `Changed ${date}`,
       parentFallback: 'Parent',
       errSave: 'Could not save. Try again.',
+    },
+    invite: {
+      joinTitle: 'Team invitation',
+      joinSubtitle: 'Your coach is inviting you to CloudPulse',
+      checking: 'Checking the invitation…',
+      teamLabel: 'Team',
+      signInToJoin: 'To join, sign in or create an account — it takes a minute.',
+      createAccount: 'Create account',
+      signIn: 'I already have an account',
+      signedInAs: (email) => `Signed in as ${email}`,
+      switchAccount: 'Switch account',
+      labelField: 'How your coach should see your name',
+      labelPlaceholder: 'e.g. Max K.',
+      labelHint: 'A name or nickname — only your coach sees it.',
+      coachSeesTitle: 'What your coach will see',
+      coachSees: [
+        'Your readiness score and zone for the day',
+        'Check-in answers: sleep, stress, fatigue, soreness, pain',
+        'Training sessions, exam and match dates',
+        'Profile: age, sport, past injuries',
+      ],
+      leaveHint: 'You can leave the team any time under “Progress” — your coach loses access immediately.',
+      agree: 'Got it, I agree',
+      join: 'Join the team',
+      joining: 'Joining…',
+      joinedTitle: (team) => `You're in “${team}”!`,
+      joinedBody: 'Your coach can already see you on the roster. Every check-in helps them spot overload in time.',
+      alreadyMember: (team) => `You're already on “${team}”.`,
+      continue: 'Continue',
+      errInvalid: 'This invitation is no longer valid: the code has changed or the coach closed sign-ups. Ask your coach for a new QR code.',
+      errNotAthlete: 'Only an athlete account can join a team. You are signed in as a coach or parent.',
+      errOwnTeam: "This is your own team — you don't need to join it.",
+      errLabel: 'Enter the name your coach should see (up to 40 characters).',
+      errGeneric: 'Something went wrong. Check your connection and try again.',
+      panelTitle: 'Teams & invitations',
+      panelHint: 'Show the QR code to your team — athletes join on their own in 30 seconds. No manual setup needed.',
+      teamName: 'Team name',
+      teamNamePlaceholder: 'e.g. RFS U17',
+      createTeam: 'Create team',
+      creating: 'Creating…',
+      addTeam: 'Another team',
+      cancel: 'Cancel',
+      members: (n) => (n === 0 ? 'No one has joined yet' : `${n} athlete${n === 1 ? '' : 's'}`),
+      scanHint: 'Point a phone camera at the code',
+      codeLabel: 'Code',
+      copyLink: 'Copy link',
+      copied: 'Copied',
+      fullscreen: 'Full screen',
+      close: 'Close',
+      accepting: 'Accepting new members',
+      acceptingOn: 'Open',
+      acceptingOff: 'Closed — the code cannot be used',
+      newCode: 'New code',
+      newCodeConfirm: 'The old QR code will stop working immediately. Athletes who already joined stay on the team.',
+      confirm: 'Create new code',
+      errCreate: 'Could not create the team. Try again.',
+      errAction: 'Could not save. Try again.',
+      cardTitle: 'My team',
+      cardNone: "You're not on a team yet. Ask your coach for the QR code — joining takes 30 seconds.",
+      cardLabel: (label) => `Your coach sees you as “${label}”`,
+      cardCoachSees: 'Your coach sees your check-ins, training sessions and readiness status.',
+      leave: 'Leave team',
+      leaveConfirm: (team) => `Leave “${team}”? Your coach will no longer see your data.`,
+      errLeave: 'Could not leave the team. Try again.',
     },
     engine: {
       penaltyAcwrSpike: (acwr) => `ACWR ${acwr} — sharp load spike (injury risk)`,

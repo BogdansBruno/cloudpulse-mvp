@@ -19,6 +19,7 @@ import { generateInsight, insightMessage } from '@/lib/generate-insight';
 import type { ReadinessHistoryPoint } from '@/lib/types/readiness';
 import { ReadinessRing, zoneMeta, HUB } from '@/components/PerformancePanel';
 import ParentAccessCard from '@/components/ParentAccessCard';
+import TeamMembershipCard from '@/components/TeamMembershipCard';
 
 type HistoryPoint = ReadinessHistoryPoint;
 
@@ -446,6 +447,7 @@ export default function ProgressPage() {
           </div>
         )}
 
+        <TeamMembershipCard />
         <ParentAccessCard />
       </div>
     </div>

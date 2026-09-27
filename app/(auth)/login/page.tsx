@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'motion/react';
 import { Envelope, LockSimple, ArrowRight, WarningCircle, CheckCircle } from '@phosphor-icons/react';
@@ -9,6 +9,14 @@ import { useLanguage } from '@/lib/i18n/LanguageContext';
 import AuthShell from '@/components/AuthShell';
 import AuthField from '@/components/AuthField';
 import { GoogleMark, AppleMark } from '@/components/BrandIcons';
+import { safeNextPath } from '@/lib/invite';
+
+// ?next= is honoured only for team-invite links (see safeNextPath), so an
+// athlete who scanned a coach's QR lands back on the invite after signing in.
+function readNext(): string | null {
+  if (typeof window === 'undefined') return null;
+  return safeNextPath(new URLSearchParams(window.location.search).get('next'));
+}
 
 export default function LoginPage() {
   const { t } = useLanguage();
@@ -17,6 +25,11 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [resetNotice, setResetNotice] = useState('');
+  const [next, setNext] = useState<string | null>(null);
+
+  useEffect(() => {
+    setNext(readNext());
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,7 +42,7 @@ export default function LoginPage() {
       setError(signInError.message);
       setLoading(false);
     } else {
-      window.location.href = await homeForRole();
+      window.location.href = readNext() ?? (await homeForRole());
     }
   };
 
@@ -67,7 +80,7 @@ export default function LoginPage() {
   const handleOAuth = async (provider: 'google' | 'apple') => {
     await supabase.auth.signInWithOAuth({
       provider,
-      options: { redirectTo: `${window.location.origin}/chat` },
+      options: { redirectTo: `${window.location.origin}${readNext() ?? '/chat'}` },
     });
   };
 
@@ -155,7 +168,10 @@ export default function LoginPage() {
 
       <p className="mt-6 text-center text-sm text-zinc-500">
         {t.auth.noAccount}{' '}
-        <Link href="/signup" className="text-[#CCFF00] hover:brightness-110 font-medium">
+        <Link
+          href={next ? `/signup?next=${encodeURIComponent(next)}` : '/signup'}
+          className="text-[#CCFF00] hover:brightness-110 font-medium"
+        >
           {t.auth.signUp}
         </Link>
       </p>

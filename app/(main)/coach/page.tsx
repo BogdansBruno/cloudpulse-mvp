@@ -8,6 +8,7 @@ import { useLanguage } from '@/lib/i18n/LanguageContext';
 import { ReadinessRing, zoneMeta, loadStatus, HUB } from '@/components/PerformancePanel';
 import type { Penalty, SafetyViolation, InconsistencyFlag } from '@/lib/readiness-engine';
 import { translatePenalty, translateViolation, translateInconsistency } from '@/lib/engine-i18n';
+import TeamInvitePanel from '@/components/TeamInvitePanel';
 
 // ---------------------------------------------------------------------------
 // Coach view — the one screen in the app that actually uses the new
@@ -20,19 +21,20 @@ import { translatePenalty, translateViolation, translateInconsistency } from '@/
 // athlete is selected, call get-readiness?athlete_id=<id> to get their
 // live score, ACWR, Hooper index, monotony, streak and safety flags.
 //
-// NOTE: profiles has no name/email column yet — athletes are labelled by
-// team_name (set when the coach<->athlete link is created) or, failing
-// that, a short id fragment. Adding a friendly display name is a natural
-// next step but is out of scope here.
+// Athletes are labelled by the name they chose when joining via the coach's
+// QR code (team_members.athlete_label, 08_team_invites.sql). Older links
+// (demo seed) fall back to team_name, then to a short id fragment. Names are
+// never stored on profiles — only the coach link carries one.
 // ---------------------------------------------------------------------------
 
 const EDGE_FUNCTION_URL = 'https://pgfhvvetujsvigesueib.supabase.co/functions/v1/get-readiness';
 
-type DbTeamMemberRow = { athlete_id: string; team_name: string | null };
+type DbTeamMemberRow = { athlete_id: string; team_name: string | null; athlete_label: string | null };
 type DbProfileRow = { id: string; sport: string | null; age: number | null };
 
 type RosterEntry = {
   athleteId: string;
+  label: string | null;
   teamName: string | null;
   sport: string | null;
   age: number | null;
@@ -62,6 +64,7 @@ function loadColor(status: ReturnType<typeof loadStatus> | null) {
 }
 
 function athleteLabel(a: RosterEntry, fallback: (id: string) => string) {
+  if (a.label) return a.label;
   if (a.teamName) return a.teamName;
   if (a.sport) return `${a.sport} · ${a.athleteId.slice(0, 8)}`;
   return fallback(a.athleteId.slice(0, 8));
@@ -92,8 +95,9 @@ export default function CoachPage() {
 
         const { data: links, error: linksError } = await supabase
           .from('team_members')
-          .select('athlete_id, team_name')
-          .eq('coach_id', userId);
+          .select('athlete_id, team_name, athlete_label')
+          .eq('coach_id', userId)
+          .order('created_at');
         if (linksError) throw linksError;
 
         const teamMembers = (links ?? []) as DbTeamMemberRow[];
@@ -113,6 +117,7 @@ export default function CoachPage() {
         const profileById = new Map(profiles.map((p) => [p.id, p]));
         const merged: RosterEntry[] = teamMembers.map((l) => ({
           athleteId: l.athlete_id,
+          label: l.athlete_label ?? null,
           teamName: l.team_name ?? null,
           sport: profileById.get(l.athlete_id)?.sport ?? null,
           age: profileById.get(l.athlete_id)?.age ?? null,
@@ -192,6 +197,8 @@ export default function CoachPage() {
             {t.coach.navLabel}
           </span>
         </header>
+
+        <TeamInvitePanel />
 
         {rosterError && (
           <div className="mb-6 flex gap-3 rounded-2xl bg-[#FF4D5E]/[0.08] p-4 text-sm text-zinc-200 ring-1 ring-inset ring-[#FF4D5E]/30">
