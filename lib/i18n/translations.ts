@@ -12,6 +12,7 @@ type Dict = {
     chat: string;
     checkin: string;
     progress: string;
+    calendar: string;
     signOut: string;
   };
   chat: {
@@ -222,6 +223,41 @@ type Dict = {
     rLoad: string;
     verifyNote: string;
   };
+  calendar: {
+    title: string;
+    subtitle: string;
+    addTitle: string;
+    typeExam: string;
+    typeMatch: string;
+    datePlaceholder: string;
+    subjectLabel: string;
+    subjectPlaceholder: string;
+    add: string;
+    upcomingTitle: string;
+    empty: string;
+    loading: string;
+    today: string;
+    tomorrow: string;
+    yesterday: string;
+    inDays: (n: number) => string;
+    examFallback: string;
+    matchTitle: string;
+    effectExamNow: string;
+    effectExamLater: string;
+    effectMatchNow: string;
+    effectMatchLater: string;
+    remove: string;
+    saving: string;
+    saved: string;
+    errLoad: string;
+    errSave: string;
+    errDate: string;
+    errDuplicate: string;
+    pastNote: (n: number) => string;
+    howTitle: string;
+    howExam: string;
+    howMatch: string;
+  };
   admin: {
     title: string;
     subtitle: string;
@@ -294,7 +330,7 @@ type Dict = {
 
 export const translations: Record<Lang, Dict> = {
   ru: {
-    nav: { brand: 'CloudPulse', chat: 'Чат', checkin: 'Чек-ин', progress: 'Прогресс', signOut: 'Выйти' },
+    nav: { brand: 'CloudPulse', chat: 'Чат', checkin: 'Чек-ин', progress: 'Прогресс', calendar: 'Календарь', signOut: 'Выйти' },
     chat: {
       title: 'CloudPulse Coach',
       subtitle: 'Твой AI-партнёр по тренировкам',
@@ -520,6 +556,46 @@ export const translations: Record<Lang, Dict> = {
       inconsistencyTitle: 'Несостыковки в самооценке',
       forbidden: 'Нет доступа к данным этого атлета',
     },
+    calendar: {
+      title: 'Школьный календарь',
+      subtitle: 'Контрольные, экзамены и матчи. CloudPulse учитывает их в расчёте готовности.',
+      addTitle: 'Добавить событие',
+      typeExam: 'Контрольная',
+      typeMatch: 'Матч',
+      datePlaceholder: 'Выбери дату',
+      subjectLabel: 'Предмет (необязательно)',
+      subjectPlaceholder: 'Например, математика',
+      add: 'Добавить',
+      upcomingTitle: 'Ближайшие события',
+      empty: 'Пока пусто. Добавь ближайшую контрольную или матч, и CloudPulse заранее снизит нагрузку.',
+      loading: 'Загружаю календарь...',
+      today: 'Сегодня',
+      tomorrow: 'Завтра',
+      yesterday: 'Вчера',
+      inDays: (n) => {
+        const m10 = n % 10;
+        const m100 = n % 100;
+        const word = m10 === 1 && m100 !== 11 ? 'день' : m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14) ? 'дня' : 'дней';
+        return `Через ${n} ${word}`;
+      },
+      examFallback: 'Контрольная',
+      matchTitle: 'Матч',
+      effectExamNow: 'Сейчас снижает балл готовности на 15',
+      effectExamLater: 'Учтётся за 3 дня до даты',
+      effectMatchNow: 'Safety Guard ограничивает нагрузки',
+      effectMatchLater: 'Safety Guard включится накануне',
+      remove: 'Удалить',
+      saving: 'Сохраняю...',
+      saved: 'Сохранено, балл пересчитан',
+      errLoad: 'Не удалось загрузить календарь.',
+      errSave: 'Не удалось сохранить. Попробуй ещё раз.',
+      errDate: 'Выбери дату',
+      errDuplicate: 'Это событие уже есть в календаре',
+      pastNote: (n) => `Прошедших событий в истории: ${n}`,
+      howTitle: 'Как это влияет на расчёт',
+      howExam: 'Контрольная или экзамен: за 3 дня до даты и в сам день балл готовности снижается на 15. Учебный стресс тоже нагрузка.',
+      howMatch: 'Матч: накануне, в день матча и на следующий день Safety Guard запрещает тяжёлые нагрузки.',
+    },
     admin: {
       title: 'Панель управления',
       subtitle: 'Доступ только для владельца',
@@ -588,7 +664,7 @@ export const translations: Record<Lang, Dict> = {
     common: { loading: 'Загружаю…' },
   },
   lv: {
-    nav: { brand: 'CloudPulse', chat: 'Tērzēšana', checkin: 'Pārbaude', progress: 'Progress', signOut: 'Iziet' },
+    nav: { brand: 'CloudPulse', chat: 'Tērzēšana', checkin: 'Pārbaude', progress: 'Progress', calendar: 'Kalendārs', signOut: 'Iziet' },
     chat: {
       title: 'CloudPulse Coach',
       subtitle: 'Tavs AI treniņu partneris',
@@ -814,6 +890,41 @@ export const translations: Record<Lang, Dict> = {
       inconsistencyTitle: 'Neatbilstības pašnovērtējumā',
       forbidden: 'Nav piekļuves šī atlēta datiem',
     },
+    calendar: {
+      title: 'Skolas kalendārs',
+      subtitle: 'Kontroldarbi, eksāmeni un spēles. CloudPulse tos ņem vērā gatavības aprēķinā.',
+      addTitle: 'Pievienot notikumu',
+      typeExam: 'Kontroldarbs',
+      typeMatch: 'Spēle',
+      datePlaceholder: 'Izvēlies datumu',
+      subjectLabel: 'Priekšmets (nav obligāti)',
+      subjectPlaceholder: 'Piemēram, matemātika',
+      add: 'Pievienot',
+      upcomingTitle: 'Tuvākie notikumi',
+      empty: 'Pagaidām tukšs. Pievieno tuvāko kontroldarbu vai spēli, un CloudPulse laikus samazinās slodzi.',
+      loading: 'Ielādēju kalendāru...',
+      today: 'Šodien',
+      tomorrow: 'Rīt',
+      yesterday: 'Vakar',
+      inDays: (n) => `Pēc ${n} ${n % 10 === 1 && n % 100 !== 11 ? 'dienas' : 'dienām'}`,
+      examFallback: 'Kontroldarbs',
+      matchTitle: 'Spēle',
+      effectExamNow: 'Šobrīd samazina gatavību par 15 punktiem',
+      effectExamLater: 'Tiks ņemts vērā 3 dienas pirms datuma',
+      effectMatchNow: 'Safety Guard ierobežo slodzi',
+      effectMatchLater: 'Safety Guard ieslēgsies dienu iepriekš',
+      remove: 'Dzēst',
+      saving: 'Saglabāju...',
+      saved: 'Saglabāts, gatavība pārrēķināta',
+      errLoad: 'Neizdevās ielādēt kalendāru.',
+      errSave: 'Neizdevās saglabāt. Mēģini vēlreiz.',
+      errDate: 'Izvēlies datumu',
+      errDuplicate: 'Šis notikums jau ir kalendārā',
+      pastNote: (n) => `Pagājušie notikumi vēsturē: ${n}`,
+      howTitle: 'Kā tas ietekmē aprēķinu',
+      howExam: 'Kontroldarbs vai eksāmens: 3 dienas pirms datuma un pašā dienā gatavība samazinās par 15 punktiem. Mācību stress arī ir slodze.',
+      howMatch: 'Spēle: dienu pirms, spēles dienā un nākamajā dienā Safety Guard aizliedz smagas slodzes.',
+    },
     admin: {
       title: 'Vadības panelis',
       subtitle: 'Pieejams tikai īpašniekam',
@@ -882,7 +993,7 @@ export const translations: Record<Lang, Dict> = {
     common: { loading: 'Ielādē…' },
   },
   en: {
-    nav: { brand: 'CloudPulse', chat: 'Chat', checkin: 'Check-in', progress: 'Progress', signOut: 'Sign out' },
+    nav: { brand: 'CloudPulse', chat: 'Chat', checkin: 'Check-in', progress: 'Progress', calendar: 'Calendar', signOut: 'Sign out' },
     chat: {
       title: 'CloudPulse Coach',
       subtitle: 'Your AI fitness partner for better training',
@@ -1107,6 +1218,41 @@ export const translations: Record<Lang, Dict> = {
       noSafety: 'No restrictions',
       inconsistencyTitle: 'Self-report inconsistencies',
       forbidden: "No access to this athlete's data",
+    },
+    calendar: {
+      title: 'School calendar',
+      subtitle: 'Tests, exams and matches. CloudPulse factors them into your readiness.',
+      addTitle: 'Add an event',
+      typeExam: 'Test / exam',
+      typeMatch: 'Match',
+      datePlaceholder: 'Pick a date',
+      subjectLabel: 'Subject (optional)',
+      subjectPlaceholder: 'e.g. Maths',
+      add: 'Add',
+      upcomingTitle: 'Coming up',
+      empty: 'Nothing here yet. Add your next test or match and CloudPulse will ease your load ahead of it.',
+      loading: 'Loading calendar...',
+      today: 'Today',
+      tomorrow: 'Tomorrow',
+      yesterday: 'Yesterday',
+      inDays: (n) => `In ${n} days`,
+      examFallback: 'Test',
+      matchTitle: 'Match',
+      effectExamNow: 'Lowering your readiness by 15 right now',
+      effectExamLater: 'Counts from 3 days before',
+      effectMatchNow: 'Safety Guard is limiting load',
+      effectMatchLater: 'Safety Guard turns on the day before',
+      remove: 'Remove',
+      saving: 'Saving...',
+      saved: 'Saved, readiness recalculated',
+      errLoad: 'Could not load the calendar.',
+      errSave: 'Could not save. Try again.',
+      errDate: 'Pick a date',
+      errDuplicate: 'This event is already in your calendar',
+      pastNote: (n) => `Past events in history: ${n}`,
+      howTitle: 'How this affects your score',
+      howExam: 'Test or exam: from 3 days before and on the day itself, readiness drops by 15. School stress is load too.',
+      howMatch: 'Match: the day before, match day and the day after, Safety Guard blocks heavy training.',
     },
     admin: {
       title: 'Control panel',

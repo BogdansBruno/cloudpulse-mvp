@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import {
@@ -137,6 +137,40 @@ export default function OnboardingPage() {
   const [examDates, setExamDates] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Pre-fill from the saved profile. Without this, going through onboarding
+  // again started from empty lists and saving wiped the dates already stored.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const { data } = await supabase.auth.getSession();
+        const token = data.session?.access_token;
+        const res = await fetch('/api/profile', {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
+        if (!res.ok) return;
+        const { profile } = (await res.json()) as {
+          profile?: { age?: number | null; sport?: string | null; matchDates?: string[]; examDates?: string[] };
+        };
+        if (cancelled || !profile) return;
+        if (typeof profile.age === 'number') {
+          const bracket = AGES.find((a) => Number(a.split('-')[0]) === profile.age);
+          if (bracket) setAge((cur) => cur || bracket);
+        }
+        if (profile.sport && SPORTS.some((s) => s.value === profile.sport)) {
+          setSport((cur) => cur || profile.sport!);
+        }
+        if (profile.matchDates?.length) setMatchDates((cur) => (cur.length ? cur : profile.matchDates!));
+        if (profile.examDates?.length) setExamDates((cur) => (cur.length ? cur : profile.examDates!));
+      } catch {
+        // Pre-fill is a convenience; the form still works empty.
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const goTo = (next: number) => {
     setDir(next > step ? 1 : -1);

@@ -34,6 +34,7 @@ export default function Nav() {
     { href: '/chat', label: t.nav.chat },
     { href: '/checkin', label: t.nav.checkin },
     { href: '/progress', label: t.nav.progress },
+    { href: '/calendar', label: t.nav.calendar },
     ...(isCoach ? [{ href: '/coach', label: t.coach.navLabel }] : []),
     ...(isAdmin ? [{ href: '/admin', label: t.admin.navLabel }] : []),
   ];
@@ -103,14 +104,14 @@ export default function Nav() {
         </div>
 
         {/* Mobile page links */}
-        <div className="sm:hidden flex items-center gap-1 px-3 pb-2.5">
+        <div className="sm:hidden flex items-center gap-1 overflow-x-auto px-3 pb-2.5 [scrollbar-width:none]">
           {links.map((link) => {
             const active = pathname === link.href;
             return (
               <Link
                 key={link.href}
                 href={link.href}
-                className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-300 ${
+                className={`shrink-0 whitespace-nowrap px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-300 ${
                   active ? 'bg-white/10 text-white' : 'text-zinc-400 hover:text-zinc-200'
                 }`}
               >

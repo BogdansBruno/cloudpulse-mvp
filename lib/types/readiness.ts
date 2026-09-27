@@ -97,6 +97,13 @@ export type ProfileRequestBody = {
   injuryHistory?: InjuryRecord[];
 };
 
+// PATCH /api/profile — school calendar page. Only the fields sent are changed.
+export type CalendarRequestBody = {
+  matchDates?: string[]; // ISO dates
+  examDates?: string[]; // ISO dates
+  examSubjects?: Record<string, string>; // ISO date -> label, display only
+};
+
 export type ProfileResponseBody = {
   profile: {
     age: number | null;
@@ -104,6 +111,7 @@ export type ProfileResponseBody = {
     trainingSchedule: TrainingScheduleEntry[];
     matchDates: string[];
     examDates: string[];
+    examSubjects: Record<string, string>;
     injuryHistory: InjuryRecord[];
   };
 };
