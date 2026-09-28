@@ -8,6 +8,7 @@ import {
   type DailyCheckin,
   type UserContext,
 } from '@/lib/readiness-engine';
+import { isAcceptableCheckinDate } from '@/lib/offline-queue';
 
 export const runtime = 'nodejs';
 
@@ -65,7 +66,17 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json().catch(() => ({}));
-    const date: string = typeof body?.date === 'string' ? body.date : todayIso();
+    // Offline check-ins (lib/offline-queue.ts) arrive later with the day they
+    // were filled in. Only today and the last 7 days are accepted, so a date
+    // can't be used to back-fill weeks of fake check-ins or write the future.
+    const serverToday = todayIso();
+    if (body?.date !== undefined && !isAcceptableCheckinDate(body.date, serverToday)) {
+      return NextResponse.json(
+        { error: 'Invalid date', content: 'date must be YYYY-MM-DD, not in the future and at most 7 days ago.' },
+        { status: 400 }
+      );
+    }
+    const date: string = typeof body?.date === 'string' ? body.date : serverToday;
     const { sleepQuality, stress, fatigue, soreness, painFlag, painZone, session } = body ?? {};
 
     if (![sleepQuality, stress, fatigue, soreness].every(isValidScale)) {

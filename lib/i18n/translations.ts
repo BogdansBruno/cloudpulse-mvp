@@ -402,6 +402,24 @@ type Dict = {
     teamHint: string;
     athleteStreak: (n: number) => string;
   };
+  offline: {
+    savedTitle: string;
+    savedBody: (date: string) => string;
+    noScore: string;
+    painNote: string;
+    needLogin: string;
+    offlineBanner: string;
+    pending: (n: number) => string;
+    sendNow: string;
+    sending: string;
+    synced: (n: number) => string;
+    expired: string;
+    installTitle: string;
+    installBody: string;
+    installButton: string;
+    installIos: string;
+    installClose: string;
+  };
   engine: {
     penaltyAcwrSpike: (acwr: string) => string;
     penaltyAcwrRising: (acwr: string) => string;
@@ -905,6 +923,26 @@ export const translations: Record<Lang, Dict> = {
       teamHint: 'Считается сам факт чек-ина, а не результат.',
       athleteStreak: (n) => `Серия чек-инов: ${n}`,
     },
+    offline: {
+      savedTitle: 'Сохранено на телефоне',
+      savedBody: (date) =>
+        `Интернета сейчас нет. Чек-ин за ${date} сохранён и отправится сам, когда ты снова откроешь CloudPulse с интернетом.`,
+      noScore: 'Оценку готовности движок посчитает после отправки: без твоей истории из базы мы её не выдумываем.',
+      painNote:
+        'Ты отметил(а) боль. Не тренируйся через боль и скажи тренеру или школьной медсестре — это правило работает и без интернета.',
+      needLogin: 'Без интернета чек-ин можно сохранить, только если ты уже входил(а) в аккаунт на этом телефоне.',
+      offlineBanner: 'Нет сети. Чек-ин всё равно можно заполнить — он сохранится на телефоне.',
+      pending: (n) => `${n} ${n === 1 ? 'чек-ин ждёт' : n < 5 ? 'чек-ина ждут' : 'чек-инов ждут'} отправки`,
+      sendNow: 'Отправить',
+      sending: 'Отправляю…',
+      synced: (n) => (n === 1 ? 'Офлайн-чек-ин отправлен' : `Отправлено офлайн-чек-инов: ${n}`),
+      expired: 'Чек-ин старше 7 дней не отправлен — такие сервер не принимает.',
+      installTitle: 'Установи CloudPulse на телефон',
+      installBody: 'Иконка на главном экране и чек-ин даже без интернета.',
+      installButton: 'Установить',
+      installIos: 'В Safari нажми «Поделиться», затем «На экран „Домой“».',
+      installClose: 'Закрыть',
+    },
     engine: {
       penaltyAcwrSpike: (acwr) => `ACWR ${acwr} — резкий скачок нагрузки (риск травмы)`,
       penaltyAcwrRising: (acwr) => `ACWR ${acwr} — нагрузка растёт быстрее обычного`,
@@ -1393,6 +1431,26 @@ export const translations: Record<Lang, Dict> = {
       teamHint: 'Tiek skaitīts tikai pārbaudes fakts, nevis rezultāts.',
       athleteStreak: (n) => `Pārbaužu sērija: ${n}`,
     },
+    offline: {
+      savedTitle: 'Saglabāts telefonā',
+      savedBody: (date) =>
+        `Internets šobrīd nav pieejams. Pārbaude par ${date} ir saglabāta un tiks nosūtīta pati, kad atkal atvērsi CloudPulse ar internetu.`,
+      noScore: 'Gatavības novērtējumu dzinējs aprēķinās pēc nosūtīšanas: bez tavas vēstures no datubāzes mēs to neizdomājam.',
+      painNote:
+        'Tu atzīmēji sāpes. Netrenējies caur sāpēm un pasaki trenerim vai skolas medmāsai — šis noteikums darbojas arī bez interneta.',
+      needLogin: 'Bez interneta pārbaudi var saglabāt tikai tad, ja šajā telefonā jau esi pieslēdzies savam kontam.',
+      offlineBanner: 'Nav tīkla. Pārbaudi vari aizpildīt tāpat — tā saglabāsies telefonā.',
+      pending: (n) => (n === 1 ? '1 pārbaude gaida nosūtīšanu' : `${n} pārbaudes gaida nosūtīšanu`),
+      sendNow: 'Nosūtīt',
+      sending: 'Sūtu…',
+      synced: (n) => (n === 1 ? 'Bezsaistes pārbaude nosūtīta' : `Nosūtītas bezsaistes pārbaudes: ${n}`),
+      expired: 'Pārbaude, kas vecāka par 7 dienām, netika nosūtīta — serveris tādas nepieņem.',
+      installTitle: 'Uzstādi CloudPulse telefonā',
+      installBody: 'Ikona sākuma ekrānā un pārbaude pat bez interneta.',
+      installButton: 'Uzstādīt',
+      installIos: 'Safari nospied «Kopīgot», tad «Pievienot sākuma ekrānam».',
+      installClose: 'Aizvērt',
+    },
     engine: {
       penaltyAcwrSpike: (acwr) => `ACWR ${acwr} — straujš slodzes lēciens (traumas risks)`,
       penaltyAcwrRising: (acwr) => `ACWR ${acwr} — slodze pieaug straujāk nekā parasti`,
@@ -1877,6 +1935,26 @@ export const translations: Record<Lang, Dict> = {
       teamMissing: 'Not yet:',
       teamHint: 'Counts the check-in itself, not the result.',
       athleteStreak: (n) => `Check-in streak: ${n}`,
+    },
+    offline: {
+      savedTitle: 'Saved on your phone',
+      savedBody: (date) =>
+        `You're offline. Your check-in for ${date} is saved and will be sent automatically the next time you open CloudPulse with internet.`,
+      noScore: "The engine calculates your readiness score once it's sent: without your history from the database, we don't make one up.",
+      painNote:
+        "You reported pain. Don't train through pain, and tell your coach or the school nurse — this rule works without internet too.",
+      needLogin: 'Offline check-ins can only be saved if you have already signed in on this phone.',
+      offlineBanner: "You're offline. You can still fill in your check-in — it will be saved on your phone.",
+      pending: (n) => (n === 1 ? '1 check-in waiting to be sent' : `${n} check-ins waiting to be sent`),
+      sendNow: 'Send',
+      sending: 'Sending…',
+      synced: (n) => (n === 1 ? 'Offline check-in sent' : `Offline check-ins sent: ${n}`),
+      expired: "A check-in older than 7 days was not sent — the server doesn't accept those.",
+      installTitle: 'Install CloudPulse on your phone',
+      installBody: 'An icon on your home screen and check-ins even without internet.',
+      installButton: 'Install',
+      installIos: 'In Safari, tap Share, then "Add to Home Screen".',
+      installClose: 'Close',
     },
     engine: {
       penaltyAcwrSpike: (acwr) => `ACWR ${acwr} — sharp load spike (injury risk)`,

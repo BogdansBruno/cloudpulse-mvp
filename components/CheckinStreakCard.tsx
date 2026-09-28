@@ -8,6 +8,7 @@ import { useLanguage } from '@/lib/i18n/LanguageContext';
 import type { Lang } from '@/lib/i18n/translations';
 import { addDays, computeCheckinStreak, recentDays, todayUtc } from '@/lib/checkin-streak';
 import type { CheckinStreak } from '@/lib/checkin-streak';
+import { SYNCED_EVENT } from '@/lib/offline-queue';
 
 // ---------------------------------------------------------------------------
 // Athlete's check-in streak: shown on /progress and on the check-in result
@@ -31,6 +32,14 @@ export default function CheckinStreakCard({
   const s = t.streak;
   const [data, setData] = useState<Loaded | null>(null);
   const [hidden, setHidden] = useState(false);
+  // Bumped when OfflineSync has sent queued check-ins, so the streak catches up.
+  const [reloadKey, setReloadKey] = useState(0);
+
+  useEffect(() => {
+    const bump = () => setReloadKey((k) => k + 1);
+    window.addEventListener(SYNCED_EVENT, bump);
+    return () => window.removeEventListener(SYNCED_EVENT, bump);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -59,7 +68,7 @@ export default function CheckinStreakCard({
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [reloadKey]);
 
   if (hidden) return null;
 

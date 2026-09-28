@@ -9,6 +9,7 @@ import { useLanguage } from '@/lib/i18n/LanguageContext';
 import { HUB } from '@/components/PerformancePanel';
 
 const POLL_MS = 20_000;
+const LOADING_TIMEOUT_MS = 6_000;
 
 // Wraps every page under app/(main). Checks the owner's kill switch and
 // ban list once on load, then keeps polling quietly so a lockdown flipped
@@ -22,6 +23,13 @@ export default function AccessGate({ children }: { children: ReactNode }) {
     let cancelled = false;
 
     async function run() {
+      // Offline, neither table can be read, and waiting would leave the page
+      // blank (getSession() retries a token refresh for ~30 s). Let the page
+      // render so the offline check-in works; a block already shown stays.
+      if (!navigator.onLine) {
+        if (!cancelled) setStatus((s) => (s === 'loading' ? { blocked: false } : s));
+        return;
+      }
       const { data } = await supabase.auth.getSession();
       const email = data.session?.user?.email ?? null;
       emailRef.current = email;
@@ -35,9 +43,15 @@ export default function AccessGate({ children }: { children: ReactNode }) {
 
     run();
     const interval = setInterval(run, POLL_MS);
+    // Weak signal ("online" but nothing gets through): don't keep the page
+    // blank forever. The 20 s poll still applies a lockdown once it can.
+    const fallback = setTimeout(() => {
+      if (!cancelled) setStatus((s) => (s === 'loading' ? { blocked: false } : s));
+    }, LOADING_TIMEOUT_MS);
     return () => {
       cancelled = true;
       clearInterval(interval);
+      clearTimeout(fallback);
     };
   }, []);
 

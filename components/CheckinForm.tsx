@@ -3,7 +3,7 @@
 import { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
-import { Moon, Brain, Lightning, Barbell, WarningOctagon, Info, ArrowRight, Bandaids, PersonSimpleRun } from '@phosphor-icons/react';
+import { Moon, Brain, Lightning, Barbell, WarningOctagon, Info, ArrowRight, Bandaids, PersonSimpleRun, CloudCheck } from '@phosphor-icons/react';
 import type { Icon } from '@phosphor-icons/react';
 import { supabase } from '@/lib/supabase';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
@@ -11,6 +11,18 @@ import { ReadinessRing, zoneMeta, HUB } from '@/components/PerformancePanel';
 import type { Penalty, SafetyViolation, InconsistencyFlag } from '@/lib/readiness-engine';
 import { translatePenalty, translateViolation, translateInconsistency } from '@/lib/engine-i18n';
 import CheckinStreakCard from '@/components/CheckinStreakCard';
+import type { Lang } from '@/lib/i18n/translations';
+import { todayUtc } from '@/lib/checkin-streak';
+import {
+  enqueueCheckin,
+  removeFromQueue,
+  makeQueuedCheckin,
+  storedUserId,
+  isNetworkError,
+  withTimeout,
+  QUEUE_EVENT,
+  type CheckinPayload,
+} from '@/lib/offline-queue';
 
 type ScaleField = 'sleepQuality' | 'stress' | 'fatigue' | 'soreness';
 
@@ -29,6 +41,13 @@ type CheckinApiResponse = {
 };
 
 const SPRING = { type: 'spring', bounce: 0, duration: 0.35 } as const;
+
+// With a weak signal (locker room) a request can hang instead of failing.
+// After this long we stop waiting and save the check-in on the phone instead.
+// If the request did get through, the later resend just upserts the same row.
+const SUBMIT_TIMEOUT_MS = 12_000;
+
+const LOCALE: Record<Lang, string> = { ru: 'ru-RU', lv: 'lv-LV', en: 'en-GB' };
 const DURATION_PRESETS = [30, 45, 60, 90, 120];
 
 // All four Hooper scales run 1-7 with 7 = best, so the fill colour reads the
@@ -188,7 +207,7 @@ function Toggle({
 
 export default function CheckinForm({ onSubmitted }: { onSubmitted?: () => void } = {}) {
   const router = useRouter();
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const reduce = useReducedMotion();
 
   const SCALES: { field: ScaleField; title: string; low: string; high: string; icon: Icon }[] = [
@@ -219,9 +238,46 @@ export default function CheckinForm({ onSubmitted }: { onSubmitted?: () => void 
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<CheckinApiResponse | null>(null);
+  // Set when there was no network and the check-in went to the offline queue.
+  const [offlineSaved, setOfflineSaved] = useState<{ date: string; pain: boolean } | null>(null);
 
   function setScale(field: ScaleField, value: number) {
     setValues((prev) => (prev[field] === value ? prev : { ...prev, [field]: value }));
+  }
+
+  // No network: keep the answers on the phone. OfflineSync (in the main
+  // layout) sends them with this day's date once the connection is back.
+  // Uses the user id supabase-js already stored, not getSession(), which would
+  // try to refresh an expired token over a network that isn't there.
+  function saveOffline(payload: CheckinPayload) {
+    try {
+      const store = window.localStorage;
+      const uid = storedUserId(store, process.env.NEXT_PUBLIC_SUPABASE_URL ?? '');
+      if (!uid) {
+        setError(t.offline.needLogin);
+        return;
+      }
+      const date = todayUtc();
+      enqueueCheckin(store, makeQueuedCheckin(uid, date, payload));
+      window.dispatchEvent(new Event(QUEUE_EVENT));
+      setOfflineSaved({ date, pain: payload.painFlag });
+    } catch {
+      setError(t.onboarding.errGeneric);
+    }
+  }
+
+  // A fresh online check-in replaces today's queued offline one, so a late
+  // sync can't overwrite the newer answers with the older ones.
+  function dropQueuedToday() {
+    try {
+      const store = window.localStorage;
+      const uid = storedUserId(store, process.env.NEXT_PUBLIC_SUPABASE_URL ?? '');
+      if (!uid) return;
+      removeFromQueue(store, [`${uid}:${todayUtc()}`]);
+      window.dispatchEvent(new Event(QUEUE_EVENT));
+    } catch {
+      // storage unavailable: nothing was queued either
+    }
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -229,10 +285,25 @@ export default function CheckinForm({ onSubmitted }: { onSubmitted?: () => void 
     setSubmitting(true);
     setError(null);
 
+    const payload: CheckinPayload = {
+      ...values,
+      painFlag,
+      painZone: painFlag && painZone.trim() ? painZone.trim() : undefined,
+      session: trainedToday ? { rpe, durationMinutes } : undefined,
+    };
+
+    if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+      saveOffline(payload);
+      setSubmitting(false);
+      return;
+    }
+
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), SUBMIT_TIMEOUT_MS);
     try {
       // Attach the Supabase session when one exists, otherwise the server
       // falls back to its dev-mode bypass.
-      const { data: sessionData } = await supabase.auth.getSession();
+      const { data: sessionData } = await withTimeout(supabase.auth.getSession(), SUBMIT_TIMEOUT_MS);
       const token = sessionData.session?.access_token;
 
       const res = await fetch('/api/checkin', {
@@ -241,12 +312,8 @@ export default function CheckinForm({ onSubmitted }: { onSubmitted?: () => void 
           'Content-Type': 'application/json',
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
-        body: JSON.stringify({
-          ...values,
-          painFlag,
-          painZone: painFlag && painZone.trim() ? painZone.trim() : undefined,
-          session: trainedToday ? { rpe, durationMinutes } : undefined,
-        }),
+        body: JSON.stringify(payload),
+        signal: controller.signal,
       });
 
       if (!res.ok) {
@@ -255,11 +322,14 @@ export default function CheckinForm({ onSubmitted }: { onSubmitted?: () => void 
       }
 
       const data: CheckinApiResponse = await res.json();
+      dropQueuedToday();
       setResult(data);
       onSubmitted?.();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Something went wrong');
+      if (isNetworkError(err)) saveOffline(payload);
+      else setError(err instanceof Error ? err.message : 'Something went wrong');
     } finally {
+      clearTimeout(timer);
       setSubmitting(false);
     }
   }
@@ -270,6 +340,47 @@ export default function CheckinForm({ onSubmitted }: { onSubmitted?: () => void 
     exit: reduce ? { opacity: 0 } : { opacity: 0, height: 0 },
     transition: SPRING,
   };
+
+  // ------------------------------------------------------- saved offline
+  if (offlineSaved) {
+    const day = new Date(`${offlineSaved.date}T12:00:00Z`).toLocaleDateString(LOCALE[lang], {
+      day: 'numeric',
+      month: 'long',
+    });
+    return (
+      <div className="relative min-h-[calc(100dvh-4.5rem)] shrink-0 overflow-x-clip bg-[#07080A] px-4 py-8 md:py-12">
+        <div className="pointer-events-none absolute left-1/2 top-10 h-[420px] w-[420px] -translate-x-1/2 rounded-full bg-[#CCFF00]/[0.05] blur-[140px]" />
+        <motion.div
+          initial={reduce ? false : { opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={SPRING}
+          className="relative mx-auto max-w-md"
+        >
+          <div className="flex flex-col items-center text-center">
+            <span className="flex h-20 w-20 items-center justify-center rounded-3xl bg-[#CCFF00]/[0.12] text-[#CCFF00]">
+              <CloudCheck size={40} weight="fill" />
+            </span>
+            <h1 className="mt-5 text-[28px] font-semibold leading-tight tracking-[-0.03em] text-zinc-50">
+              {t.offline.savedTitle}
+            </h1>
+            <p className="mt-3 text-[15px] leading-relaxed text-zinc-300">{t.offline.savedBody(day)}</p>
+          </div>
+
+          {offlineSaved.pain && (
+            <div className="mt-6 flex gap-3 rounded-2xl bg-[#FF4D5E]/[0.08] p-4 text-sm leading-relaxed text-zinc-200 ring-1 ring-inset ring-[#FF4D5E]/30">
+              <WarningOctagon size={18} weight="fill" className="mt-0.5 shrink-0 text-[#FF4D5E]" />
+              <span>{t.offline.painNote}</span>
+            </div>
+          )}
+
+          <div className="mt-3 flex gap-3 rounded-2xl bg-white/[0.03] p-4 text-sm leading-relaxed text-zinc-400 ring-1 ring-inset ring-white/[0.08]">
+            <Info size={18} className="mt-0.5 shrink-0 text-zinc-500" />
+            <span>{t.offline.noScore}</span>
+          </div>
+        </motion.div>
+      </div>
+    );
+  }
 
   // ---------------------------------------------------------------- result
   if (result) {

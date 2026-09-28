@@ -63,6 +63,9 @@ export default function SafetyShield({ refreshKey = 0 }: { refreshKey?: number }
 
     async function load() {
       setError(false);
+      // Offline the pass can't be fetched or verified; the offline strip
+      // already says so, and a load error here would only add noise.
+      if (!navigator.onLine) return;
       try {
         const { data } = await supabase.auth.getSession();
         const token = data.session?.access_token;
