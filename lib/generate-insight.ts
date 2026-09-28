@@ -1,4 +1,5 @@
 import type { ReadinessHistoryPoint } from './types/readiness';
+import { computeCheckinStreak } from './checkin-streak';
 
 export type InsightSeverity = 'warning' | 'info' | 'positive';
 
@@ -52,9 +53,16 @@ export function generateInsight(history: ReadinessHistoryPoint[]): Insight {
     return { code: 'monotony', severity: 'warning' };
   }
 
+  // Praise the check-in habit, never days without rest: trainingStreak is a
+  // risk factor the engine penalises after 6 days (NO_REST_STREAK). The zone
+  // doesn't matter either — an honest red day keeps the habit going too.
   const today = history[history.length - 1];
-  if (today?.hasCheckin && today.zone === 'green' && today.trainingStreak >= 10) {
-    return { code: 'streak_positive', severity: 'positive', days: today.trainingStreak };
+  if (today) {
+    const checkinDates = withCheckins.map((p) => p.date);
+    const { current } = computeCheckinStreak(checkinDates, today.date);
+    if (current >= 7) {
+      return { code: 'streak_positive', severity: 'positive', days: current };
+    }
   }
 
   const last7 = withCheckins.slice(-7);

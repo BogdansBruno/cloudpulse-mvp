@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { motion, useReducedMotion } from 'motion/react';
-import { CheckCircle, Warning, WarningOctagon, Flame, ArrowRight } from '@phosphor-icons/react';
+import { CheckCircle, Warning, WarningOctagon, Barbell, ArrowRight } from '@phosphor-icons/react';
 import type { ReadinessHistoryPoint } from '@/lib/types/readiness';
 import type { Lang } from '@/lib/i18n/translations';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
@@ -35,6 +35,15 @@ export function loadStatus(acwr: number): LoadStatus {
   if (acwr <= 1.3) return 'ok';
   if (acwr <= 1.5) return 'high';
   return 'spike';
+}
+
+// trainingStreak = days in a row WITHOUT rest. It is a risk factor, not an
+// achievement: the engine penalises it from day 7 (NO_REST_STREAK). So it
+// gets a neutral barbell, turning amber past the limit — never the lime
+// flame, which belongs to the check-in streak (lib/checkin-streak.ts).
+export const NO_REST_LIMIT = 6;
+export function noRestColor(days: number): string {
+  return days > NO_REST_LIMIT ? HUB.amber : '#A1A1AA';
 }
 
 function loadColor(s: LoadStatus) {
@@ -332,8 +341,10 @@ export function PerformancePanel({ history, loading }: { history: ReadinessHisto
         <div className="mb-3 flex items-center justify-between">
           <h3 className="text-xs text-zinc-400">{t.hub.trend}</h3>
           <span className="inline-flex items-center gap-1 text-xs text-zinc-300">
-            <Flame size={14} weight="fill" className="text-[#CCFF00]" />
-            <span className="font-mono tabular-nums">{today?.trainingStreak ?? 0}</span>
+            <Barbell size={14} weight="fill" style={{ color: noRestColor(today?.trainingStreak ?? 0) }} />
+            <span className="font-mono tabular-nums" style={{ color: noRestColor(today?.trainingStreak ?? 0) }}>
+              {today?.trainingStreak ?? 0}
+            </span>
             <span className="text-zinc-500">{t.hub.streak}</span>
           </span>
         </div>
@@ -384,7 +395,9 @@ export function PerformanceStrip({ history }: { history: ReadinessHistoryPoint[]
       </div>
       <div className="ml-auto text-right">
         <p className="text-[11px] text-zinc-500">{t.hub.streak}</p>
-        <p className="font-mono text-sm tabular-nums text-zinc-100">{today.trainingStreak}</p>
+        <p className="font-mono text-sm tabular-nums" style={{ color: noRestColor(today.trainingStreak) }}>
+          {today.trainingStreak}
+        </p>
       </div>
     </div>
   );

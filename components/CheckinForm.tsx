@@ -10,6 +10,7 @@ import { useLanguage } from '@/lib/i18n/LanguageContext';
 import { ReadinessRing, zoneMeta, HUB } from '@/components/PerformancePanel';
 import type { Penalty, SafetyViolation, InconsistencyFlag } from '@/lib/readiness-engine';
 import { translatePenalty, translateViolation, translateInconsistency } from '@/lib/engine-i18n';
+import CheckinStreakCard from '@/components/CheckinStreakCard';
 
 type ScaleField = 'sleepQuality' | 'stress' | 'fatigue' | 'soreness';
 
@@ -345,6 +346,8 @@ export default function CheckinForm({ onSubmitted }: { onSubmitted?: () => void 
               </ul>
             </div>
           )}
+
+          <CheckinStreakCard showCta={false} className="mt-3" />
 
           <motion.button
             type="button"

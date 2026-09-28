@@ -10,7 +10,7 @@ import {
   CalendarBlank,
   Moon,
   ForkKnife,
-  Flame,
+  Barbell,
 } from '@phosphor-icons/react';
 import { supabase } from '@/lib/supabase';
 import { parseScheduleFromAI, getTextBeforeSchedule, getTextAfterSchedule } from '@/lib/schedule-parser';
@@ -19,7 +19,7 @@ import { useLanguage } from '@/lib/i18n/LanguageContext';
 import type { ReadinessHistoryPoint } from '@/lib/types/readiness';
 import QuickReplyQuestions from '@/components/QuickReplyQuestions';
 import WorkoutPlan from '@/components/WorkoutPlan';
-import { PerformancePanel, PerformanceStrip, zoneMeta, loadStatus, HUB } from '@/components/PerformancePanel';
+import { PerformancePanel, PerformanceStrip, zoneMeta, loadStatus, noRestColor, HUB } from '@/components/PerformancePanel';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -251,8 +251,9 @@ export default function ChatPage() {
             )}
             {today && (
               <span className="hidden items-center gap-1 rounded-full bg-white/[0.04] px-2.5 py-1 text-xs text-zinc-300 ring-1 ring-inset ring-white/[0.08] sm:inline-flex">
-                <Flame size={12} weight="fill" className="text-[#CCFF00]" />
+                <Barbell size={12} weight="fill" style={{ color: noRestColor(today.trainingStreak) }} />
                 <span className="font-mono tabular-nums">{today.trainingStreak}</span>
+                <span className="text-zinc-500">{t.hub.streak}</span>
               </span>
             )}
           </header>

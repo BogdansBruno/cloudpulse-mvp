@@ -2,13 +2,14 @@
 
 import { useEffect, useState } from 'react';
 import { motion, useReducedMotion } from 'motion/react';
-import { WarningOctagon, Info, Flame, Users } from '@phosphor-icons/react';
+import { WarningOctagon, Info, Flame, Users, Barbell, CheckCircle } from '@phosphor-icons/react';
 import { supabase } from '@/lib/supabase';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
-import { ReadinessRing, zoneMeta, loadStatus, HUB } from '@/components/PerformancePanel';
+import { ReadinessRing, zoneMeta, loadStatus, noRestColor, HUB } from '@/components/PerformancePanel';
 import type { Penalty, SafetyViolation, InconsistencyFlag } from '@/lib/readiness-engine';
 import { translatePenalty, translateViolation, translateInconsistency } from '@/lib/engine-i18n';
 import TeamInvitePanel from '@/components/TeamInvitePanel';
+import { addDays, computeCheckinStreak, datesByAthlete, teamCheckinSummary, todayUtc } from '@/lib/checkin-streak';
 
 // ---------------------------------------------------------------------------
 // Coach view — the one screen in the app that actually uses the new
@@ -31,6 +32,7 @@ const EDGE_FUNCTION_URL = 'https://pgfhvvetujsvigesueib.supabase.co/functions/v1
 
 type DbTeamMemberRow = { athlete_id: string; team_name: string | null; athlete_label: string | null };
 type DbProfileRow = { id: string; sport: string | null; age: number | null };
+type DbCheckinDateRow = { user_id: string; date: string };
 
 type RosterEntry = {
   athleteId: string;
@@ -76,6 +78,9 @@ export default function CoachPage() {
 
   const [roster, setRoster] = useState<RosterEntry[] | null>(null);
   const [rosterError, setRosterError] = useState<string | null>(null);
+  // Only (athlete, date) pairs — enough for "X of Y today" and streaks.
+  // null = not loaded or failed; the summary card then simply stays hidden.
+  const [checkinRows, setCheckinRows] = useState<DbCheckinDateRow[] | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const [data, setData] = useState<ReadinessPayload | null>(null);
@@ -127,6 +132,17 @@ export default function CoachPage() {
           setRoster(merged);
           setSelectedId(merged[0]?.athleteId ?? null);
         }
+
+        // Check-in dates for the whole roster (RLS: checkins_coach_view_team).
+        // 60 days is plenty for a current streak and keeps the query small.
+        const today = todayUtc();
+        const { data: dateRows, error: datesError } = await supabase
+          .from('checkins')
+          .select('user_id, date')
+          .in('user_id', athleteIds)
+          .gte('date', addDays(today, -60))
+          .lte('date', today);
+        if (!cancelled && !datesError) setCheckinRows((dateRows ?? []) as DbCheckinDateRow[]);
       } catch (err) {
         if (!cancelled) setRosterError(err instanceof Error ? err.message : 'Something went wrong');
       }
@@ -180,6 +196,20 @@ export default function CoachPage() {
 
   const acwrStatus = data?.readiness.acwr != null ? loadStatus(data.readiness.acwr) : null;
 
+  const today = todayUtc();
+  const summary =
+    roster && roster.length > 0 && checkinRows
+      ? teamCheckinSummary(roster.map((a) => a.athleteId), checkinRows, today)
+      : null;
+  const datesMap = checkinRows ? datesByAthlete(checkinRows) : null;
+  const doneToday = (id: string) => (summary ? !summary.missing.includes(id) : null);
+  const selectedCheckinStreak =
+    selectedId && datesMap ? computeCheckinStreak(datesMap.get(selectedId) ?? [], today).current : null;
+  const labelFor = (id: string) => {
+    const a = roster?.find((r) => r.athleteId === id);
+    return a ? athleteLabel(a, t.coach.athleteFallback) : id.slice(0, 8);
+  };
+
   return (
     <div className="relative min-h-[calc(100dvh-4.5rem)] shrink-0 overflow-x-clip bg-[#07080A] px-4 py-8 md:py-12">
       <div className="pointer-events-none absolute -left-40 -top-40 h-[480px] w-[480px] rounded-full bg-[#CCFF00]/[0.05] blur-[140px]" />
@@ -223,23 +253,83 @@ export default function CoachPage() {
 
         {roster && roster.length > 0 && (
           <div className="space-y-4">
+            {/* Who has checked in today */}
+            {summary && (
+              <section className={card}>
+                <div className="flex items-baseline justify-between gap-3">
+                  <h2 className="text-sm text-zinc-400">{t.streak.teamTitle}</h2>
+                  <p className="font-mono text-2xl tabular-nums text-zinc-50">
+                    {t.streak.teamCount(summary.done, summary.total)}
+                  </p>
+                </div>
+                <div
+                  className="mt-3 h-2 overflow-hidden rounded-full"
+                  style={{ backgroundColor: HUB.track }}
+                  role="progressbar"
+                  aria-valuemin={0}
+                  aria-valuemax={summary.total}
+                  aria-valuenow={summary.done}
+                >
+                  <div
+                    className="h-full rounded-full transition-[width] duration-500"
+                    style={{ width: `${(summary.done / summary.total) * 100}%`, backgroundColor: HUB.lime }}
+                  />
+                </div>
+                {summary.missing.length === 0 ? (
+                  <p className="mt-3 inline-flex items-center gap-1.5 text-sm text-zinc-200">
+                    <CheckCircle size={16} weight="fill" className="text-[#CCFF00]" />
+                    {t.streak.teamAllDone}
+                  </p>
+                ) : (
+                  <div className="mt-3 flex flex-wrap items-center gap-1.5 text-sm">
+                    <span className="mr-1 text-zinc-400">{t.streak.teamMissing}</span>
+                    {summary.missing.map((id) => (
+                      <button
+                        key={id}
+                        type="button"
+                        onClick={() => setSelectedId(id)}
+                        className="rounded-full bg-white/[0.04] px-2.5 py-0.5 text-xs text-zinc-300 ring-1 ring-inset ring-white/[0.08] hover:bg-white/[0.07]"
+                      >
+                        {labelFor(id)}
+                      </button>
+                    ))}
+                  </div>
+                )}
+                <p className="mt-3 text-[11px] text-zinc-500">{t.streak.teamHint}</p>
+              </section>
+            )}
+
             {/* Roster picker */}
             <div>
               <p className="mb-2 text-xs text-zinc-500">{t.coach.pickAthlete}</p>
               <div className="flex flex-wrap gap-2">
                 {roster.map((a) => {
                   const active = a.athleteId === selectedId;
+                  const done = doneToday(a.athleteId);
                   return (
                     <button
                       key={a.athleteId}
                       onClick={() => setSelectedId(a.athleteId)}
-                      className={`rounded-full px-3.5 py-1.5 text-sm font-medium transition-all ${
+                      title={done === null ? undefined : done ? t.streak.dayDone : t.streak.dayMissed}
+                      className={`inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-sm font-medium transition-all ${
                         active
                           ? 'bg-[#CCFF00] text-zinc-950'
                           : 'bg-white/[0.04] text-zinc-300 ring-1 ring-inset ring-white/[0.08] hover:bg-white/[0.07]'
                       }`}
                     >
+                      {done !== null && (
+                        <span
+                          aria-hidden
+                          className="h-2 w-2 rounded-full"
+                          style={{
+                            backgroundColor: done
+                              ? active ? '#09090B' : HUB.lime
+                              : active ? 'rgba(9,9,11,0.25)' : 'rgba(255,255,255,0.2)',
+                          }}
+                        />
+                      )}
                       {athleteLabel(a, t.coach.athleteFallback)}
+                      {done !== null && <span className="sr-only">({done ? t.streak.dayDone : t.streak.dayMissed})</span>}
                     </button>
                   );
                 })}
@@ -271,8 +361,18 @@ export default function CoachPage() {
                 transition={{ type: 'spring', bounce: 0, duration: 0.5 }}
                 className="space-y-3"
               >
-                <p className="text-xs text-zinc-500">
-                  {data.hasCheckin ? t.coach.hasCheckinToday : t.coach.noCheckinToday}
+                <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-zinc-500">
+                  <span>{data.hasCheckin ? t.coach.hasCheckinToday : t.coach.noCheckinToday}</span>
+                  {selectedCheckinStreak !== null && (
+                    <span className="inline-flex items-center gap-1 text-zinc-300">
+                      <Flame
+                        size={13}
+                        weight="fill"
+                        className={selectedCheckinStreak > 0 ? 'text-[#CCFF00]' : 'text-zinc-600'}
+                      />
+                      {t.streak.athleteStreak(selectedCheckinStreak)}
+                    </span>
+                  )}
                 </p>
 
                 <div className="grid gap-3 sm:grid-cols-3">
@@ -312,8 +412,11 @@ export default function CoachPage() {
                   {/* Streak */}
                   <div className={card}>
                     <p className="text-xs text-zinc-400">{t.coach.streakLabel}</p>
-                    <p className="mt-3 inline-flex items-baseline gap-1.5 font-mono text-4xl font-light leading-none tabular-nums tracking-[-0.04em] text-zinc-50">
-                      <Flame size={22} weight="fill" className="text-[#CCFF00]" />
+                    <p
+                      className="mt-3 inline-flex items-baseline gap-1.5 font-mono text-4xl font-light leading-none tabular-nums tracking-[-0.04em]"
+                      style={{ color: data.readiness.trainingStreak > 6 ? HUB.amber : '#FAFAFA' }}
+                    >
+                      <Barbell size={22} weight="fill" style={{ color: noRestColor(data.readiness.trainingStreak) }} />
                       {data.readiness.trainingStreak}
                     </p>
                   </div>

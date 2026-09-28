@@ -1,5 +1,18 @@
 export type Lang = 'en' | 'ru' | 'lv';
 
+// Day-count plurals for streak copy ("1 день / 2 дня / 5 дней").
+function ruDays(n: number): string {
+  const d10 = n % 10;
+  const d100 = n % 100;
+  if (d10 === 1 && d100 !== 11) return 'день';
+  if (d10 >= 2 && d10 <= 4 && (d100 < 12 || d100 > 14)) return 'дня';
+  return 'дней';
+}
+function lvDays(n: number): string {
+  if (n === 0) return 'dienu';
+  return n % 10 === 1 && n % 100 !== 11 ? 'diena' : 'dienas';
+}
+
 export const LANGS: { code: Lang; label: string }[] = [
   { code: 'ru', label: 'RU' },
   { code: 'lv', label: 'LV' },
@@ -371,6 +384,24 @@ type Dict = {
     resetError: string;
     switchRole: string;
   };
+  streak: {
+    title: string;
+    days: (n: number) => string;
+    best: (n: number) => string;
+    doneToday: string;
+    keepGoing: string;
+    startNew: string;
+    honesty: string;
+    last14: string;
+    dayDone: string;
+    dayMissed: string;
+    teamTitle: string;
+    teamCount: (done: number, total: number) => string;
+    teamAllDone: string;
+    teamMissing: string;
+    teamHint: string;
+    athleteStreak: (n: number) => string;
+  };
   engine: {
     penaltyAcwrSpike: (acwr: string) => string;
     penaltyAcwrRising: (acwr: string) => string;
@@ -522,7 +553,7 @@ export const translations: Record<Lang, Dict> = {
         `Нагрузка выросла слишком резко за неделю (ACWR ${v}) — риск травмы сейчас выше обычного. Снизь интенсивность на пару дней.`,
       insightMonotony: 'Тренировки в последнее время слишком однообразные по нагрузке — добавь лёгкие дни для разнообразия, это снижает риск перетренированности.',
       insightStreakPositive: (n) =>
-        `${n}+ дней подряд без пропуска при хорошей готовности — отличная стабильность. Не забудь про плановый день отдыха.`,
+        `${n} ${ruDays(n)} подряд с чек-ином — отличная привычка. Честные ответы делают оценку точнее.`,
       insightGreatShape: 'Последняя неделя стабильно в зелёной зоне — организм хорошо восстанавливается. Можно постепенно наращивать нагрузку.',
       insightNotEnoughData: 'Ещё мало чек-инов, чтобы увидеть тренд — заполняй ежедневно, и здесь появятся более точные наблюдения.',
       insightNeutral: 'Готовность в норме, явных сигналов риска не видно. Продолжай ежедневные чек-ины.',
@@ -570,7 +601,7 @@ export const translations: Record<Lang, Dict> = {
       loadOk: 'В норме',
       loadHigh: 'Резкий рост',
       notEnoughData: 'Мало данных',
-      streak: 'Дней подряд',
+      streak: 'Дней без отдыха',
       sleep: 'Сон',
       calm: 'Спокойствие',
       energy: 'Энергия',
@@ -856,6 +887,24 @@ export const translations: Record<Lang, Dict> = {
       resetError: 'Не удалось сбросить',
       switchRole: 'Сменить роль',
     },
+    streak: {
+      title: 'Серия чек-инов',
+      days: (n) => `${n} ${ruDays(n)} подряд`,
+      best: (n) => `Лучшая серия: ${n}`,
+      doneToday: 'Сегодня отмечено',
+      keepGoing: 'Сделай чек-ин сегодня — и серия продолжится',
+      startNew: 'Начни новую серию сегодня',
+      honesty: 'Засчитывается сам факт чек-ина, а не цвет зоны. Честное «мне плохо» считается так же, как зелёный день.',
+      last14: 'Последние 14 дней',
+      dayDone: 'чек-ин есть',
+      dayMissed: 'нет чек-ина',
+      teamTitle: 'Чек-ин сегодня',
+      teamCount: (done, total) => `${done} из ${total}`,
+      teamAllDone: 'Вся команда отметилась',
+      teamMissing: 'Ещё не отметились:',
+      teamHint: 'Считается сам факт чек-ина, а не результат.',
+      athleteStreak: (n) => `Серия чек-инов: ${n}`,
+    },
     engine: {
       penaltyAcwrSpike: (acwr) => `ACWR ${acwr} — резкий скачок нагрузки (риск травмы)`,
       penaltyAcwrRising: (acwr) => `ACWR ${acwr} — нагрузка растёт быстрее обычного`,
@@ -1005,7 +1054,7 @@ export const translations: Record<Lang, Dict> = {
         `Slodze pēdējā nedēļā pieaugusi pārāk strauji (ACWR ${v}) — traumu risks tagad ir augstāks nekā parasti. Samazini intensitāti pāris dienas.`,
       insightMonotony: 'Pēdējā laikā treniņi ir pārāk vienveidīgi pēc slodzes — pievieno vieglākas dienas dažādībai, tas samazina pārtrenēšanās risku.',
       insightStreakPositive: (n) =>
-        `${n}+ dienas pēc kārtas bez izlaišanas ar labu gatavību — lieliska stabilitāte. Neaizmirsti par plānotu atpūtas dienu.`,
+        `${n} ${lvDays(n)} pēc kārtas ar pārbaudi — lielisks ieradums. Godīgas atbildes padara novērtējumu precīzāku.`,
       insightGreatShape: 'Pēdējā nedēļa stabili zaļajā zonā — organisms labi atveseļojas. Var pakāpeniski palielināt slodzi.',
       insightNotEnoughData: 'Vēl par maz pārbaužu, lai redzētu tendenci — aizpildi katru dienu, un šeit parādīsies precīzāki novērojumi.',
       insightNeutral: 'Gatavība ir normā, skaidru riska signālu nav. Turpini ikdienas pārbaudes.',
@@ -1053,7 +1102,7 @@ export const translations: Record<Lang, Dict> = {
       loadOk: 'Normā',
       loadHigh: 'Straujš kāpums',
       notEnoughData: 'Par maz datu',
-      streak: 'Dienas pēc kārtas',
+      streak: 'Dienas bez atpūtas',
       sleep: 'Miegs',
       calm: 'Miers',
       energy: 'Enerģija',
@@ -1326,6 +1375,24 @@ export const translations: Record<Lang, Dict> = {
       resetError: 'Neizdevās atiestatīt',
       switchRole: 'Mainīt lomu',
     },
+    streak: {
+      title: 'Pārbaužu sērija',
+      days: (n) => `${n} ${lvDays(n)} pēc kārtas`,
+      best: (n) => `Labākā sērija: ${n}`,
+      doneToday: 'Šodien atzīmēts',
+      keepGoing: 'Aizpildi pārbaudi šodien, lai sērija turpinātos',
+      startNew: 'Sāc jaunu sēriju šodien',
+      honesty: 'Tiek skaitīts pats pārbaudes fakts, nevis zonas krāsa. Godīgs «man ir slikti» skaitās tāpat kā zaļa diena.',
+      last14: 'Pēdējās 14 dienas',
+      dayDone: 'pārbaude ir',
+      dayMissed: 'nav pārbaudes',
+      teamTitle: 'Pārbaude šodien',
+      teamCount: (done, total) => `${done} no ${total}`,
+      teamAllDone: 'Visa komanda ir atzīmējusies',
+      teamMissing: 'Vēl nav atzīmējušies:',
+      teamHint: 'Tiek skaitīts tikai pārbaudes fakts, nevis rezultāts.',
+      athleteStreak: (n) => `Pārbaužu sērija: ${n}`,
+    },
     engine: {
       penaltyAcwrSpike: (acwr) => `ACWR ${acwr} — straujš slodzes lēciens (traumas risks)`,
       penaltyAcwrRising: (acwr) => `ACWR ${acwr} — slodze pieaug straujāk nekā parasti`,
@@ -1475,7 +1542,7 @@ export const translations: Record<Lang, Dict> = {
         `Workload has climbed too fast this week (ACWR ${v}) — injury risk is higher than usual right now. Ease off intensity for a couple of days.`,
       insightMonotony: "Training load has been too repetitive lately — add an easier day for variety, it lowers overtraining risk.",
       insightStreakPositive: (n) =>
-        `${n}+ days in a row without missing while readiness stays good — great consistency. Don't forget a planned rest day.`,
+        `${n} ${n === 1 ? 'day' : 'days'} in a row with a check-in — great habit. Honest answers make the score more accurate.`,
       insightGreatShape: "The last week has stayed steadily in the green zone — recovery is working well. You can gradually build up load.",
       insightNotEnoughData: "Not enough check-ins yet to see a trend — keep filling it in daily and sharper insights will show up here.",
       insightNeutral: 'Readiness looks normal, no clear risk signals right now. Keep up the daily check-ins.',
@@ -1523,7 +1590,7 @@ export const translations: Record<Lang, Dict> = {
       loadOk: 'On track',
       loadHigh: 'Sharp spike',
       notEnoughData: 'Not enough data',
-      streak: 'Days in a row',
+      streak: 'Days without rest',
       sleep: 'Sleep',
       calm: 'Calm',
       energy: 'Energy',
@@ -1792,6 +1859,24 @@ export const translations: Record<Lang, Dict> = {
       resetting: 'Resetting…',
       resetError: 'Reset failed',
       switchRole: 'Switch role',
+    },
+    streak: {
+      title: 'Check-in streak',
+      days: (n) => `${n} ${n === 1 ? 'day' : 'days'} in a row`,
+      best: (n) => `Best streak: ${n}`,
+      doneToday: 'Done today',
+      keepGoing: 'Check in today to keep it going',
+      startNew: 'Start a new streak today',
+      honesty: 'Only the check-in itself counts, not the zone colour. An honest "I feel bad" counts the same as a green day.',
+      last14: 'Last 14 days',
+      dayDone: 'checked in',
+      dayMissed: 'no check-in',
+      teamTitle: 'Checked in today',
+      teamCount: (done, total) => `${done} of ${total}`,
+      teamAllDone: 'The whole team has checked in',
+      teamMissing: 'Not yet:',
+      teamHint: 'Counts the check-in itself, not the result.',
+      athleteStreak: (n) => `Check-in streak: ${n}`,
     },
     engine: {
       penaltyAcwrSpike: (acwr) => `ACWR ${acwr} — sharp load spike (injury risk)`,

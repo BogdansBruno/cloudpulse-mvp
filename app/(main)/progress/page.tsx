@@ -20,6 +20,7 @@ import type { ReadinessHistoryPoint } from '@/lib/types/readiness';
 import { ReadinessRing, zoneMeta, HUB } from '@/components/PerformancePanel';
 import ParentAccessCard from '@/components/ParentAccessCard';
 import TeamMembershipCard from '@/components/TeamMembershipCard';
+import CheckinStreakCard from '@/components/CheckinStreakCard';
 
 type HistoryPoint = ReadinessHistoryPoint;
 
@@ -312,6 +313,8 @@ export default function ProgressPage() {
             {t.progress.badge}
           </span>
         </header>
+
+        <CheckinStreakCard className="mb-3" />
 
         {error && (
           <div className="mb-6 flex gap-3 rounded-2xl bg-[#FF4D5E]/[0.08] p-4 text-sm text-zinc-200 ring-1 ring-inset ring-[#FF4D5E]/30">
