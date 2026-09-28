@@ -9,6 +9,8 @@ import { ReadinessRing, zoneMeta, loadStatus, noRestColor, HUB } from '@/compone
 import type { Penalty, SafetyViolation, InconsistencyFlag } from '@/lib/readiness-engine';
 import { translatePenalty, translateViolation, translateInconsistency } from '@/lib/engine-i18n';
 import TeamInvitePanel from '@/components/TeamInvitePanel';
+import MatchRosterCard from '@/components/MatchRosterCard';
+import type { RosterCheckin, RosterZone } from '@/lib/match-roster';
 import { addDays, computeCheckinStreak, datesByAthlete, teamCheckinSummary, todayUtc } from '@/lib/checkin-streak';
 
 // ---------------------------------------------------------------------------
@@ -31,7 +33,16 @@ import { addDays, computeCheckinStreak, datesByAthlete, teamCheckinSummary, toda
 const EDGE_FUNCTION_URL = 'https://pgfhvvetujsvigesueib.supabase.co/functions/v1/get-readiness';
 
 type DbTeamMemberRow = { athlete_id: string; team_name: string | null; athlete_label: string | null };
-type DbProfileRow = { id: string; sport: string | null; age: number | null };
+type DbProfileRow = { id: string; sport: string | null; age: number | null; match_dates: string[] | null };
+// Today's check-in with the numbers the readiness trigger already computed.
+type DbTodayCheckinRow = {
+  user_id: string;
+  readiness_score: number | null;
+  zone: RosterZone | null;
+  acwr: number | null;
+  is_pain_blocked: boolean;
+  pain_zone: string | null;
+};
 type DbCheckinDateRow = { user_id: string; date: string };
 
 type RosterEntry = {
@@ -81,6 +92,9 @@ export default function CoachPage() {
   // Only (athlete, date) pairs — enough for "X of Y today" and streaks.
   // null = not loaded or failed; the summary card then simply stays hidden.
   const [checkinRows, setCheckinRows] = useState<DbCheckinDateRow[] | null>(null);
+  // Match squad: today's computed check-ins + the team's match dates.
+  const [todayCheckins, setTodayCheckins] = useState<Map<string, RosterCheckin> | null>(null);
+  const [matchDates, setMatchDates] = useState<string[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const [data, setData] = useState<ReadinessPayload | null>(null);
@@ -114,7 +128,7 @@ export default function CoachPage() {
 
         const { data: profilesData, error: profilesError } = await supabase
           .from('profiles')
-          .select('id, sport, age')
+          .select('id, sport, age, match_dates')
           .in('id', athleteIds);
         if (profilesError) throw profilesError;
 
@@ -143,6 +157,28 @@ export default function CoachPage() {
           .gte('date', addDays(today, -60))
           .lte('date', today);
         if (!cancelled && !datesError) setCheckinRows((dateRows ?? []) as DbCheckinDateRow[]);
+
+        // Match squad (RLS: checkins_coach_view_team). Only computed outputs
+        // are read here — score, zone, ACWR, pain block — not the raw answers.
+        if (!cancelled) setMatchDates(profiles.flatMap((p) => p.match_dates ?? []));
+        const { data: todayRows, error: todayError } = await supabase
+          .from('checkins')
+          .select('user_id, readiness_score, zone, acwr, is_pain_blocked, pain_zone')
+          .in('user_id', athleteIds)
+          .eq('date', today);
+        if (!cancelled && !todayError) {
+          const map = new Map<string, RosterCheckin>();
+          for (const row of (todayRows ?? []) as DbTodayCheckinRow[]) {
+            map.set(row.user_id, {
+              score: row.readiness_score,
+              zone: row.zone,
+              acwr: row.acwr === null ? null : Number(row.acwr),
+              painBlocked: row.is_pain_blocked,
+              painZone: row.pain_zone,
+            });
+          }
+          setTodayCheckins(map);
+        }
       } catch (err) {
         if (!cancelled) setRosterError(err instanceof Error ? err.message : 'Something went wrong');
       }
@@ -297,6 +333,16 @@ export default function CoachPage() {
                 )}
                 <p className="mt-3 text-[11px] text-zinc-500">{t.streak.teamHint}</p>
               </section>
+            )}
+
+            {todayCheckins && (
+              <MatchRosterCard
+                players={roster.map((a) => ({ id: a.athleteId, label: athleteLabel(a, t.coach.athleteFallback) }))}
+                checkins={todayCheckins}
+                matchDates={matchDates}
+                today={today}
+                onSelect={setSelectedId}
+              />
             )}
 
             {/* Roster picker */}

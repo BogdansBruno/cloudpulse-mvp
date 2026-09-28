@@ -420,6 +420,24 @@ type Dict = {
     installIos: string;
     installClose: string;
   };
+  roster: {
+    title: string;
+    basis: string;
+    nextMatch: (date: string, inDays: number) => string;
+    noMatch: string;
+    groups: { out: string; limited: string; unknown: string; available: string };
+    reasonPain: (zone: string | null) => string;
+    reasonLowReadiness: (score: number | null) => string;
+    reasonLoadSpike: (acwr: string) => string;
+    reasonNoCheckin: string;
+    reasonNotComputed: string;
+    reasonOk: (score: number | null) => string;
+    copy: string;
+    copied: string;
+    shareHeader: (date: string) => string;
+    shareGroups: { out: string; limited: string; unknown: string; available: string };
+    empty: string;
+  };
   engine: {
     penaltyAcwrSpike: (acwr: string) => string;
     penaltyAcwrRising: (acwr: string) => string;
@@ -943,6 +961,31 @@ export const translations: Record<Lang, Dict> = {
       installIos: 'В Safari нажми «Поделиться», затем «На экран „Домой“».',
       installClose: 'Закрыть',
     },
+    roster: {
+      title: 'Заявка на матч',
+      basis: 'По сегодняшним чек-инам. Это подсказка движка — состав выбирает тренер.',
+      nextMatch: (date, d) =>
+        d === 0 ? `Матч сегодня, ${date}` : d === 1 ? `Матч завтра, ${date}` : `Ближайший матч: ${date}, через ${d} ${ruDays(d)}`,
+      noMatch: 'Матч в календаре команды не найден.',
+      groups: {
+        out: 'Не допущены до осмотра',
+        limited: 'С ограничением нагрузки',
+        unknown: 'Нет чек-ина сегодня',
+        available: 'Доступны',
+      },
+      reasonPain: (zone) =>
+        zone ? `Боль: ${zone} — сначала врач, медсестра или физиотерапевт` : 'Боль — сначала врач, медсестра или физиотерапевт',
+      reasonLowReadiness: (score) => (score === null ? 'Красная зона готовности' : `Готовность ${score} — красная зона`),
+      reasonLoadSpike: (acwr) => `Резкий рост нагрузки (ACWR ${acwr})`,
+      reasonNoCheckin: 'Попросите заполнить чек-ин',
+      reasonNotComputed: 'Оценка ещё не посчитана',
+      reasonOk: (score) => (score === null ? 'Без ограничений' : `Готовность ${score}`),
+      copy: 'Скопировать заявку',
+      copied: 'Скопировано',
+      shareHeader: (date) => `Заявка на ${date}`,
+      shareGroups: { out: 'Не заявлены', limited: 'С ограничением нагрузки', unknown: 'Нет данных', available: 'Доступны' },
+      empty: 'никого',
+    },
     engine: {
       penaltyAcwrSpike: (acwr) => `ACWR ${acwr} — резкий скачок нагрузки (риск травмы)`,
       penaltyAcwrRising: (acwr) => `ACWR ${acwr} — нагрузка растёт быстрее обычного`,
@@ -1451,6 +1494,31 @@ export const translations: Record<Lang, Dict> = {
       installIos: 'Safari nospied «Kopīgot», tad «Pievienot sākuma ekrānam».',
       installClose: 'Aizvērt',
     },
+    roster: {
+      title: 'Pieteikums spēlei',
+      basis: 'Pēc šodienas pārbaudēm. Tas ir dzinēja ieteikums — sastāvu izvēlas treneris.',
+      nextMatch: (date, d) =>
+        d === 0 ? `Spēle šodien, ${date}` : d === 1 ? `Spēle rīt, ${date}` : `Tuvākā spēle: ${date}, pēc ${d} ${lvDays(d)}`,
+      noMatch: 'Komandas kalendārā spēle nav atrasta.',
+      groups: {
+        out: 'Nav pielaisti līdz apskatei',
+        limited: 'Ar samazinātu slodzi',
+        unknown: 'Šodien nav pārbaudes',
+        available: 'Pieejami',
+      },
+      reasonPain: (zone) =>
+        zone ? `Sāpes: ${zone} — vispirms ārsts, medmāsa vai fizioterapeits` : 'Sāpes — vispirms ārsts, medmāsa vai fizioterapeits',
+      reasonLowReadiness: (score) => (score === null ? 'Sarkanā gatavības zona' : `Gatavība ${score} — sarkanā zona`),
+      reasonLoadSpike: (acwr) => `Straujš slodzes pieaugums (ACWR ${acwr})`,
+      reasonNoCheckin: 'Palūdziet aizpildīt pārbaudi',
+      reasonNotComputed: 'Novērtējums vēl nav aprēķināts',
+      reasonOk: (score) => (score === null ? 'Bez ierobežojumiem' : `Gatavība ${score}`),
+      copy: 'Kopēt pieteikumu',
+      copied: 'Nokopēts',
+      shareHeader: (date) => `Pieteikums ${date}`,
+      shareGroups: { out: 'Nav pieteikti', limited: 'Ar samazinātu slodzi', unknown: 'Nav datu', available: 'Pieejami' },
+      empty: 'neviena',
+    },
     engine: {
       penaltyAcwrSpike: (acwr) => `ACWR ${acwr} — straujš slodzes lēciens (traumas risks)`,
       penaltyAcwrRising: (acwr) => `ACWR ${acwr} — slodze pieaug straujāk nekā parasti`,
@@ -1955,6 +2023,31 @@ export const translations: Record<Lang, Dict> = {
       installButton: 'Install',
       installIos: 'In Safari, tap Share, then "Add to Home Screen".',
       installClose: 'Close',
+    },
+    roster: {
+      title: 'Match squad',
+      basis: "From today's check-ins. This is the engine's suggestion — the coach picks the team.",
+      nextMatch: (date, d) =>
+        d === 0 ? `Match today, ${date}` : d === 1 ? `Match tomorrow, ${date}` : `Next match: ${date}, in ${d} days`,
+      noMatch: 'No match found in the team calendar.',
+      groups: {
+        out: 'Not selected until examined',
+        limited: 'Reduced load',
+        unknown: 'No check-in today',
+        available: 'Available',
+      },
+      reasonPain: (zone) =>
+        zone ? `Pain: ${zone} — see a doctor, nurse or physio first` : 'Pain — see a doctor, nurse or physio first',
+      reasonLowReadiness: (score) => (score === null ? 'Readiness in the red zone' : `Readiness ${score} — red zone`),
+      reasonLoadSpike: (acwr) => `Sharp load increase (ACWR ${acwr})`,
+      reasonNoCheckin: 'Ask them to check in',
+      reasonNotComputed: 'Score not calculated yet',
+      reasonOk: (score) => (score === null ? 'No restrictions' : `Readiness ${score}`),
+      copy: 'Copy squad',
+      copied: 'Copied',
+      shareHeader: (date) => `Squad for ${date}`,
+      shareGroups: { out: 'Not selected', limited: 'Reduced load', unknown: 'No data', available: 'Available' },
+      empty: 'nobody',
     },
     engine: {
       penaltyAcwrSpike: (acwr) => `ACWR ${acwr} — sharp load spike (injury risk)`,
