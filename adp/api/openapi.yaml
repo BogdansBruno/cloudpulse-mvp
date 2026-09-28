@@ -1,0 +1,603 @@
+openapi: 3.1.0
+info:
+  title: Athlete Digital Passport (ADP) API
+  version: 0.1.0
+  summary: Check-in, coach roster and reschedule endpoints for the ADP pilot.
+  description: |
+    REST API of the ADP foundation (PRD v0.1). Implemented as Next.js route
+    handlers on Vercel, next to CloudPulse, after the competition (06.11.2026).
+    REST rather than gRPC: every client is a browser/PWA, and Vercel serverless
+    functions speak HTTP/JSON natively.
+
+    Rules every endpoint follows:
+    - **Who you are comes from the token, never from the body.** The server
+      verifies the Supabase JWT and uses its `sub` as the caller. No request
+      body carries the caller's own id, so nobody can check in "as" someone else.
+    - **The database is the last gate.** Handlers read and write through the
+      caller's own RLS-scoped connection, except the writes that only the server
+      may make (check-ins, daily status, safety flags, eligibility), which go
+      through service_role *after* the TypeScript engines ran
+      (adp/src/services). See adp/db/migrations/001_init_adp_schema.sql.
+    - **Not visible = not found.** A resource the caller may not see answers
+      404, not 403, so ids of other children's data cannot be probed.
+    - **No diagnoses** (EU MDR): triage returns observed signs, deadlines and
+      kinds of professional, never a medical condition.
+    - **The machine proposes, a human decides**: a reschedule is only ever
+      decided by the addressed teacher, and a decision is final.
+
+servers:
+  - url: https://cloudpulse-mvp.vercel.app/api/v1
+    description: Production (not deployed before 06.11.2026)
+  - url: http://localhost:3000/api/v1
+    description: Local development
+
+security:
+  - supabaseJwt: []
+
+tags:
+  - name: Check-in
+  - name: Coach
+  - name: Academic
+
+paths:
+  /check-in:
+    post:
+      tags: [Check-in]
+      operationId: submitCheckIn
+      summary: Submit today's (or a recent offline) check-in and get the triage result
+      description: |
+        Caller role: **student**. Runs `TriageSafetyGuard.processCheckIn`.
+
+        - Any pain or red-flag sign turns the day **red and blocks load at
+          once**; the response lists what to do next (112 first when needed).
+        - An earlier red flag no doctor has cleared keeps the day blocked,
+          whatever today's answers say.
+        - Writes are fail-safe: status and flags are stored before the raw answers.
+        - Idempotent per (student, date): re-submitting the same day replaces
+          the answers and never duplicates open flags.
+        - `date` defaults to today (UTC). Offline check-ins send the day they
+          were filled in; only today and the previous 7 days are accepted.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CheckInRequest' }
+            examples:
+              pain:
+                summary: Knee pain, nothing else
+                value:
+                  date: '2026-10-01'
+                  sleepQuality: 6
+                  stress: 5
+                  fatigue: 5
+                  soreness: 3
+                  painReported: true
+                  painLocation: knee
+                  signs: []
+      responses:
+        '200':
+          description: Stored and triaged.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CheckInResponse' }
+              examples:
+                pain:
+                  summary: Pain two days before a match
+                  value:
+                    outcome: PAIN
+                    statusColor: red
+                    loadBlocked: true
+                    reasonCodes: [PAIN_REPORTED]
+                    flagsCreated: 1
+                    actions:
+                      - { type: BLOCK_LOAD }
+                      - { type: NOTIFY, audience: [coach, parent], urgency: same_day }
+                      - { type: BOOK_SPECIALIST, specialist: sports_doctor, deadline: '2026-10-02', beforeMatch: true }
+                      - { type: ISSUE_SAFETY_PASS }
+                      - { type: FOLLOW_UP, onDates: ['2026-10-02', '2026-10-04'] }
+        '400':
+          $ref: '#/components/responses/ValidationFailed'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/WrongRole'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+
+  /coach/roster-status:
+    get:
+      tags: [Coach]
+      operationId: getRosterStatus
+      summary: Today's status of every athlete in the caller's teams
+      description: |
+        Caller role: **coach**. Returns only what the PRD matrix gives a coach:
+        colour of the day, load block, open safety flags (types, not answers)
+        and the eligibility **colour** — never grades, averages or check-in
+        answers. The schemas below are closed (`additionalProperties: false`),
+        so adding a field is a deliberate, reviewed change.
+
+        Eligibility that got worse is shown to the coach 48 h after the
+        student (`eligibility.visibility = pending_notice` until then).
+        A day without a check-in is `color: null` ("no data"), never green.
+      parameters:
+        - name: date
+          in: query
+          required: false
+          description: Day to show (UTC). Defaults to today.
+          schema: { $ref: '#/components/schemas/IsoDate' }
+      responses:
+        '200':
+          description: Roster for the requested day.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RosterStatus' }
+              examples:
+                twoAthletes:
+                  value:
+                    date: '2026-10-01'
+                    summary: { checkedIn: 1, total: 2, loadBlocked: 1 }
+                    athletes:
+                      - studentId: a1000000-0000-4000-8000-000000000001
+                        displayName: Maksims
+                        day: { color: red, loadBlocked: true, hasCheckIn: true }
+                        openFlags:
+                          - { type: pain, level: red, location: knee, since: '2026-10-01' }
+                        eligibility: { color: null, visibility: pending_notice }
+                      - studentId: a1000000-0000-4000-8000-000000000002
+                        displayName: Elīza
+                        day: { color: null, loadBlocked: false, hasCheckIn: false }
+                        openFlags: []
+                        eligibility: { color: green, visibility: visible }
+        '400':
+          $ref: '#/components/responses/ValidationFailed'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/WrongRole'
+
+  /academic/reschedule-request:
+    post:
+      tags: [Academic]
+      operationId: createRescheduleRequest
+      summary: Ask a teacher to move an assessment
+      description: |
+        Caller role: **student** (the server's conflict detector uses the same
+        rules through service_role). Creates a `pending` request; only the
+        addressed teacher can decide it.
+
+        - The teacher must actually teach the caller (`NOT_THIS_STUDENTS_TEACHER`).
+        - A `medical` reason carries no text: teachers get no health details.
+        - One request per (student, teacher, subject, date). A rejection is
+          final, so the same request cannot be sent again (`ALREADY_REQUESTED`).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateRescheduleRequest' }
+            examples:
+              competition:
+                value:
+                  teacherId: a1000000-0000-4000-8000-000000000031
+                  subject: Matemātika
+                  eventDate: '2026-10-10'
+                  reason: competition
+                  proposedDates: ['2026-10-12', '2026-10-14']
+      responses:
+        '201':
+          description: Created, waiting for the teacher.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RescheduleRequest' }
+        '400':
+          $ref: '#/components/responses/ValidationFailed'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/WrongRole'
+        '409':
+          description: This assessment already has a request (pending or decided).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+              examples:
+                duplicate:
+                  value: { error: { code: ALREADY_REQUESTED, message: A request for this assessment already exists. } }
+
+  /academic/reschedule-request/{id}:
+    patch:
+      tags: [Academic]
+      operationId: decideRescheduleRequest
+      summary: Teacher's one-tap decision
+      description: |
+        Caller role: **teacher**, and only the teacher the request is addressed
+        to (others get 404). Approving means tapping one of the dates the
+        student proposed — the tap both approves and sets `approvedDate`.
+        A decision is final: a second decision answers 409 `DECISION_FINAL`.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { $ref: '#/components/schemas/Uuid' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RescheduleDecision' }
+            examples:
+              approve:
+                value: { decision: approve, approvedDate: '2026-10-12' }
+              reject:
+                value: { decision: reject, note: Let's talk after class. }
+      responses:
+        '200':
+          description: Decision stored.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RescheduleRequest' }
+        '400':
+          $ref: '#/components/responses/ValidationFailed'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/WrongRole'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Already decided.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+              examples:
+                final:
+                  value: { error: { code: DECISION_FINAL, message: This request has already been decided. } }
+
+components:
+  securitySchemes:
+    supabaseJwt:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: 'Supabase access token of the signed-in user (`Authorization: Bearer <token>`).'
+
+  responses:
+    ValidationFailed:
+      description: The request is malformed or breaks a business rule.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+          examples:
+            scale:
+              value:
+                error:
+                  code: VALIDATION_FAILED
+                  message: Check-in is not valid.
+                  details: [{ code: SCALE_OUT_OF_RANGE, field: stress }]
+    Unauthenticated:
+      description: Missing, expired or invalid token.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+          examples:
+            noToken:
+              value: { error: { code: UNAUTHENTICATED, message: Sign in first. } }
+    WrongRole:
+      description: Signed in, but this endpoint is not for the caller's role.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+          examples:
+            role:
+              value: { error: { code: WRONG_ROLE, message: This endpoint is for coaches. } }
+    NotFound:
+      description: Does not exist, or the caller may not see it (deliberately indistinguishable).
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+          examples:
+            hidden:
+              value: { error: { code: NOT_FOUND, message: Not found. } }
+    RateLimited:
+      description: Too many requests; retry after the given number of seconds.
+      headers:
+        Retry-After:
+          schema: { type: integer, minimum: 1 }
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+          examples:
+            slow:
+              value: { error: { code: RATE_LIMITED, message: Too many requests. } }
+
+  schemas:
+    Uuid:
+      type: string
+      format: uuid
+    IsoDate:
+      type: string
+      format: date
+      description: Calendar day in UTC, `YYYY-MM-DD`.
+      pattern: '^\d{4}-\d{2}-\d{2}$'
+    IsoDateTime:
+      type: string
+      format: date-time
+    StatusColor:
+      type: string
+      enum: [green, yellow, red]
+    Scale1to7:
+      type: integer
+      minimum: 1
+      maximum: 7
+      description: 1 = worst, 7 = best (same scales as CloudPulse).
+    ReportableSign:
+      type: string
+      description: Observed signs an athlete can tick. Not diagnoses.
+      enum:
+        - loss_of_consciousness
+        - seizure
+        - confusion
+        - cannot_bear_weight
+        - visible_deformity
+        - numbness_or_tingling
+        - chest_pain_or_breathlessness
+        - head_impact
+    RedFlagType:
+      type: string
+      enum:
+        - pain
+        - head_impact
+        - loss_of_consciousness
+        - seizure
+        - confusion
+        - cannot_bear_weight
+        - visible_deformity
+        - numbness_or_tingling
+        - chest_pain_or_breathlessness
+        - overuse_pattern
+
+    CheckInRequest:
+      type: object
+      additionalProperties: false
+      description: The caller's id is taken from the token; there is deliberately no studentId here.
+      required: [sleepQuality, stress, fatigue, soreness, painReported, signs]
+      properties:
+        date: { $ref: '#/components/schemas/IsoDate' }
+        sleepQuality: { $ref: '#/components/schemas/Scale1to7' }
+        stress: { $ref: '#/components/schemas/Scale1to7' }
+        fatigue: { $ref: '#/components/schemas/Scale1to7' }
+        soreness: { $ref: '#/components/schemas/Scale1to7' }
+        painReported: { type: boolean }
+        painLocation:
+          type: string
+          maxLength: 60
+          description: Body area in the athlete's words ("knee"). Only with painReported = true.
+        signs:
+          type: array
+          uniqueItems: true
+          items: { $ref: '#/components/schemas/ReportableSign' }
+
+    TriageAction:
+      description: Next steps in priority order. Kinds of professional only, never a condition.
+      oneOf:
+        - type: object
+          additionalProperties: false
+          required: [type, phone]
+          properties:
+            type: { const: CALL_EMERGENCY }
+            phone: { const: '112' }
+        - type: object
+          additionalProperties: false
+          required: [type]
+          properties:
+            type: { enum: [BLOCK_LOAD, ISSUE_SAFETY_PASS, RETURN_TO_LEARN_FIRST] }
+        - type: object
+          additionalProperties: false
+          required: [type, audience, urgency]
+          properties:
+            type: { const: NOTIFY }
+            audience:
+              type: array
+              items: { enum: [coach, parent] }
+            urgency: { enum: [immediate, same_day] }
+        - type: object
+          additionalProperties: false
+          required: [type, specialist, deadline, beforeMatch]
+          properties:
+            type: { const: BOOK_SPECIALIST }
+            specialist: { enum: [emergency_services, doctor, sports_doctor] }
+            deadline: { $ref: '#/components/schemas/IsoDate' }
+            beforeMatch:
+              type: [boolean, 'null']
+              description: true = possible ≥ 2 days before the next match; false = not possible; null = no match planned.
+        - type: object
+          additionalProperties: false
+          required: [type, onDates]
+          properties:
+            type: { const: FOLLOW_UP }
+            onDates:
+              type: array
+              items: { $ref: '#/components/schemas/IsoDate' }
+
+    CheckInResponse:
+      type: object
+      additionalProperties: false
+      required: [outcome, statusColor, loadBlocked, reasonCodes, actions, flagsCreated]
+      properties:
+        outcome: { enum: [EMERGENCY, HEAD_IMPACT, PAIN, CLEAR] }
+        statusColor:
+          description: red whenever load is blocked; otherwise the readiness colour, or null = no data yet.
+          oneOf:
+            - { $ref: '#/components/schemas/StatusColor' }
+            - { type: 'null' }
+        loadBlocked: { type: boolean }
+        reasonCodes:
+          type: array
+          items: { enum: [EMERGENCY_SIGN, HEAD_IMPACT, PAIN_REPORTED, OVERUSE_PATTERN, AWAITING_DOCTOR_CLEARANCE] }
+        actions:
+          type: array
+          items: { $ref: '#/components/schemas/TriageAction' }
+        flagsCreated: { type: integer, minimum: 0 }
+
+    RosterStatus:
+      type: object
+      additionalProperties: false
+      required: [date, summary, athletes]
+      properties:
+        date: { $ref: '#/components/schemas/IsoDate' }
+        summary:
+          type: object
+          additionalProperties: false
+          required: [checkedIn, total, loadBlocked]
+          properties:
+            checkedIn: { type: integer, minimum: 0 }
+            total: { type: integer, minimum: 0 }
+            loadBlocked: { type: integer, minimum: 0 }
+        athletes:
+          type: array
+          items: { $ref: '#/components/schemas/RosterAthlete' }
+
+    RosterAthlete:
+      type: object
+      additionalProperties: false
+      description: What a coach may see about one athlete. No grades, averages or check-in answers — by design.
+      required: [studentId, displayName, day, openFlags, eligibility]
+      properties:
+        studentId: { $ref: '#/components/schemas/Uuid' }
+        displayName: { type: string, maxLength: 60 }
+        day:
+          type: object
+          additionalProperties: false
+          required: [color, loadBlocked, hasCheckIn]
+          properties:
+            color:
+              oneOf:
+                - { $ref: '#/components/schemas/StatusColor' }
+                - { type: 'null' }
+            loadBlocked: { type: boolean }
+            hasCheckIn: { type: boolean }
+        openFlags:
+          type: array
+          description: Flags not yet cleared by a doctor.
+          items:
+            type: object
+            additionalProperties: false
+            required: [type, level, location, since]
+            properties:
+              type: { $ref: '#/components/schemas/RedFlagType' }
+              level: { enum: [red, yellow] }
+              location: { type: [string, 'null'], maxLength: 60 }
+              since: { $ref: '#/components/schemas/IsoDate' }
+        eligibility:
+          type: object
+          additionalProperties: false
+          required: [color, visibility]
+          properties:
+            color:
+              description: null while pending_notice or without data.
+              oneOf:
+                - { $ref: '#/components/schemas/StatusColor' }
+                - { type: 'null' }
+            visibility:
+              enum: [visible, pending_notice, no_data]
+
+    CreateRescheduleRequest:
+      type: object
+      additionalProperties: false
+      required: [teacherId, subject, eventDate, reason, proposedDates]
+      properties:
+        teacherId: { $ref: '#/components/schemas/Uuid' }
+        subject: { type: string, minLength: 1, maxLength: 80 }
+        eventDate: { $ref: '#/components/schemas/IsoDate' }
+        reason: { enum: [competition, travel, medical] }
+        reasonNote:
+          type: string
+          maxLength: 280
+          description: Not allowed when reason = medical (400 MEDICAL_NOTE_NOT_ALLOWED).
+        proposedDates:
+          type: array
+          minItems: 1
+          maxItems: 3
+          uniqueItems: true
+          items: { $ref: '#/components/schemas/IsoDate' }
+
+    RescheduleDecision:
+      oneOf:
+        - type: object
+          additionalProperties: false
+          required: [decision, approvedDate]
+          properties:
+            decision: { const: approve }
+            approvedDate:
+              $ref: '#/components/schemas/IsoDate'
+              description: Must be one of the request's proposedDates.
+        - type: object
+          additionalProperties: false
+          required: [decision]
+          properties:
+            decision: { const: reject }
+            note: { type: string, maxLength: 280 }
+
+    RescheduleRequest:
+      type: object
+      additionalProperties: false
+      required: [id, studentId, teacherId, subject, eventDate, reason, reasonNote, proposedDates, status, approvedDate, decidedAt, createdAt]
+      properties:
+        id: { $ref: '#/components/schemas/Uuid' }
+        studentId: { $ref: '#/components/schemas/Uuid' }
+        teacherId: { $ref: '#/components/schemas/Uuid' }
+        subject: { type: string }
+        eventDate: { $ref: '#/components/schemas/IsoDate' }
+        reason: { enum: [competition, travel, medical] }
+        reasonNote: { type: [string, 'null'] }
+        proposedDates:
+          type: array
+          items: { $ref: '#/components/schemas/IsoDate' }
+        status: { enum: [pending, approved, rejected] }
+        approvedDate:
+          oneOf:
+            - { $ref: '#/components/schemas/IsoDate' }
+            - { type: 'null' }
+        decidedAt:
+          oneOf:
+            - { $ref: '#/components/schemas/IsoDateTime' }
+            - { type: 'null' }
+        createdAt: { $ref: '#/components/schemas/IsoDateTime' }
+
+    Error:
+      type: object
+      additionalProperties: false
+      required: [error]
+      properties:
+        error:
+          type: object
+          additionalProperties: false
+          required: [code, message]
+          properties:
+            code:
+              enum:
+                - UNAUTHENTICATED
+                - WRONG_ROLE
+                - NOT_FOUND
+                - RATE_LIMITED
+                - VALIDATION_FAILED
+                - INVALID_DATE
+                - MEDICAL_NOTE_NOT_ALLOWED
+                - PROPOSED_DATE_EQUALS_EVENT
+                - EVENT_IN_PAST
+                - NOT_THIS_STUDENTS_TEACHER
+                - DATE_NOT_PROPOSED
+                - ALREADY_REQUESTED
+                - DECISION_FINAL
+                - INTERNAL
+            message:
+              type: string
+              description: Short English text for logs. The UI shows its own RU/LV/EN copy by `code`.
+            details:
+              type: array
+              description: Field-level problems, e.g. the check-in validation errors.
+              items:
+                type: object
+                required: [code]
+                properties:
+                  code: { type: string }
+                  field: { type: string }
+                  sign: { type: string }

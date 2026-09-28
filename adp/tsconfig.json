@@ -1,0 +1,19 @@
+{
+  // ADP is type-checked on its own, never by the site's `next build`:
+  // the root tsconfig.json excludes "adp", so nothing here can break the
+  // live CloudPulse deploy before the competition (06.11.2026).
+  // Check it with:  npx tsc -p adp
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "incremental": false,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "paths": {
+      "@adp/*": ["./src/*"]
+    }
+  },
+  "include": ["src/**/*.ts", "src/**/*.tsx"],
+  "exclude": []
+}
