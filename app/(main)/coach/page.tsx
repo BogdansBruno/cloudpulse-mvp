@@ -12,6 +12,8 @@ import TeamInvitePanel from '@/components/TeamInvitePanel';
 import MatchRosterCard from '@/components/MatchRosterCard';
 import CoachAlertsCard from '@/components/CoachAlertsCard';
 import RtpCoachCard, { type RtpCoachEntry } from '@/components/RtpCoachCard';
+import ExamStormCard from '@/components/ExamStormCard';
+import type { StormAthlete } from '@/lib/exam-storm';
 import {
   RTP_LOOKBACK_DAYS,
   openRtp,
@@ -44,7 +46,13 @@ import { addDays, computeCheckinStreak, datesByAthlete, teamCheckinSummary, toda
 const EDGE_FUNCTION_URL = 'https://pgfhvvetujsvigesueib.supabase.co/functions/v1/get-readiness';
 
 type DbTeamMemberRow = { athlete_id: string; team_name: string | null; athlete_label: string | null };
-type DbProfileRow = { id: string; sport: string | null; age: number | null; match_dates: string[] | null };
+type DbProfileRow = {
+  id: string;
+  sport: string | null;
+  age: number | null;
+  match_dates: string[] | null;
+  exam_dates: string[] | null;
+};
 // Today's check-in with the numbers the readiness trigger already computed.
 type DbTodayCheckinRow = {
   user_id: string;
@@ -107,6 +115,8 @@ export default function CoachPage() {
   // Match squad: today's computed check-ins + the team's match dates.
   const [todayCheckins, setTodayCheckins] = useState<Map<string, RosterCheckin> | null>(null);
   const [matchDates, setMatchDates] = useState<string[]>([]);
+  // Exam storm: each athlete's exam and match dates (counts only on screen).
+  const [stormAthletes, setStormAthletes] = useState<StormAthlete[] | null>(null);
   // Return-to-Play rows (SQL 11). null = not loaded / tables not there yet.
   const [rtpRows, setRtpRows] = useState<{ clearances: unknown[]; followups: unknown[] } | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -145,7 +155,7 @@ export default function CoachPage() {
 
         const { data: profilesData, error: profilesError } = await supabase
           .from('profiles')
-          .select('id, sport, age, match_dates')
+          .select('id, sport, age, match_dates, exam_dates')
           .in('id', athleteIds);
         if (profilesError) throw profilesError;
 
@@ -164,7 +174,10 @@ export default function CoachPage() {
           setSelectedId(merged[0]?.athleteId ?? null);
         }
 
-        if (!cancelled) setMatchDates(profiles.flatMap((p) => p.match_dates ?? []));
+        if (!cancelled) {
+          setMatchDates(profiles.flatMap((p) => p.match_dates ?? []));
+          setStormAthletes(profiles.map((p) => ({ examDates: p.exam_dates ?? [], matchDates: p.match_dates ?? [] })));
+        }
       } catch (err) {
         if (!cancelled) setRosterError(err instanceof Error ? err.message : 'Something went wrong');
       }
@@ -439,6 +452,9 @@ export default function CoachPage() {
                 onSelect={setSelectedId}
               />
             )}
+
+            {/* Exam storm: next 14 days, counts only */}
+            {stormAthletes && <ExamStormCard athletes={stormAthletes} today={today} />}
 
             {/* Roster picker */}
             <div>

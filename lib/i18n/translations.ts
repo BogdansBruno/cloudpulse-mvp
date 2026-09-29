@@ -444,6 +444,21 @@ type Dict = {
     shareGroups: { out: string; limited: string; unknown: string; available: string };
     empty: string;
   };
+  storm: {
+    title: string;
+    subtitle: string;
+    fewer: string;
+    legendStorm: (threshold: number) => string;
+    legendMatch: string;
+    none: string;
+    noneHint: string;
+    calm: string;
+    stormLine: (range: string, peak: string, team: number) => string;
+    matchInStorm: (dates: string) => string;
+    engineNote: string;
+    privacy: string;
+    dayAria: (day: string, count: string, match: boolean) => string;
+  };
   rtp: {
     title: string;
     painOn: (date: string, zone: string | null) => string;
@@ -1054,6 +1069,21 @@ export const translations: Record<Lang, Dict> = {
       shareGroups: { out: 'Не заявлены', limited: 'С ограничением нагрузки', unknown: 'Нет данных', available: 'Доступны' },
       empty: 'никого',
     },
+    storm: {
+      title: 'Экзаменационный шторм',
+      subtitle: 'Ближайшие 2 недели: сколько спортсменов в окне контрольных — день контрольной и 3 дня до неё.',
+      fewer: '<3',
+      legendStorm: (n) => `шторм — в окне треть команды или больше (от ${n})`,
+      legendMatch: 'матч',
+      none: 'В ближайшие 2 недели контрольных у команды не отмечено.',
+      noneHint: 'Спортсмены добавляют контрольные в разделе «Календарь».',
+      calm: 'Шторма нет: одновременно в окне контрольных меньше трети команды.',
+      stormLine: (range, peak, team) => `Шторм ${range}: в окне контрольных до ${peak} из ${team}.`,
+      matchInStorm: (dates) => `Матч в дни шторма: ${dates}.`,
+      engineNote: 'Движок уже снижает этим спортсменам балл готовности на 15. Лёгкая тренировка или перенос — решаете вы.',
+      privacy: 'Только числа, без имён. Меньше 3 точно не показываем — чтобы нельзя было угадать, о ком речь.',
+      dayAria: (day, count, match) => `${day}: в окне контрольных ${count}${match ? ', матч' : ''}`,
+    },
     rtp: {
       title: 'Возвращение после боли',
       painOn: (date, zone) => (zone ? `Боль ${date}: ${zone}` : `Боль ${date}`),
@@ -1658,6 +1688,21 @@ export const translations: Record<Lang, Dict> = {
       shareGroups: { out: 'Nav pieteikti', limited: 'Ar samazinātu slodzi', unknown: 'Nav datu', available: 'Pieejami' },
       empty: 'neviena',
     },
+    storm: {
+      title: 'Eksāmenu vētra',
+      subtitle: 'Nākamās 2 nedēļas: cik sportistu ir kontroldarbu logā — kontroldarba diena un 3 dienas pirms tās.',
+      fewer: '<3',
+      legendStorm: (n) => `vētra — logā ir trešdaļa komandas vai vairāk (no ${n})`,
+      legendMatch: 'spēle',
+      none: 'Nākamajās 2 nedēļās komandai kontroldarbi nav atzīmēti.',
+      noneHint: 'Sportisti pievieno kontroldarbus sadaļā «Kalendārs».',
+      calm: 'Vētras nav: kontroldarbu logā vienlaikus ir mazāk nekā trešdaļa komandas.',
+      stormLine: (range, peak, team) => `Vētra ${range}: kontroldarbu logā līdz ${peak} no ${team}.`,
+      matchInStorm: (dates) => `Spēle vētras dienās: ${dates}.`,
+      engineNote: 'Dzinējs jau samazina šiem sportistiem gatavības punktus par 15. Viegls treniņš vai pārcelšana — jūsu lēmums.',
+      privacy: 'Tikai skaitļi, bez vārdiem. Mazāk par 3 precīzi nerādām — lai nevarētu uzminēt, par ko ir runa.',
+      dayAria: (day, count, match) => `${day}: kontroldarbu logā ${count}${match ? ', spēle' : ''}`,
+    },
     rtp: {
       title: 'Atgriešanās pēc sāpēm',
       painOn: (date, zone) => (zone ? `Sāpes ${date}: ${zone}` : `Sāpes ${date}`),
@@ -2258,6 +2303,21 @@ export const translations: Record<Lang, Dict> = {
       shareHeader: (date) => `Squad for ${date}`,
       shareGroups: { out: 'Not selected', limited: 'Reduced load', unknown: 'No data', available: 'Available' },
       empty: 'nobody',
+    },
+    storm: {
+      title: 'Exam storm',
+      subtitle: 'Next 2 weeks: how many athletes are in their exam window — the exam day and the 3 days before it.',
+      fewer: '<3',
+      legendStorm: (n) => `storm — a third of the team or more in the window (from ${n})`,
+      legendMatch: 'match',
+      none: 'No exams marked for the team in the next 2 weeks.',
+      noneHint: 'Athletes add exams in the Calendar section.',
+      calm: 'No storm: fewer than a third of the team is in an exam window at the same time.',
+      stormLine: (range, peak, team) => `Storm ${range}: up to ${peak} of ${team} in the exam window.`,
+      matchInStorm: (dates) => `Match during the storm: ${dates}.`,
+      engineNote: 'The engine already takes 15 points off these athletes’ readiness. A lighter session or moving it — your call.',
+      privacy: 'Numbers only, no names. Counts below 3 are never shown exactly, so no one can guess who it is.',
+      dayAria: (day, count, match) => `${day}: ${count} in the exam window${match ? ', match' : ''}`,
     },
     rtp: {
       title: 'Return after pain',
