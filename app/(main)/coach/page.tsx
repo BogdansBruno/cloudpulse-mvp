@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { motion, useReducedMotion } from 'motion/react';
 import { WarningOctagon, Info, Flame, Users, Barbell, CheckCircle } from '@phosphor-icons/react';
 import { supabase } from '@/lib/supabase';
@@ -10,6 +10,7 @@ import type { Penalty, SafetyViolation, InconsistencyFlag } from '@/lib/readines
 import { translatePenalty, translateViolation, translateInconsistency } from '@/lib/engine-i18n';
 import TeamInvitePanel from '@/components/TeamInvitePanel';
 import MatchRosterCard from '@/components/MatchRosterCard';
+import CoachAlertsCard from '@/components/CoachAlertsCard';
 import type { RosterCheckin, RosterZone } from '@/lib/match-roster';
 import { addDays, computeCheckinStreak, datesByAthlete, teamCheckinSummary, todayUtc } from '@/lib/checkin-streak';
 
@@ -100,6 +101,9 @@ export default function CoachPage() {
   const [data, setData] = useState<ReadinessPayload | null>(null);
   const [loadingAthlete, setLoadingAthlete] = useState(false);
   const [athleteError, setAthleteError] = useState<string | null>(null);
+  // Bumped when a live alert arrives: today's numbers and the open athlete
+  // card are fetched again, so the whole screen agrees with the alert.
+  const [refreshKey, setRefreshKey] = useState(0);
 
   // Load the coach's roster: team_members -> profiles, both RLS-scoped to
   // rows where the signed-in user is the coach.
@@ -147,38 +151,7 @@ export default function CoachPage() {
           setSelectedId(merged[0]?.athleteId ?? null);
         }
 
-        // Check-in dates for the whole roster (RLS: checkins_coach_view_team).
-        // 60 days is plenty for a current streak and keeps the query small.
-        const today = todayUtc();
-        const { data: dateRows, error: datesError } = await supabase
-          .from('checkins')
-          .select('user_id, date')
-          .in('user_id', athleteIds)
-          .gte('date', addDays(today, -60))
-          .lte('date', today);
-        if (!cancelled && !datesError) setCheckinRows((dateRows ?? []) as DbCheckinDateRow[]);
-
-        // Match squad (RLS: checkins_coach_view_team). Only computed outputs
-        // are read here — score, zone, ACWR, pain block — not the raw answers.
         if (!cancelled) setMatchDates(profiles.flatMap((p) => p.match_dates ?? []));
-        const { data: todayRows, error: todayError } = await supabase
-          .from('checkins')
-          .select('user_id, readiness_score, zone, acwr, is_pain_blocked, pain_zone')
-          .in('user_id', athleteIds)
-          .eq('date', today);
-        if (!cancelled && !todayError) {
-          const map = new Map<string, RosterCheckin>();
-          for (const row of (todayRows ?? []) as DbTodayCheckinRow[]) {
-            map.set(row.user_id, {
-              score: row.readiness_score,
-              zone: row.zone,
-              acwr: row.acwr === null ? null : Number(row.acwr),
-              painBlocked: row.is_pain_blocked,
-              painZone: row.pain_zone,
-            });
-          }
-          setTodayCheckins(map);
-        }
       } catch (err) {
         if (!cancelled) setRosterError(err instanceof Error ? err.message : 'Something went wrong');
       }
@@ -189,6 +162,53 @@ export default function CoachPage() {
       cancelled = true;
     };
   }, []);
+
+  // Today's check-ins for the roster — on load and again after each live alert.
+  const athleteKey = roster ? roster.map((a) => a.athleteId).join(',') : '';
+  useEffect(() => {
+    if (!athleteKey) return;
+    const athleteIds = athleteKey.split(',');
+    let cancelled = false;
+
+    async function loadCheckins() {
+      // Check-in dates for the whole roster (RLS: checkins_coach_view_team).
+      // 60 days is plenty for a current streak and keeps the query small.
+      const today = todayUtc();
+      const { data: dateRows, error: datesError } = await supabase
+        .from('checkins')
+        .select('user_id, date')
+        .in('user_id', athleteIds)
+        .gte('date', addDays(today, -60))
+        .lte('date', today);
+      if (!cancelled && !datesError) setCheckinRows((dateRows ?? []) as DbCheckinDateRow[]);
+
+      // Match squad (RLS: checkins_coach_view_team). Only computed outputs
+      // are read here — score, zone, ACWR, pain block — not the raw answers.
+      const { data: todayRows, error: todayError } = await supabase
+        .from('checkins')
+        .select('user_id, readiness_score, zone, acwr, is_pain_blocked, pain_zone')
+        .in('user_id', athleteIds)
+        .eq('date', today);
+      if (!cancelled && !todayError) {
+        const map = new Map<string, RosterCheckin>();
+        for (const row of (todayRows ?? []) as DbTodayCheckinRow[]) {
+          map.set(row.user_id, {
+            score: row.readiness_score,
+            zone: row.zone,
+            acwr: row.acwr === null ? null : Number(row.acwr),
+            painBlocked: row.is_pain_blocked,
+            painZone: row.pain_zone,
+          });
+        }
+        setTodayCheckins(map);
+      }
+    }
+
+    loadCheckins();
+    return () => {
+      cancelled = true;
+    };
+  }, [athleteKey, refreshKey]);
 
   // Call the Edge Function for whichever athlete is selected.
   useEffect(() => {
@@ -224,7 +244,7 @@ export default function CoachPage() {
     return () => {
       cancelled = true;
     };
-  }, [selectedId, t.coach.errorReadiness, t.coach.forbidden]);
+  }, [selectedId, refreshKey, t.coach.errorReadiness, t.coach.forbidden]);
 
   const card = 'rounded-3xl bg-white/[0.03] p-5 ring-1 ring-inset ring-white/[0.08] backdrop-blur-2xl';
   const zoneLabel = (z: 'green' | 'yellow' | 'red') =>
@@ -241,6 +261,7 @@ export default function CoachPage() {
   const doneToday = (id: string) => (summary ? !summary.missing.includes(id) : null);
   const selectedCheckinStreak =
     selectedId && datesMap ? computeCheckinStreak(datesMap.get(selectedId) ?? [], today).current : null;
+  const rosterIds = useMemo(() => (athleteKey ? athleteKey.split(',') : []), [athleteKey]);
   const labelFor = (id: string) => {
     const a = roster?.find((r) => r.athleteId === id);
     return a ? athleteLabel(a, t.coach.athleteFallback) : id.slice(0, 8);
@@ -289,6 +310,14 @@ export default function CoachPage() {
 
         {roster && roster.length > 0 && (
           <div className="space-y-4">
+            {/* Live alerts: pain / red zone, one-tap answer */}
+            <CoachAlertsCard
+              athleteIds={rosterIds}
+              labelFor={labelFor}
+              onSelect={setSelectedId}
+              onNewAlert={() => setRefreshKey((k) => k + 1)}
+            />
+
             {/* Who has checked in today */}
             {summary && (
               <section className={card}>

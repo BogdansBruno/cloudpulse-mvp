@@ -21,6 +21,7 @@ import { ReadinessRing, zoneMeta, HUB } from '@/components/PerformancePanel';
 import ParentAccessCard from '@/components/ParentAccessCard';
 import TeamMembershipCard from '@/components/TeamMembershipCard';
 import CheckinStreakCard from '@/components/CheckinStreakCard';
+import CoachReplyCard from '@/components/CoachReplyCard';
 import InstallAppCard from '@/components/InstallAppCard';
 
 type HistoryPoint = ReadinessHistoryPoint;
@@ -315,6 +316,7 @@ export default function ProgressPage() {
           </span>
         </header>
 
+        <CoachReplyCard className="mb-3" />
         <CheckinStreakCard className="mb-3" />
         <InstallAppCard className="mb-3" />
 

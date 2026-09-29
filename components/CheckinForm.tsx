@@ -11,6 +11,7 @@ import { ReadinessRing, zoneMeta, HUB } from '@/components/PerformancePanel';
 import type { Penalty, SafetyViolation, InconsistencyFlag } from '@/lib/readiness-engine';
 import { translatePenalty, translateViolation, translateInconsistency } from '@/lib/engine-i18n';
 import CheckinStreakCard from '@/components/CheckinStreakCard';
+import CoachReplyCard from '@/components/CoachReplyCard';
 import type { Lang } from '@/lib/i18n/translations';
 import { todayUtc } from '@/lib/checkin-streak';
 import {
@@ -458,6 +459,7 @@ export default function CheckinForm({ onSubmitted }: { onSubmitted?: () => void 
             </div>
           )}
 
+          <CoachReplyCard className="mt-3" />
           <CheckinStreakCard showCta={false} className="mt-3" />
 
           <motion.button

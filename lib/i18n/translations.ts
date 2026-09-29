@@ -438,6 +438,26 @@ type Dict = {
     shareGroups: { out: string; limited: string; unknown: string; available: string };
     empty: string;
   };
+  alerts: {
+    title: string;
+    live: string;
+    polling: string;
+    soundOn: string;
+    soundOff: string;
+    soundHint: string;
+    none: string;
+    kindPain: (zone: string | null) => string;
+    kindRed: (score: number | null) => string;
+    yesterdayAt: (time: string) => string;
+    react: { contact: string; rest: string; specialist: string };
+    reactError: string;
+    answeredTitle: string;
+    basis: string;
+    replyWaitingTitle: string;
+    replyWaiting: (kind: 'pain' | 'red') => string;
+    replyTitle: (time: string) => string;
+    reply: { contact: string; rest: string; specialist: string };
+  };
   engine: {
     penaltyAcwrSpike: (acwr: string) => string;
     penaltyAcwrRising: (acwr: string) => string;
@@ -986,6 +1006,34 @@ export const translations: Record<Lang, Dict> = {
       shareGroups: { out: 'Не заявлены', limited: 'С ограничением нагрузки', unknown: 'Нет данных', available: 'Доступны' },
       empty: 'никого',
     },
+    alerts: {
+      title: 'Тревоги',
+      live: 'Онлайн — сигнал придёт сразу',
+      polling: 'Проверяем каждые 10 секунд',
+      soundOn: 'Звук включён',
+      soundOff: 'Включить звук',
+      soundHint: 'Браузер не даёт сайту играть звук без нажатия — включите один раз на этом устройстве.',
+      none: 'Тревог нет. Если спортсмен отметит боль или окажется в красной зоне, здесь появится сигнал.',
+      kindPain: (zone) => (zone ? `Боль: ${zone}` : 'Отмечена боль'),
+      kindRed: (score) => (score === null ? 'Красная зона готовности' : `Готовность ${score} — красная зона`),
+      yesterdayAt: (time) => `вчера, ${time}`,
+      react: { contact: 'Видел, свяжусь', rest: 'Сегодня отдых', specialist: 'К врачу или физио' },
+      reactError: 'Не получилось отправить ответ. Проверьте интернет и нажмите ещё раз.',
+      answeredTitle: 'Отвечено',
+      basis:
+        'Сигнал — не диагноз. Спортсмен видит ваш ответ. О нагрузке решает тренер, при боли — врач, медсестра или физиотерапевт.',
+      replyWaitingTitle: 'Тренер получил сигнал',
+      replyWaiting: (kind) =>
+        kind === 'pain'
+          ? 'Отмечена боль — тренер уже видит это. Его ответ появится здесь.'
+          : 'Готовность в красной зоне — тренер уже видит это. Его ответ появится здесь.',
+      replyTitle: (time) => `Ответ тренера · ${time}`,
+      reply: {
+        contact: 'Видел. Свяжусь с тобой.',
+        rest: 'Сегодня — отдых, без тренировки.',
+        specialist: 'Покажись врачу, школьной медсестре или физиотерапевту.',
+      },
+    },
     engine: {
       penaltyAcwrSpike: (acwr) => `ACWR ${acwr} — резкий скачок нагрузки (риск травмы)`,
       penaltyAcwrRising: (acwr) => `ACWR ${acwr} — нагрузка растёт быстрее обычного`,
@@ -1519,6 +1567,34 @@ export const translations: Record<Lang, Dict> = {
       shareGroups: { out: 'Nav pieteikti', limited: 'Ar samazinātu slodzi', unknown: 'Nav datu', available: 'Pieejami' },
       empty: 'neviena',
     },
+    alerts: {
+      title: 'Trauksmes',
+      live: 'Tiešsaistē — signāls pienāks uzreiz',
+      polling: 'Pārbaudām ik pēc 10 sekundēm',
+      soundOn: 'Skaņa ieslēgta',
+      soundOff: 'Ieslēgt skaņu',
+      soundHint: 'Pārlūks neļauj vietnei atskaņot skaņu bez pieskāriena — ieslēdziet to vienreiz šajā ierīcē.',
+      none: 'Trauksmju nav. Ja sportists atzīmēs sāpes vai nonāks sarkanajā zonā, šeit parādīsies signāls.',
+      kindPain: (zone) => (zone ? `Sāpes: ${zone}` : 'Atzīmētas sāpes'),
+      kindRed: (score) => (score === null ? 'Gatavība sarkanajā zonā' : `Gatavība ${score} — sarkanā zona`),
+      yesterdayAt: (time) => `vakar, ${time}`,
+      react: { contact: 'Redzēju, sazināšos', rest: 'Šodien atpūta', specialist: 'Pie ārsta vai fizioterapeita' },
+      reactError: 'Atbildi neizdevās nosūtīt. Pārbaudiet internetu un mēģiniet vēlreiz.',
+      answeredTitle: 'Atbildēts',
+      basis:
+        'Signāls nav diagnoze. Sportists redz jūsu atbildi. Par slodzi lemj treneris, sāpju gadījumā — ārsts, medmāsa vai fizioterapeits.',
+      replyWaitingTitle: 'Treneris saņēma signālu',
+      replyWaiting: (kind) =>
+        kind === 'pain'
+          ? 'Atzīmētas sāpes — treneris to jau redz. Viņa atbilde parādīsies šeit.'
+          : 'Gatavība sarkanajā zonā — treneris to jau redz. Viņa atbilde parādīsies šeit.',
+      replyTitle: (time) => `Trenera atbilde · ${time}`,
+      reply: {
+        contact: 'Redzēju. Sazināšos ar tevi.',
+        rest: 'Šodien — atpūta, bez treniņa.',
+        specialist: 'Parādies ārstam, skolas medmāsai vai fizioterapeitam.',
+      },
+    },
     engine: {
       penaltyAcwrSpike: (acwr) => `ACWR ${acwr} — straujš slodzes lēciens (traumas risks)`,
       penaltyAcwrRising: (acwr) => `ACWR ${acwr} — slodze pieaug straujāk nekā parasti`,
@@ -2048,6 +2124,34 @@ export const translations: Record<Lang, Dict> = {
       shareHeader: (date) => `Squad for ${date}`,
       shareGroups: { out: 'Not selected', limited: 'Reduced load', unknown: 'No data', available: 'Available' },
       empty: 'nobody',
+    },
+    alerts: {
+      title: 'Alerts',
+      live: 'Live — alerts arrive instantly',
+      polling: 'Checking every 10 seconds',
+      soundOn: 'Sound on',
+      soundOff: 'Turn on sound',
+      soundHint: 'Browsers block sound until you tap — turn it on once on this device.',
+      none: 'No alerts. If an athlete reports pain or lands in the red zone, a signal will appear here.',
+      kindPain: (zone) => (zone ? `Pain: ${zone}` : 'Reported pain'),
+      kindRed: (score) => (score === null ? 'Red readiness zone' : `Readiness ${score} — red zone`),
+      yesterdayAt: (time) => `yesterday, ${time}`,
+      react: { contact: 'Seen, will contact', rest: 'Rest today', specialist: 'See a doctor or physio' },
+      reactError: "Couldn't send the answer. Check the connection and tap again.",
+      answeredTitle: 'Answered',
+      basis:
+        'A signal is not a diagnosis. The athlete sees your answer. Training load is the coach’s call; with pain, a doctor, nurse or physio decides.',
+      replyWaitingTitle: 'Your coach has been notified',
+      replyWaiting: (kind) =>
+        kind === 'pain'
+          ? 'Pain reported — your coach can already see it. Their answer will appear here.'
+          : 'Readiness in the red zone — your coach can already see it. Their answer will appear here.',
+      replyTitle: (time) => `Coach replied · ${time}`,
+      reply: {
+        contact: 'Seen. I’ll get in touch with you.',
+        rest: 'Rest today — no training.',
+        specialist: 'Please see a doctor, the school nurse or a physio.',
+      },
     },
     engine: {
       penaltyAcwrSpike: (acwr) => `ACWR ${acwr} — sharp load spike (injury risk)`,
