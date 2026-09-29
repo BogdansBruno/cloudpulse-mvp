@@ -16,6 +16,7 @@ import {
   type RosterPlayer,
   type RosterReason,
 } from '@/lib/match-roster';
+import type { OpenRtp } from '@/lib/return-to-play';
 
 // ---------------------------------------------------------------------------
 // "Match squad" on /coach: the whole team in four groups (lib/match-roster.ts),
@@ -38,6 +39,7 @@ export default function MatchRosterCard({
   checkins,
   matchDates,
   today,
+  rtp,
   onSelect,
 }: {
   players: readonly RosterPlayer[];
@@ -45,13 +47,15 @@ export default function MatchRosterCard({
   /** Every match date on the athletes' calendars; the card picks the next one. */
   matchDates: readonly string[];
   today: string;
+  /** Open Return-to-Play episodes (after a recent pain), by athlete id. */
+  rtp?: ReadonlyMap<string, OpenRtp>;
   onSelect: (athleteId: string) => void;
 }) {
   const { t, lang } = useLanguage();
   const r = t.roster;
   const [copied, setCopied] = useState(false);
 
-  const roster = buildMatchRoster(players, checkins);
+  const roster = buildMatchRoster(players, checkins, rtp);
   const next = nextTeamMatch(matchDates, today);
   const day = (iso: string) =>
     new Date(`${iso}T12:00:00Z`).toLocaleDateString(LOCALE[lang], { day: 'numeric', month: 'long', timeZone: 'UTC' });
@@ -64,6 +68,10 @@ export default function MatchRosterCard({
         return r.reasonLowReadiness(reason.score);
       case 'LOAD_SPIKE':
         return r.reasonLoadSpike(reason.acwr.toFixed(2));
+      case 'RTP_RESTRICTED':
+        return r.reasonRtpRestricted(reason.cleanDays, reason.required);
+      case 'RTP_AWAITING':
+        return r.reasonRtpAwaiting;
       case 'NO_CHECKIN':
         return r.reasonNoCheckin;
       case 'NOT_COMPUTED':

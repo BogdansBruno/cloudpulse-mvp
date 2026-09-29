@@ -12,6 +12,7 @@ import type { Penalty, SafetyViolation, InconsistencyFlag } from '@/lib/readines
 import { translatePenalty, translateViolation, translateInconsistency } from '@/lib/engine-i18n';
 import CheckinStreakCard from '@/components/CheckinStreakCard';
 import CoachReplyCard from '@/components/CoachReplyCard';
+import RtpAthleteCard from '@/components/RtpAthleteCard';
 import type { Lang } from '@/lib/i18n/translations';
 import { todayUtc } from '@/lib/checkin-streak';
 import {
@@ -460,6 +461,7 @@ export default function CheckinForm({ onSubmitted }: { onSubmitted?: () => void 
           )}
 
           <CoachReplyCard className="mt-3" />
+          <RtpAthleteCard className="mt-3" />
           <CheckinStreakCard showCta={false} className="mt-3" />
 
           <motion.button

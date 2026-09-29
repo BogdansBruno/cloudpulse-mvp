@@ -11,6 +11,16 @@ import { translatePenalty, translateViolation, translateInconsistency } from '@/
 import TeamInvitePanel from '@/components/TeamInvitePanel';
 import MatchRosterCard from '@/components/MatchRosterCard';
 import CoachAlertsCard from '@/components/CoachAlertsCard';
+import RtpCoachCard, { type RtpCoachEntry } from '@/components/RtpCoachCard';
+import {
+  RTP_LOOKBACK_DAYS,
+  openRtp,
+  parseClearances,
+  parseFollowups,
+  parseRtpCheckins,
+  rtpByAthlete,
+  type OpenRtp,
+} from '@/lib/return-to-play';
 import type { RosterCheckin, RosterZone } from '@/lib/match-roster';
 import { addDays, computeCheckinStreak, datesByAthlete, teamCheckinSummary, todayUtc } from '@/lib/checkin-streak';
 
@@ -44,7 +54,8 @@ type DbTodayCheckinRow = {
   is_pain_blocked: boolean;
   pain_zone: string | null;
 };
-type DbCheckinDateRow = { user_id: string; date: string };
+// pain_flag / pain_zone feed Return-to-Play (lib/return-to-play.ts).
+type DbCheckinDateRow = { user_id: string; date: string; pain_flag: boolean | null; pain_zone: string | null };
 
 type RosterEntry = {
   athleteId: string;
@@ -96,6 +107,8 @@ export default function CoachPage() {
   // Match squad: today's computed check-ins + the team's match dates.
   const [todayCheckins, setTodayCheckins] = useState<Map<string, RosterCheckin> | null>(null);
   const [matchDates, setMatchDates] = useState<string[]>([]);
+  // Return-to-Play rows (SQL 11). null = not loaded / tables not there yet.
+  const [rtpRows, setRtpRows] = useState<{ clearances: unknown[]; followups: unknown[] } | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const [data, setData] = useState<ReadinessPayload | null>(null);
@@ -176,11 +189,27 @@ export default function CoachPage() {
       const today = todayUtc();
       const { data: dateRows, error: datesError } = await supabase
         .from('checkins')
-        .select('user_id, date')
+        .select('user_id, date, pain_flag, pain_zone')
         .in('user_id', athleteIds)
         .gte('date', addDays(today, -60))
         .lte('date', today);
       if (!cancelled && !datesError) setCheckinRows((dateRows ?? []) as DbCheckinDateRow[]);
+
+      // Return-to-Play: coach confirmations and follow-up answers (RLS: own team).
+      const rtpSince = addDays(today, -RTP_LOOKBACK_DAYS);
+      const [clearRes, followRes] = await Promise.all([
+        supabase.from('rtp_clearances').select('athlete_id, pain_date, cleared_at').in('athlete_id', athleteIds).gte('pain_date', rtpSince),
+        supabase
+          .from('rtp_followups')
+          .select('athlete_id, pain_date, day_offset, trend, saw_specialist, answered_at')
+          .in('athlete_id', athleteIds)
+          .gte('pain_date', rtpSince),
+      ]);
+      if (!cancelled) {
+        setRtpRows(
+          clearRes.error || followRes.error ? null : { clearances: clearRes.data ?? [], followups: followRes.data ?? [] }
+        );
+      }
 
       // Match squad (RLS: checkins_coach_view_team). Only computed outputs
       // are read here — score, zone, ACWR, pain block — not the raw answers.
@@ -262,6 +291,28 @@ export default function CoachPage() {
   const selectedCheckinStreak =
     selectedId && datesMap ? computeCheckinStreak(datesMap.get(selectedId) ?? [], today).current : null;
   const rosterIds = useMemo(() => (athleteKey ? athleteKey.split(',') : []), [athleteKey]);
+  // Return-to-Play status per athlete; empty until the RTP tables answer.
+  const rtpStatus = useMemo(
+    () =>
+      checkinRows && rtpRows
+        ? rtpByAthlete(
+            rosterIds,
+            parseRtpCheckins(checkinRows),
+            parseClearances(rtpRows.clearances),
+            parseFollowups(rtpRows.followups),
+            today
+          )
+        : null,
+    [checkinRows, rtpRows, rosterIds, today]
+  );
+  const openRtpMap = useMemo(() => {
+    const m = new Map<string, OpenRtp>();
+    for (const [id, st] of rtpStatus ?? []) {
+      const o = openRtp(st);
+      if (o) m.set(id, o);
+    }
+    return m;
+  }, [rtpStatus]);
   const labelFor = (id: string) => {
     const a = roster?.find((r) => r.athleteId === id);
     return a ? athleteLabel(a, t.coach.athleteFallback) : id.slice(0, 8);
@@ -318,6 +369,20 @@ export default function CoachPage() {
               onNewAlert={() => setRefreshKey((k) => k + 1)}
             />
 
+            {/* Return-to-Play: after pain, full load only with the coach's OK */}
+            {rtpStatus && (
+              <RtpCoachCard
+                entries={roster.flatMap((a): RtpCoachEntry[] => {
+                  const st = rtpStatus.get(a.athleteId);
+                  return st && st.state !== 'none'
+                    ? [{ athleteId: a.athleteId, label: athleteLabel(a, t.coach.athleteFallback), status: st }]
+                    : [];
+                })}
+                onSelect={setSelectedId}
+                onCleared={() => setRefreshKey((k) => k + 1)}
+              />
+            )}
+
             {/* Who has checked in today */}
             {summary && (
               <section className={card}>
@@ -370,6 +435,7 @@ export default function CoachPage() {
                 checkins={todayCheckins}
                 matchDates={matchDates}
                 today={today}
+                rtp={openRtpMap}
                 onSelect={setSelectedId}
               />
             )}

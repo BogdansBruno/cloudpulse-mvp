@@ -50,6 +50,37 @@ describe('classifyForMatch', () => {
   });
 });
 
+describe('classifyForMatch with Return-to-Play', () => {
+  const restricted = { state: 'restricted' as const, cleanDays: 1, painDate: '2026-09-29' };
+  const ready = { state: 'ready' as const, cleanDays: 2, painDate: '2026-09-27' };
+
+  it('pain yesterday, fine today → still not selected until 2 clean days', () => {
+    expect(classifyForMatch(ok, restricted)).toEqual({
+      group: 'out',
+      reasons: [{ code: 'RTP_RESTRICTED', cleanDays: 1, required: 2 }],
+    });
+    expect(classifyForMatch(null, restricted).group).toBe('out');
+  });
+
+  it('2 clean days, no coach confirmation yet → reduced load, not green', () => {
+    expect(classifyForMatch(ok, ready)).toEqual({ group: 'limited', reasons: [{ code: 'RTP_AWAITING' }] });
+    expect(classifyForMatch(null, ready)).toEqual({
+      group: 'unknown',
+      reasons: [{ code: 'NO_CHECKIN' }, { code: 'RTP_AWAITING' }],
+    });
+  });
+
+  it('pain today wins over Return-to-Play', () => {
+    const v = classifyForMatch({ ...ok, painBlocked: true, painZone: 'knee' }, restricted);
+    expect(v).toEqual({ group: 'out', reasons: [{ code: 'PAIN', zone: 'knee' }] });
+  });
+
+  it('buildMatchRoster passes the Return-to-Play map through', () => {
+    const r = buildMatchRoster([{ id: 'a', label: 'Anna' }], new Map([['a', ok]]), new Map([['a', restricted]]));
+    expect(r.groups.out.map((x) => x.id)).toEqual(['a']);
+  });
+});
+
 describe('buildMatchRoster', () => {
   it('groups the team, counts each athlete once and sorts names', () => {
     const players = [

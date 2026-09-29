@@ -15,7 +15,14 @@ import { formatPassDate, formatPassId } from '@/components/SafetyShield';
 // level, restriction type). No name, no health details (GDPR Art. 9).
 // ---------------------------------------------------------------------------
 
-type PassCode = 'PAIN_REPORTED' | 'MATCH_DAY' | 'PRE_MATCH' | 'POST_MATCH' | 'LOAD_SPIKE';
+type PassCode =
+  | 'PAIN_REPORTED'
+  | 'MATCH_DAY'
+  | 'PRE_MATCH'
+  | 'POST_MATCH'
+  | 'LOAD_SPIKE'
+  | 'RTP_RESTRICTED'
+  | 'RTP_AWAITING_CLEARANCE';
 
 type VerifyResponse =
   | { valid: false }
@@ -44,6 +51,8 @@ function PassCheck() {
       PRE_MATCH: t.shield.rPreMatch,
       POST_MATCH: t.shield.rPostMatch,
       LOAD_SPIKE: t.shield.rLoad,
+      RTP_RESTRICTED: t.shield.rRtp,
+      RTP_AWAITING_CLEARANCE: t.shield.rRtpAwaiting,
     })[code];
 
   const live = result?.valid === true && !result.expired;

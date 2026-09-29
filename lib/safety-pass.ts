@@ -20,7 +20,15 @@ import { createHmac, timingSafeEqual } from 'node:crypto';
 
 export type PassLevel = 'block' | 'caution';
 
-export type PassCode = 'PAIN_REPORTED' | 'MATCH_DAY' | 'PRE_MATCH' | 'POST_MATCH' | 'LOAD_SPIKE';
+export type PassCode =
+  | 'PAIN_REPORTED'
+  | 'MATCH_DAY'
+  | 'PRE_MATCH'
+  | 'POST_MATCH'
+  | 'LOAD_SPIKE'
+  // Return-to-Play (lib/return-to-play.ts): after a recent pain.
+  | 'RTP_RESTRICTED'
+  | 'RTP_AWAITING_CLEARANCE';
 
 export type PassPayload = {
   v: 1;
@@ -34,7 +42,15 @@ export type VerifyResult =
   | { valid: true; expired: boolean; payload: PassPayload }
   | { valid: false };
 
-const PASS_CODES: readonly PassCode[] = ['PAIN_REPORTED', 'MATCH_DAY', 'PRE_MATCH', 'POST_MATCH', 'LOAD_SPIKE'];
+const PASS_CODES: readonly PassCode[] = [
+  'PAIN_REPORTED',
+  'MATCH_DAY',
+  'PRE_MATCH',
+  'POST_MATCH',
+  'LOAD_SPIKE',
+  'RTP_RESTRICTED',
+  'RTP_AWAITING_CLEARANCE',
+];
 
 function secret(): string | null {
   const s = process.env.PASS_SIGNING_SECRET;

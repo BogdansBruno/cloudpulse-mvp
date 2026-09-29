@@ -22,6 +22,7 @@ import ParentAccessCard from '@/components/ParentAccessCard';
 import TeamMembershipCard from '@/components/TeamMembershipCard';
 import CheckinStreakCard from '@/components/CheckinStreakCard';
 import CoachReplyCard from '@/components/CoachReplyCard';
+import RtpAthleteCard from '@/components/RtpAthleteCard';
 import InstallAppCard from '@/components/InstallAppCard';
 
 type HistoryPoint = ReadinessHistoryPoint;
@@ -317,6 +318,7 @@ export default function ProgressPage() {
         </header>
 
         <CoachReplyCard className="mb-3" />
+        <RtpAthleteCard className="mb-3" />
         <CheckinStreakCard className="mb-3" />
         <InstallAppCard className="mb-3" />
 

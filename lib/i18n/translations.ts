@@ -234,6 +234,10 @@ type Dict = {
     rPreMatch: string;
     rPostMatch: string;
     rLoad: string;
+    dirRtp: (cleanDays: number, required: number) => string;
+    dirRtpAwaiting: string;
+    rRtp: string;
+    rRtpAwaiting: string;
     verifyNote: string;
   };
   calendar: {
@@ -429,6 +433,8 @@ type Dict = {
     reasonPain: (zone: string | null) => string;
     reasonLowReadiness: (score: number | null) => string;
     reasonLoadSpike: (acwr: string) => string;
+    reasonRtpRestricted: (cleanDays: number, required: number) => string;
+    reasonRtpAwaiting: string;
     reasonNoCheckin: string;
     reasonNotComputed: string;
     reasonOk: (score: number | null) => string;
@@ -437,6 +443,41 @@ type Dict = {
     shareHeader: (date: string) => string;
     shareGroups: { out: string; limited: string; unknown: string; available: string };
     empty: string;
+  };
+  rtp: {
+    title: string;
+    painOn: (date: string, zone: string | null) => string;
+    cleanProgress: (n: number, required: number) => string;
+    stepPain: string;
+    stepClean: string;
+    stepCoach: string;
+    stateRestricted: (required: number) => string;
+    stateReady: string;
+    stateCleared: (date: string) => string;
+    noCheckinNote: string;
+    disclaimer: string;
+    followupTitle: (day: 1 | 3) => string;
+    qTrend: (zone: string | null) => string;
+    trend: { better: string; same: string; worse: string };
+    qSpecialist: string;
+    yes: string;
+    notYet: string;
+    send: string;
+    sendError: string;
+    worseNote: string;
+    coachTitle: string;
+    coachHint: string;
+    coachRestricted: (n: number, required: number) => string;
+    coachReady: string;
+    coachCleared: (time: string) => string;
+    answerLine: (day: 1 | 3, trend: string, sawSpecialist: boolean) => string;
+    noAnswers: string;
+    clearButton: string;
+    clearConfirm: string;
+    clearYes: string;
+    cancel: string;
+    clearError: string;
+    coachBasis: string;
   };
   alerts: {
     title: string;
@@ -741,6 +782,11 @@ export const translations: Record<Lang, Dict> = {
       rPreMatch: 'Накануне матча: без тяжёлых силовых нагрузок',
       rPostMatch: 'После матча: только восстановительная нагрузка',
       rLoad: 'Резкий рост нагрузки: рекомендовано снизить интенсивность',
+      dirRtp: (n, req) =>
+        `Возвращение после боли: без боли ${n} из ${req} дней. Полная нагрузка — только после допуска тренера.`,
+      dirRtpAwaiting: 'Боли нет 2 дня. Полная нагрузка — после подтверждения тренера.',
+      rRtp: 'После перерыва по здоровью: без полной нагрузки до допуска тренера',
+      rRtpAwaiting: 'После перерыва по здоровью: ждёт подтверждения тренера',
       verifyNote: 'Статус рассчитан системой CloudPulse по ежедневному чек-ину спортсмена. Подробности о здоровье не раскрываются.',
     },
     coach: {
@@ -997,6 +1043,8 @@ export const translations: Record<Lang, Dict> = {
         zone ? `Боль: ${zone} — сначала врач, медсестра или физиотерапевт` : 'Боль — сначала врач, медсестра или физиотерапевт',
       reasonLowReadiness: (score) => (score === null ? 'Красная зона готовности' : `Готовность ${score} — красная зона`),
       reasonLoadSpike: (acwr) => `Резкий рост нагрузки (ACWR ${acwr})`,
+      reasonRtpRestricted: (n, req) => `После боли: без боли ${n} из ${req} дней`,
+      reasonRtpAwaiting: 'Без боли 2 дня — ждёт вашего допуска',
       reasonNoCheckin: 'Попросите заполнить чек-ин',
       reasonNotComputed: 'Оценка ещё не посчитана',
       reasonOk: (score) => (score === null ? 'Без ограничений' : `Готовность ${score}`),
@@ -1005,6 +1053,42 @@ export const translations: Record<Lang, Dict> = {
       shareHeader: (date) => `Заявка на ${date}`,
       shareGroups: { out: 'Не заявлены', limited: 'С ограничением нагрузки', unknown: 'Нет данных', available: 'Доступны' },
       empty: 'никого',
+    },
+    rtp: {
+      title: 'Возвращение после боли',
+      painOn: (date, zone) => (zone ? `Боль ${date}: ${zone}` : `Боль ${date}`),
+      cleanProgress: (n, req) => `Дней без боли: ${Math.min(n, req)} из ${req}`,
+      stepPain: 'Боль',
+      stepClean: '2 дня без боли',
+      stepCoach: 'Допуск тренера',
+      stateRestricted: (req) => `Пока без полной нагрузки. Нужно ${req} дня с чек-ином без боли.`,
+      stateReady: 'Боли нет 2 дня. Полную нагрузку подтверждает тренер.',
+      stateCleared: (date) => `Тренер допустил к полной нагрузке · ${date}`,
+      noCheckinNote: 'День без чек-ина не считается днём без боли.',
+      disclaimer: 'Это не медицинский допуск. Если боль вернулась — врач, школьная медсестра или физиотерапевт.',
+      followupTitle: (day) => (day === 1 ? 'Переспрос: день после боли' : 'Переспрос: третий день после боли'),
+      qTrend: (zone) => (zone ? `Как ${zone} сейчас по сравнению с днём боли?` : 'Как сейчас по сравнению с днём боли?'),
+      trend: { better: 'Лучше', same: 'Так же', worse: 'Хуже' },
+      qSpecialist: 'Тебя осматривал врач, школьная медсестра или физиотерапевт?',
+      yes: 'Да',
+      notYet: 'Пока нет',
+      send: 'Отправить',
+      sendError: 'Не получилось отправить. Проверь интернет и попробуй ещё раз.',
+      worseNote: 'Если стало хуже — покажись врачу, школьной медсестре или физиотерапевту и отметь боль в чек-ине.',
+      coachTitle: 'Возвращение после боли',
+      coachHint: 'Кто недавно отмечал боль. Полную нагрузку разрешаете вы — после 2 дней без боли.',
+      coachRestricted: (n, req) => `Без боли ${n} из ${req} дней — ещё рано`,
+      coachReady: 'Без боли 2 дня — ждёт вашего допуска',
+      coachCleared: (time) => `Допущен вами · ${time}`,
+      answerLine: (day, trend, seen) =>
+        `День ${day}: ${trend.toLowerCase()} · ${seen ? 'осмотрел специалист' : 'специалист не осматривал'}`,
+      noAnswers: 'Ответов на переспрос пока нет',
+      clearButton: 'Допустить к полной нагрузке',
+      clearConfirm: 'Подтверждаю: я поговорил со спортсменом, боли нет. Это не медицинский допуск — при сомнении сначала специалист.',
+      clearYes: 'Да, допустить',
+      cancel: 'Отмена',
+      clearError: 'Не получилось. Обновите страницу — возможно, спортсмен снова отметил боль.',
+      coachBasis: 'Кнопка появляется только после 2 дней с чек-ином без боли — это проверяет база, а не браузер.',
     },
     alerts: {
       title: 'Тревоги',
@@ -1315,6 +1399,11 @@ export const translations: Record<Lang, Dict> = {
       rPreMatch: 'Dienu pirms spēles: bez smagas spēka slodzes',
       rPostMatch: 'Pēc spēles: tikai atjaunojoša slodze',
       rLoad: 'Straujš slodzes pieaugums: ieteicams samazināt intensitāti',
+      dirRtp: (n, req) =>
+        `Atgriešanās pēc sāpēm: bez sāpēm ${n} no ${req} dienām. Pilna slodze — tikai pēc trenera atļaujas.`,
+      dirRtpAwaiting: 'Sāpju nav 2 dienas. Pilna slodze — pēc trenera apstiprinājuma.',
+      rRtp: 'Pēc veselības pārtraukuma: bez pilnas slodzes līdz trenera atļaujai',
+      rRtpAwaiting: 'Pēc veselības pārtraukuma: gaida trenera apstiprinājumu',
       verifyNote: 'Statusu aprēķinājusi CloudPulse sistēma pēc sportista ikdienas pārbaudes. Veselības detaļas netiek atklātas.',
     },
     coach: {
@@ -1558,6 +1647,8 @@ export const translations: Record<Lang, Dict> = {
         zone ? `Sāpes: ${zone} — vispirms ārsts, medmāsa vai fizioterapeits` : 'Sāpes — vispirms ārsts, medmāsa vai fizioterapeits',
       reasonLowReadiness: (score) => (score === null ? 'Sarkanā gatavības zona' : `Gatavība ${score} — sarkanā zona`),
       reasonLoadSpike: (acwr) => `Straujš slodzes pieaugums (ACWR ${acwr})`,
+      reasonRtpRestricted: (n, req) => `Pēc sāpēm: bez sāpēm ${n} no ${req} dienām`,
+      reasonRtpAwaiting: 'Bez sāpēm 2 dienas — gaida jūsu atļauju',
       reasonNoCheckin: 'Palūdziet aizpildīt pārbaudi',
       reasonNotComputed: 'Novērtējums vēl nav aprēķināts',
       reasonOk: (score) => (score === null ? 'Bez ierobežojumiem' : `Gatavība ${score}`),
@@ -1566,6 +1657,42 @@ export const translations: Record<Lang, Dict> = {
       shareHeader: (date) => `Pieteikums ${date}`,
       shareGroups: { out: 'Nav pieteikti', limited: 'Ar samazinātu slodzi', unknown: 'Nav datu', available: 'Pieejami' },
       empty: 'neviena',
+    },
+    rtp: {
+      title: 'Atgriešanās pēc sāpēm',
+      painOn: (date, zone) => (zone ? `Sāpes ${date}: ${zone}` : `Sāpes ${date}`),
+      cleanProgress: (n, req) => `Dienas bez sāpēm: ${Math.min(n, req)} no ${req}`,
+      stepPain: 'Sāpes',
+      stepClean: '2 dienas bez sāpēm',
+      stepCoach: 'Trenera atļauja',
+      stateRestricted: (req) => `Pagaidām bez pilnas slodzes. Vajag ${req} dienas ar aptauju bez sāpēm.`,
+      stateReady: 'Sāpju nav 2 dienas. Pilnu slodzi apstiprina treneris.',
+      stateCleared: (date) => `Treneris atļāva pilnu slodzi · ${date}`,
+      noCheckinNote: 'Diena bez aptaujas netiek skaitīta kā diena bez sāpēm.',
+      disclaimer: 'Tā nav medicīniska atļauja. Ja sāpes atgriezušās — ārsts, skolas medmāsa vai fizioterapeits.',
+      followupTitle: (day) => (day === 1 ? 'Atkārtots jautājums: diena pēc sāpēm' : 'Atkārtots jautājums: trešā diena pēc sāpēm'),
+      qTrend: (zone) => (zone ? `Kā ${zone} jūtas tagad, salīdzinot ar sāpju dienu?` : 'Kā ir tagad, salīdzinot ar sāpju dienu?'),
+      trend: { better: 'Labāk', same: 'Tāpat', worse: 'Sliktāk' },
+      qSpecialist: 'Vai tevi apskatīja ārsts, skolas medmāsa vai fizioterapeits?',
+      yes: 'Jā',
+      notYet: 'Vēl nē',
+      send: 'Nosūtīt',
+      sendError: 'Neizdevās nosūtīt. Pārbaudi internetu un mēģini vēlreiz.',
+      worseNote: 'Ja kļuvis sliktāk — parādies ārstam, skolas medmāsai vai fizioterapeitam un atzīmē sāpes aptaujā.',
+      coachTitle: 'Atgriešanās pēc sāpēm',
+      coachHint: 'Kuri nesen atzīmēja sāpes. Pilnu slodzi atļaujat jūs — pēc 2 dienām bez sāpēm.',
+      coachRestricted: (n, req) => `Bez sāpēm ${n} no ${req} dienām — vēl par agru`,
+      coachReady: 'Bez sāpēm 2 dienas — gaida jūsu atļauju',
+      coachCleared: (time) => `Jūs atļāvāt · ${time}`,
+      answerLine: (day, trend, seen) =>
+        `${day}. diena: ${trend.toLowerCase()} · ${seen ? 'apskatīja speciālists' : 'speciālists neapskatīja'}`,
+      noAnswers: 'Atbilžu uz atkārtoto jautājumu vēl nav',
+      clearButton: 'Atļaut pilnu slodzi',
+      clearConfirm: 'Apstiprinu: runāju ar sportistu, sāpju nav. Tā nav medicīniska atļauja — šaubu gadījumā vispirms speciālists.',
+      clearYes: 'Jā, atļaut',
+      cancel: 'Atcelt',
+      clearError: 'Neizdevās. Atjaunojiet lapu — iespējams, sportists atkal atzīmēja sāpes.',
+      coachBasis: 'Poga parādās tikai pēc 2 dienām ar aptauju bez sāpēm — to pārbauda datubāze, nevis pārlūks.',
     },
     alerts: {
       title: 'Trauksmes',
@@ -1876,6 +2003,11 @@ export const translations: Record<Lang, Dict> = {
       rPreMatch: 'Day before a match: no heavy strength work',
       rPostMatch: 'After a match: recovery load only',
       rLoad: 'Sharp load increase: lower the intensity',
+      dirRtp: (n, req) =>
+        `Return after pain: ${n} of ${req} days without pain. Full load only after your coach confirms.`,
+      dirRtpAwaiting: 'No pain for 2 days. Full load after your coach confirms.',
+      rRtp: 'After a health break: no full load until the coach confirms',
+      rRtpAwaiting: 'After a health break: waiting for the coach to confirm',
       verifyNote: "Status calculated by CloudPulse from the athlete's daily check-in. No health details are disclosed.",
     },
     coach: {
@@ -2116,6 +2248,8 @@ export const translations: Record<Lang, Dict> = {
         zone ? `Pain: ${zone} — see a doctor, nurse or physio first` : 'Pain — see a doctor, nurse or physio first',
       reasonLowReadiness: (score) => (score === null ? 'Readiness in the red zone' : `Readiness ${score} — red zone`),
       reasonLoadSpike: (acwr) => `Sharp load increase (ACWR ${acwr})`,
+      reasonRtpRestricted: (n, req) => `After pain: ${n} of ${req} days without pain`,
+      reasonRtpAwaiting: 'No pain for 2 days — waiting for your OK',
       reasonNoCheckin: 'Ask them to check in',
       reasonNotComputed: 'Score not calculated yet',
       reasonOk: (score) => (score === null ? 'No restrictions' : `Readiness ${score}`),
@@ -2124,6 +2258,42 @@ export const translations: Record<Lang, Dict> = {
       shareHeader: (date) => `Squad for ${date}`,
       shareGroups: { out: 'Not selected', limited: 'Reduced load', unknown: 'No data', available: 'Available' },
       empty: 'nobody',
+    },
+    rtp: {
+      title: 'Return after pain',
+      painOn: (date, zone) => (zone ? `Pain on ${date}: ${zone}` : `Pain on ${date}`),
+      cleanProgress: (n, req) => `Days without pain: ${Math.min(n, req)} of ${req}`,
+      stepPain: 'Pain',
+      stepClean: '2 days without pain',
+      stepCoach: 'Coach confirms',
+      stateRestricted: (req) => `No full load yet. You need ${req} check-in days without pain.`,
+      stateReady: 'No pain for 2 days. Your coach confirms full load.',
+      stateCleared: (date) => `Your coach cleared you for full load · ${date}`,
+      noCheckinNote: 'A day without a check-in does not count as a day without pain.',
+      disclaimer: 'This is not a medical clearance. If the pain comes back — a doctor, the school nurse or a physio.',
+      followupTitle: (day) => (day === 1 ? 'Follow-up: the day after the pain' : 'Follow-up: day 3 after the pain'),
+      qTrend: (zone) => (zone ? `How is your ${zone} now compared with the day of pain?` : 'How is it now compared with the day of pain?'),
+      trend: { better: 'Better', same: 'The same', worse: 'Worse' },
+      qSpecialist: 'Has a doctor, the school nurse or a physio looked at it?',
+      yes: 'Yes',
+      notYet: 'Not yet',
+      send: 'Send',
+      sendError: "Couldn't send. Check the connection and try again.",
+      worseNote: 'If it got worse — see a doctor, the school nurse or a physio, and mark pain in your check-in.',
+      coachTitle: 'Return after pain',
+      coachHint: 'Athletes who reported pain recently. You allow full load — after 2 days without pain.',
+      coachRestricted: (n, req) => `${n} of ${req} days without pain — too early`,
+      coachReady: 'No pain for 2 days — waiting for your OK',
+      coachCleared: (time) => `Cleared by you · ${time}`,
+      answerLine: (day, trend, seen) =>
+        `Day ${day}: ${trend.toLowerCase()} · ${seen ? 'seen by a specialist' : 'not seen by a specialist'}`,
+      noAnswers: 'No follow-up answers yet',
+      clearButton: 'Allow full load',
+      clearConfirm: 'I confirm: I talked to the athlete and there is no pain. This is not a medical clearance — if in doubt, a specialist first.',
+      clearYes: 'Yes, allow',
+      cancel: 'Cancel',
+      clearError: 'That didn’t work. Refresh the page — the athlete may have reported pain again.',
+      coachBasis: 'The button appears only after 2 check-in days without pain — the database checks this, not the browser.',
     },
     alerts: {
       title: 'Alerts',

@@ -18,7 +18,14 @@ import { HUB } from '@/components/PerformancePanel';
 //   caution (orange) — ACWR > 1.5 without a hard block (engine: advice, not block)
 // ---------------------------------------------------------------------------
 
-type PassCode = 'PAIN_REPORTED' | 'MATCH_DAY' | 'PRE_MATCH' | 'POST_MATCH' | 'LOAD_SPIKE';
+type PassCode =
+  | 'PAIN_REPORTED'
+  | 'MATCH_DAY'
+  | 'PRE_MATCH'
+  | 'POST_MATCH'
+  | 'LOAD_SPIKE'
+  | 'RTP_RESTRICTED'
+  | 'RTP_AWAITING_CLEARANCE';
 
 type PassResponse =
   | { status: 'no_checkin' | 'clear'; date: string }
@@ -28,6 +35,7 @@ type PassResponse =
       codes: PassCode[];
       acwr: number | null;
       painZone: string | null;
+      rtp?: { cleanDays: number; required: number } | null;
       passId: string | null;
       token: string | null;
     };
@@ -128,6 +136,10 @@ export default function SafetyShield({ refreshKey = 0 }: { refreshKey?: number }
         return t.shield.dirPostMatch;
       case 'LOAD_SPIKE':
         return t.shield.dirLoad(pass.acwr !== null ? pass.acwr.toFixed(2) : '—');
+      case 'RTP_RESTRICTED':
+        return t.shield.dirRtp(pass.rtp?.cleanDays ?? 0, pass.rtp?.required ?? 2);
+      case 'RTP_AWAITING_CLEARANCE':
+        return t.shield.dirRtpAwaiting;
     }
   };
 
