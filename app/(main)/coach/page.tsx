@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { motion, useReducedMotion } from 'motion/react';
 import { WarningOctagon, Info, Flame, Users, Barbell, CheckCircle } from '@phosphor-icons/react';
 import { supabase } from '@/lib/supabase';
@@ -14,6 +14,7 @@ import CoachAlertsCard from '@/components/CoachAlertsCard';
 import RtpCoachCard, { type RtpCoachEntry } from '@/components/RtpCoachCard';
 import ExamStormCard from '@/components/ExamStormCard';
 import type { StormAthlete } from '@/lib/exam-storm';
+import { useTeamLive } from '@/lib/use-team-live';
 import {
   RTP_LOOKBACK_DAYS,
   openRtp,
@@ -127,6 +128,10 @@ export default function CoachPage() {
   // Bumped when a live alert arrives: today's numbers and the open athlete
   // card are fetched again, so the whole screen agrees with the alert.
   const [refreshKey, setRefreshKey] = useState(0);
+  // Live updates from the team (lib/use-team-live.ts): liveKey reloads the
+  // lists; readinessKey reloads the open athlete only if it was that athlete.
+  const [liveKey, setLiveKey] = useState(0);
+  const [readinessKey, setReadinessKey] = useState(0);
 
   // Load the coach's roster: team_members -> profiles, both RLS-scoped to
   // rows where the signed-in user is the coach.
@@ -171,7 +176,7 @@ export default function CoachPage() {
 
         if (!cancelled) {
           setRoster(merged);
-          setSelectedId(merged[0]?.athleteId ?? null);
+          setSelectedId((cur) => cur ?? merged[0]?.athleteId ?? null);
         }
 
         if (!cancelled) {
@@ -197,6 +202,18 @@ export default function CoachPage() {
     let cancelled = false;
 
     async function loadCheckins() {
+      // Calendar dates can change any time (the athlete edits /calendar):
+      // re-read them with every refresh — exam storm and next match follow.
+      const { data: dateProfiles, error: dateProfilesError } = await supabase
+        .from('profiles')
+        .select('id, match_dates, exam_dates')
+        .in('id', athleteIds);
+      if (!cancelled && !dateProfilesError) {
+        const rows = (dateProfiles ?? []) as Pick<DbProfileRow, 'id' | 'match_dates' | 'exam_dates'>[];
+        setMatchDates(rows.flatMap((p) => p.match_dates ?? []));
+        setStormAthletes(rows.map((p) => ({ examDates: p.exam_dates ?? [], matchDates: p.match_dates ?? [] })));
+      }
+
       // Check-in dates for the whole roster (RLS: checkins_coach_view_team).
       // 60 days is plenty for a current streak and keeps the query small.
       const today = todayUtc();
@@ -250,7 +267,7 @@ export default function CoachPage() {
     return () => {
       cancelled = true;
     };
-  }, [athleteKey, refreshKey]);
+  }, [athleteKey, refreshKey, liveKey]);
 
   // Call the Edge Function for whichever athlete is selected.
   useEffect(() => {
@@ -286,7 +303,7 @@ export default function CoachPage() {
     return () => {
       cancelled = true;
     };
-  }, [selectedId, refreshKey, t.coach.errorReadiness, t.coach.forbidden]);
+  }, [selectedId, refreshKey, readinessKey, t.coach.errorReadiness, t.coach.forbidden]);
 
   const card = 'rounded-3xl bg-white/[0.03] p-5 ring-1 ring-inset ring-white/[0.08] backdrop-blur-2xl';
   const zoneLabel = (z: 'green' | 'yellow' | 'red') =>
@@ -304,6 +321,16 @@ export default function CoachPage() {
   const selectedCheckinStreak =
     selectedId && datesMap ? computeCheckinStreak(datesMap.get(selectedId) ?? [], today).current : null;
   const rosterIds = useMemo(() => (athleteKey ? athleteKey.split(',') : []), [athleteKey]);
+  const onTeamChange = useCallback(
+    (changed: ReadonlySet<string> | 'all') => {
+      setLiveKey((k) => k + 1);
+      // 'all' (tab back in front / fallback poll) refreshes the lists only —
+      // reloading the open athlete card every time would make it flicker.
+      if (changed !== 'all' && selectedId && changed.has(selectedId)) setReadinessKey((k) => k + 1);
+    },
+    [selectedId]
+  );
+  useTeamLive(rosterIds, onTeamChange);
   // Return-to-Play status per athlete; empty until the RTP tables answer.
   const rtpStatus = useMemo(
     () =>

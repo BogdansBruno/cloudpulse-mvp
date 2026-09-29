@@ -293,10 +293,38 @@ type Dict = {
     todayLabel: string;
     privacyTitle: string;
     privacyBody: string;
+    weekTitle: string;
+    weekCount: (n: number, total: number) => string;
+    weekNoCheckin: string;
+    coachWaiting: string;
+    coachAnswered: (time: string) => string;
+    coachReply: { contact: string; rest: string; specialist: string };
+    calendarTitle: string;
+    calendarLocked: (name: string) => string;
+    calendarEmpty: string;
+    examOn: (date: string) => string;
+    matchOn: (date: string) => string;
+    legendExam: string;
+    legendMatch: string;
+    legendWindow: string;
+    tightLine: (range: string) => string;
+    dayAria: (day: string, exam: boolean, match: boolean, window: boolean) => string;
+    tipsTitle: string;
+    tips: {
+      RED_TODAY: string;
+      EXAM_AND_MATCH_CLOSE: string;
+      MATCH_TODAY: string;
+      EXAM_TOMORROW: string;
+      MATCH_TOMORROW: string;
+      BUSY_WEEK: string;
+    };
   };
   consent: {
     title: string;
     body: (parent: string) => string;
+    colorTitle: string;
+    calendarTitle: string;
+    calendarBody: (parent: string) => string;
     on: string;
     off: string;
     changed: (date: string) => string;
@@ -875,7 +903,7 @@ export const translations: Record<Lang, Dict> = {
     parent: {
       navLabel: 'Родителям',
       title: 'Кабинет родителя',
-      subtitle: 'Общий статус готовности на сегодня.',
+      subtitle: 'Статус, неделя и календарь — только то, что ребёнок сам открыл.',
       loading: 'Загружаю...',
       errLoad: 'Не удалось загрузить статус.',
       empty: 'К твоему аккаунту пока не привязан спортсмен. Связь создаёт школа или тренер.',
@@ -891,12 +919,46 @@ export const translations: Record<Lang, Dict> = {
       todayLabel: 'Сегодня',
       privacyTitle: 'Что ты видишь',
       privacyBody:
-        'Только цвет дня и есть ли ограничения. Ответы о сне, стрессе и боли, баллы и тренировки остаются у спортсмена: так GDPR защищает данные о здоровье несовершеннолетних.',
+        'Цвет дня за неделю, ограничения и ответ тренера — если ребёнок открыл доступ. Даты контрольных и матчей — только по отдельному разрешению. Ответы о сне, стрессе и боли, баллы и тренировки остаются у спортсмена: так GDPR защищает данные о здоровье несовершеннолетних.',
+      weekTitle: 'Последние 7 дней',
+      weekCount: (n, total) => `Чек-ин: ${n} из ${total} дней`,
+      weekNoCheckin: 'нет чек-ина',
+      coachWaiting: 'Тренер получил сигнал сегодня и скоро ответит.',
+      coachAnswered: (time) => `Ответ тренера · ${time}`,
+      coachReply: {
+        contact: 'Тренер свяжется с ребёнком.',
+        rest: 'Сегодня — отдых, без тренировки.',
+        specialist: 'Показаться врачу, школьной медсестре или физиотерапевту.',
+      },
+      calendarTitle: 'Ближайшие 2 недели',
+      calendarLocked: (name) => `${name} пока не открыл(а) календарь контрольных и матчей. Это делается в разделе «Прогресс».`,
+      calendarEmpty: 'В ближайшие 2 недели контрольных и матчей не отмечено.',
+      examOn: (date) => `Контрольная — ${date}`,
+      matchOn: (date) => `Матч — ${date}`,
+      legendExam: 'контрольная',
+      legendMatch: 'матч',
+      legendWindow: 'дни перед контрольной',
+      tightLine: (range) => `Напряжённые дни: ${range} — контрольная и матч рядом.`,
+      dayAria: (day, exam, match, window) =>
+        [day, exam ? 'контрольная' : null, match ? 'матч' : null, !exam && window ? 'перед контрольной' : null].filter(Boolean).join(', '),
+      tipsTitle: 'Что может помочь дома',
+      tips: {
+        RED_TODAY:
+          'Сегодня красный день: дома лучше без дополнительных нагрузок — пробежек, зала, секций. Если что-то болит — врач, школьная медсестра или физиотерапевт.',
+        EXAM_AND_MATCH_CLOSE: 'Контрольная и матч идут подряд — помогите разгрузить эти вечера от лишних дел.',
+        MATCH_TODAY: 'Сегодня матч: после игры — спокойный вечер и обычное время отбоя.',
+        EXAM_TOMORROW: 'Завтра контрольная — обычное время отбоя поможет больше, чем учёба допоздна.',
+        MATCH_TOMORROW: 'Завтра матч — ранний отбой и форма, собранная с вечера.',
+        BUSY_WEEK: 'На этой неделе несколько контрольных: приложение уже снижает спортивную нагрузку, дома поможет ровный режим сна.',
+      },
     },
     consent: {
       title: 'Доступ для родителей',
       body: (parent) =>
-        `${parent} будет видеть только цвет твоего дня и есть ли ограничения. Ответы о самочувствии, боли и баллы остаются у тебя.`,
+        `${parent} будет видеть цвет твоего дня за последнюю неделю, есть ли ограничения и ответ тренера на сигнал. Ответы о самочувствии, боли и баллы остаются у тебя.`,
+      colorTitle: 'Цвет дня',
+      calendarTitle: 'Календарь: контрольные и матчи',
+      calendarBody: (parent) => `${parent} увидит даты твоих контрольных и матчей на 2 недели вперёд — без предметов и оценок.`,
       on: 'Доступ открыт',
       off: 'Доступ закрыт',
       changed: (date) => `Изменено ${date}`,
@@ -1502,7 +1564,7 @@ export const translations: Record<Lang, Dict> = {
     parent: {
       navLabel: 'Vecākiem',
       title: 'Vecāku skats',
-      subtitle: 'Šodienas gatavības kopējais statuss.',
+      subtitle: 'Statuss, nedēļa un kalendārs — tikai tas, ko bērns pats atvēris.',
       loading: 'Ielādēju...',
       errLoad: 'Neizdevās ielādēt statusu.',
       empty: 'Tavam kontam vēl nav piesaistīts sportists. Saiti izveido skola vai treneris.',
@@ -1518,12 +1580,46 @@ export const translations: Record<Lang, Dict> = {
       todayLabel: 'Šodien',
       privacyTitle: 'Ko tu redzi',
       privacyBody:
-        'Tikai dienas krāsu un to, vai ir ierobežojumi. Atbildes par miegu, stresu un sāpēm, punkti un treniņi paliek pie sportista: tā GDPR aizsargā nepilngadīgo veselības datus.',
+        'Dienas krāsu par nedēļu, ierobežojumus un trenera atbildi — ja bērns atvēris piekļuvi. Kontroldarbu un spēļu datumus — tikai ar atsevišķu atļauju. Atbildes par miegu, stresu un sāpēm, punkti un treniņi paliek pie sportista: tā GDPR aizsargā nepilngadīgo veselības datus.',
+      weekTitle: 'Pēdējās 7 dienas',
+      weekCount: (n, total) => `Aptauja: ${n} no ${total} dienām`,
+      weekNoCheckin: 'nav aptaujas',
+      coachWaiting: 'Treneris šodien saņēma signālu un drīz atbildēs.',
+      coachAnswered: (time) => `Trenera atbilde · ${time}`,
+      coachReply: {
+        contact: 'Treneris sazināsies ar bērnu.',
+        rest: 'Šodien — atpūta, bez treniņa.',
+        specialist: 'Parādīties ārstam, skolas medmāsai vai fizioterapeitam.',
+      },
+      calendarTitle: 'Nākamās 2 nedēļas',
+      calendarLocked: (name) => `${name} vēl nav atvēris kontroldarbu un spēļu kalendāru. To var izdarīt sadaļā «Progress».`,
+      calendarEmpty: 'Nākamajās 2 nedēļās kontroldarbi un spēles nav atzīmēti.',
+      examOn: (date) => `Kontroldarbs — ${date}`,
+      matchOn: (date) => `Spēle — ${date}`,
+      legendExam: 'kontroldarbs',
+      legendMatch: 'spēle',
+      legendWindow: 'dienas pirms kontroldarba',
+      tightLine: (range) => `Saspringtas dienas: ${range} — kontroldarbs un spēle blakus.`,
+      dayAria: (day, exam, match, window) =>
+        [day, exam ? 'kontroldarbs' : null, match ? 'spēle' : null, !exam && window ? 'pirms kontroldarba' : null].filter(Boolean).join(', '),
+      tipsTitle: 'Kas var palīdzēt mājās',
+      tips: {
+        RED_TODAY:
+          'Šodien sarkanā diena: mājās labāk bez papildu slodzes — skriešanas, zāles, pulciņiem. Ja kaut kas sāp — ārsts, skolas medmāsa vai fizioterapeits.',
+        EXAM_AND_MATCH_CLOSE: 'Kontroldarbs un spēle ir pēc kārtas — palīdziet atbrīvot šos vakarus no liekām lietām.',
+        MATCH_TODAY: 'Šodien spēle: pēc tās — mierīgs vakars un parastais gulētiešanas laiks.',
+        EXAM_TOMORROW: 'Rīt kontroldarbs — parastais gulētiešanas laiks palīdzēs vairāk nekā mācīšanās līdz vēlam vakaram.',
+        MATCH_TOMORROW: 'Rīt spēle — agrāk gulēt un forma sakravāta jau vakarā.',
+        BUSY_WEEK: 'Šonedēļ vairāki kontroldarbi: lietotne jau samazina sporta slodzi, mājās palīdzēs vienmērīgs miega režīms.',
+      },
     },
     consent: {
       title: 'Piekļuve vecākiem',
       body: (parent) =>
-        `${parent} redzēs tikai tavas dienas krāsu un to, vai ir ierobežojumi. Atbildes par pašsajūtu, sāpēm un punkti paliek pie tevis.`,
+        `${parent} redzēs tavas dienas krāsu par pēdējo nedēļu, vai ir ierobežojumi un trenera atbildi uz signālu. Atbildes par pašsajūtu, sāpēm un punkti paliek pie tevis.`,
+      colorTitle: 'Dienas krāsa',
+      calendarTitle: 'Kalendārs: kontroldarbi un spēles',
+      calendarBody: (parent) => `${parent} redzēs tavu kontroldarbu un spēļu datumus 2 nedēļas uz priekšu — bez priekšmetiem un atzīmēm.`,
       on: 'Piekļuve atvērta',
       off: 'Piekļuve slēgta',
       changed: (date) => `Mainīts ${date}`,
@@ -2121,7 +2217,7 @@ export const translations: Record<Lang, Dict> = {
     parent: {
       navLabel: 'Parents',
       title: 'Parent view',
-      subtitle: "Today's overall readiness status.",
+      subtitle: 'Status, week and calendar — only what your child has chosen to share.',
       loading: 'Loading...',
       errLoad: 'Could not load the status.',
       empty: 'No athlete is linked to your account yet. The school or coach creates the link.',
@@ -2137,12 +2233,46 @@ export const translations: Record<Lang, Dict> = {
       todayLabel: 'Today',
       privacyTitle: 'What you can see',
       privacyBody:
-        "Only the colour of the day and whether there are restrictions. Answers about sleep, stress and pain, scores and training stay with the athlete: that's how GDPR protects minors' health data.",
+        "The colour of each day this week, restrictions and the coach's reply — if your child has opened access. Exam and match dates — only with a separate permission. Answers about sleep, stress and pain, scores and training stay with the athlete: that's how GDPR protects minors' health data.",
+      weekTitle: 'Last 7 days',
+      weekCount: (n, total) => `Check-in: ${n} of ${total} days`,
+      weekNoCheckin: 'no check-in',
+      coachWaiting: 'The coach got a signal today and will reply soon.',
+      coachAnswered: (time) => `Coach replied · ${time}`,
+      coachReply: {
+        contact: 'The coach will get in touch with your child.',
+        rest: 'Rest today — no training.',
+        specialist: 'See a doctor, the school nurse or a physio.',
+      },
+      calendarTitle: 'Next 2 weeks',
+      calendarLocked: (name) => `${name} hasn't shared the exam and match calendar yet. It can be turned on in the Progress section.`,
+      calendarEmpty: 'No exams or matches marked for the next 2 weeks.',
+      examOn: (date) => `Exam — ${date}`,
+      matchOn: (date) => `Match — ${date}`,
+      legendExam: 'exam',
+      legendMatch: 'match',
+      legendWindow: 'days before an exam',
+      tightLine: (range) => `Busy stretch: ${range} — an exam and a match back to back.`,
+      dayAria: (day, exam, match, window) =>
+        [day, exam ? 'exam' : null, match ? 'match' : null, !exam && window ? 'before an exam' : null].filter(Boolean).join(', '),
+      tipsTitle: 'What can help at home',
+      tips: {
+        RED_TODAY:
+          'Red day today: better no extra load at home — no runs, gym or clubs. If something hurts — a doctor, the school nurse or a physio.',
+        EXAM_AND_MATCH_CLOSE: 'An exam and a match back to back — help keep those evenings free of extra tasks.',
+        MATCH_TODAY: 'Match today: a calm evening afterwards and the usual bedtime.',
+        EXAM_TOMORROW: 'Exam tomorrow — the usual bedtime helps more than studying late.',
+        MATCH_TOMORROW: 'Match tomorrow — an early night and the kit packed the evening before.',
+        BUSY_WEEK: 'Several exams this week: the app already lowers the sports load, a steady sleep routine helps at home.',
+      },
     },
     consent: {
       title: 'Parent access',
       body: (parent) =>
-        `${parent} will only see the colour of your day and whether there are restrictions. Your wellness answers, pain and scores stay with you.`,
+        `${parent} will see the colour of your days this week, whether there are restrictions and the coach's reply to a signal. Your wellness answers, pain and scores stay with you.`,
+      colorTitle: 'Colour of the day',
+      calendarTitle: 'Calendar: exams and matches',
+      calendarBody: (parent) => `${parent} will see the dates of your exams and matches for the next 2 weeks — no subjects, no grades.`,
       on: 'Access on',
       off: 'Access off',
       changed: (date) => `Changed ${date}`,
