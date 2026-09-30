@@ -1,6 +1,6 @@
 // adp/src/design-explorer/themeStyles.ts
 //
-// Design tokens for the three design directions explored for ADP. Each theme
+// Design tokens for the five design directions explored for ADP. Each theme
 // is a complete set: colours, gradients, radii, shadows, type. Components read
 // tokens from here and never hard-code a colour of their own, so a winning
 // direction can later be lifted into the product as-is.
@@ -11,7 +11,7 @@
 
 import type { CSSProperties } from 'react';
 
-export type ThemeId = 'whoop' | 'nike' | 'apple';
+export type ThemeId = 'glass' | 'feed' | 'whoop' | 'nike' | 'apple';
 
 export type ThemeTokens = {
   id: ThemeId;
@@ -58,8 +58,106 @@ const SYSTEM_SANS =
   "-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif";
 const GEIST = "var(--font-geist-sans), system-ui, sans-serif";
 const MONO = "var(--font-geist-mono), ui-monospace, 'SF Mono', Menlo, monospace";
+/** Editorial serif for engine verdicts (loaded in app/layout.tsx; Georgia if missing). */
+export const SERIF = "var(--font-adp-serif), 'Cormorant Garamond', Georgia, 'Times New Roman', serif";
+const SF_INTER =
+  "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', Inter, var(--font-geist-sans), 'Segoe UI', Roboto, sans-serif";
 
 export const THEMES: Readonly<Record<ThemeId, ThemeTokens>> = {
+  // Flagship: liquid glass (white at 7 %, 30px blur, double highlight rim)
+  // over a slow "liquid" light mesh. The page under the mesh is deep indigo,
+  // so white text keeps AA contrast whatever colour drifts behind a card.
+  // Cards and buttons: adp/src/components/ui/LiquidGlassCard / LiquidGlassButton.
+  glass: {
+    id: 'glass',
+    name: 'Liquid Glass',
+    tagline: {
+      ru: 'Флагман: матовое стекло, жидкий фоновый свет, тонкие светящиеся линии. Данные читаются так же чётко.',
+      lv: 'Flagmanis: matēts stikls, šķidra fona gaisma, smalkas mirdzošas līnijas. Dati lasāmi tikpat skaidri.',
+      en: 'Flagship: frosted glass, liquid ambient light, fine glowing lines. The data reads just as clearly.',
+    },
+    reference: 'Apple visionOS / Health',
+    mode: 'dark',
+    colors: {
+      bg: '#0A0F24',
+      surface: 'rgba(255,255,255,0.07)',
+      surfaceAlt: 'rgba(255,255,255,0.06)',
+      border: 'rgba(255,255,255,0.20)',
+      text: '#F8FAFC',
+      textMuted: '#CBD5E1',
+      textFaint: '#94A3B8',
+      good: '#34D399',
+      warn: '#FBBF24',
+      bad: '#FB7185',
+      info: '#67E8F9',
+      accent: '#FFFFFF',
+      onAccent: '#0A0F24',
+      track: 'rgba(255,255,255,0.10)',
+    },
+    gradients: {
+      page: 'radial-gradient(120% 80% at 50% 0%, #1B2350 0%, #0A0F24 55%, #060913 100%)',
+      hero: 'linear-gradient(160deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.02) 100%)',
+      accent: 'linear-gradient(135deg, #67E8F9 0%, #34D399 100%)',
+      cool: 'linear-gradient(135deg, #818CF8 0%, #67E8F9 100%)',
+    },
+    radius: { card: 32, inner: 20, pill: 999 },
+    shadow: {
+      card: 'inset 0 1px 1.5px 0 rgba(255,255,255,0.65), inset 0 -1px 2px 0 rgba(255,255,255,0.15), 0 12px 32px -4px rgba(0,0,0,0.18)',
+      raised: 'inset 0 1px 0 rgba(255,255,255,0.22), 0 10px 30px -12px rgba(2,6,23,0.7)',
+      glow: (c) => `0 0 28px -4px ${c}`,
+    },
+    font: { body: SF_INTER, display: SF_INTER, mono: `ui-monospace, 'SF Mono', var(--font-geist-mono), Menlo, monospace` },
+    ring: { stroke: 7, size: 200 },
+    glass: true,
+    borderWidth: 1,
+  },
+  // Night Feed: ADP "premium biohacking" — glass cards over a warm dune mesh
+  // (#2A1D1A → #52362B → #12131A), serif verdicts, a feed that changes with
+  // the time of day, a hero with three mini-rings, a 3-tab phone shell. Each metric has
+  // its own glow: readiness = its zone colour, sleep = indigo, load = amber.
+  feed: {
+    id: 'feed',
+    name: 'Night Feed',
+    tagline: {
+      ru: 'Премиальный биохакинг ADP: тёплый песчаный свет под стеклом, вердикт движка серифом, график нагрузки и шкалы «ты сейчас здесь». Лента дня и три вкладки.',
+      lv: 'ADP premium biohakings: silta smilšu gaisma zem stikla, dzinēja spriedums ar serifu, slodzes grafiks un skalas «tu esi šeit». Dienas lenta un trīs cilnes.',
+      en: 'ADP premium biohacking: warm sand light under glass, the engine’s verdict in serif, a load chart and “you are here” scales. A day feed and three tabs.',
+    },
+    reference: 'dark health-feed apps',
+    mode: 'dark',
+    colors: {
+      bg: '#0C0D12',
+      surface: 'rgba(24,25,34,0.80)',
+      surfaceAlt: '#1F2130',
+      border: 'rgba(255,255,255,0.10)',
+      text: '#F4F5F7',
+      textMuted: '#A7ADBD',
+      textFaint: '#8A90A2',
+      good: '#10B981',
+      warn: '#F59E0B',
+      bad: '#F43F5E',
+      info: '#818CF8',
+      accent: '#10B981',
+      onAccent: '#03140D',
+      track: 'rgba(255,255,255,0.08)',
+    },
+    gradients: {
+      page: 'linear-gradient(180deg, #2A1D1A 0%, #1A1416 38%, #12131A 70%, #0C0D12 100%)',
+      hero: 'linear-gradient(180deg, rgba(82,54,43,0.55) 0%, rgba(24,25,34,0.80) 60%)',
+      accent: 'linear-gradient(135deg, #10B981 0%, #059669 100%)',
+      cool: 'linear-gradient(135deg, #6366F1 0%, #4F46E5 100%)',
+    },
+    radius: { card: 28, inner: 18, pill: 999 },
+    shadow: {
+      card: '0 1px 0 rgba(255,255,255,0.04) inset, 0 18px 40px -20px rgba(0,0,0,0.85)',
+      raised: '0 10px 30px -14px rgba(0,0,0,0.9)',
+      glow: (c) => `0 0 40px -10px ${c}`,
+    },
+    font: { body: SYSTEM_SANS, display: SYSTEM_SANS, mono: MONO },
+    ring: { stroke: 6, size: 176 },
+    glass: false,
+    borderWidth: 1,
+  },
   whoop: {
     id: 'whoop',
     name: 'Performance Dark',
@@ -191,7 +289,10 @@ export const THEMES: Readonly<Record<ThemeId, ThemeTokens>> = {
   },
 };
 
-export const THEME_ORDER: readonly ThemeId[] = ['whoop', 'nike', 'apple'];
+export const THEME_ORDER: readonly ThemeId[] = ['glass', 'feed', 'whoop', 'nike', 'apple'];
+
+/** The flagship direction, shown first in the studio. */
+export const DEFAULT_THEME: ThemeId = 'glass';
 
 /** Colour for a readiness / load zone in this theme. */
 export function zoneColor(t: ThemeTokens, zone: 'green' | 'yellow' | 'red' | 'blocked'): string {
@@ -200,6 +301,8 @@ export function zoneColor(t: ThemeTokens, zone: 'green' | 'yellow' | 'red' | 'bl
 
 /** Soreness severity 1..5 → colour, per theme (low = calm, 5 = the theme's red). */
 export function severityColor(t: ThemeTokens, s: 1 | 2 | 3 | 4 | 5): string {
+  if (t.id === 'glass') return ['#67E8F9', '#6EE7B7', '#FCD34D', '#FDBA74', '#FB7185'][s - 1];
+  if (t.id === 'feed') return ['#818CF8', '#34D399', '#FBBF24', '#FB923C', '#F43F5E'][s - 1];
   if (t.id === 'whoop') return ['#00F2FE', '#7CF8A0', '#FFC21A', '#FF7A2E', '#FF0844'][s - 1];
   if (t.id === 'nike') return ['#35E0FF', '#B8FF1F', '#FFD600', '#FF6A13', '#FF3B6B'][s - 1];
   return ['#8EC5FF', '#9BDDB4', '#F6C66E', '#F29B62', '#EF6B6F'][s - 1];
@@ -208,13 +311,13 @@ export function severityColor(t: ThemeTokens, s: 1 | 2 | 3 | 4 | 5): string {
 /** The card style every component starts from. */
 export function cardStyle(t: ThemeTokens): CSSProperties {
   return {
-    background: t.glass ? 'rgba(255,255,255,0.78)' : t.colors.surface,
+    background: t.glass ? (t.mode === 'dark' ? t.colors.surface : 'rgba(255,255,255,0.78)') : t.colors.surface,
     border: `${t.borderWidth}px solid ${t.colors.border}`,
     borderRadius: t.radius.card,
     boxShadow: t.shadow.card,
     color: t.colors.text,
     fontFamily: t.font.body,
-    backdropFilter: t.glass ? 'saturate(180%) blur(20px)' : undefined,
-    WebkitBackdropFilter: t.glass ? 'saturate(180%) blur(20px)' : undefined,
+    backdropFilter: t.glass ? (t.mode === 'dark' ? 'saturate(160%) blur(40px)' : 'saturate(180%) blur(20px)') : undefined,
+    WebkitBackdropFilter: t.glass ? (t.mode === 'dark' ? 'saturate(160%) blur(40px)' : 'saturate(180%) blur(20px)') : undefined,
   };
 }

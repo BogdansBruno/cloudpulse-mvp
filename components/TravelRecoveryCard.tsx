@@ -1,6 +1,6 @@
 'use client';
 
-// "After the away trip" for the athlete (/training). Shown only inside the
+// "After the away trip" for the athlete (/training), in Liquid Glass. Shown only inside the
 // 48 h after a long trip the coach entered (lib/travel.ts). The plan below
 // already follows it (POST_TRAVEL in /api/adp-coach); this card explains why
 // and offers the signed note for the teacher (/api/travel-note, /note).
@@ -15,6 +15,8 @@ import { EXTRA } from '@/lib/i18n/extra';
 import { HUB } from '@/components/PerformancePanel';
 import { addDays, todayUtc } from '@/lib/checkin-streak';
 import { activeTravel, parseTrips, type ActiveTravel } from '@/lib/travel';
+import LiquidGlassCard from '@/adp/src/components/ui/LiquidGlassCard';
+import LiquidGlassButton from '@/adp/src/components/ui/LiquidGlassButton';
 
 const LOCALE: Record<Lang, string> = { ru: 'ru-RU', lv: 'lv-LV', en: 'en-GB' };
 
@@ -63,7 +65,7 @@ export default function TravelRecoveryCard({ className = '' }: { className?: str
   }
 
   return (
-    <section className={`rounded-3xl bg-[#FFB020]/[0.07] p-5 ring-1 ring-inset ring-[#FFB020]/30 ${className}`}>
+    <LiquidGlassCard radius={28} className={`p-5 ${className}`} style={{ background: 'linear-gradient(180deg, rgba(251,191,36,0.16), rgba(255,255,255,0.05))', border: '1px solid rgba(251,191,36,0.35)' }}>
       <div className="flex items-start justify-between gap-3">
         <h2 className="inline-flex items-center gap-2 text-base font-semibold text-zinc-50">
           <Bus size={18} weight="fill" style={{ color: HUB.amber }} />
@@ -74,14 +76,10 @@ export default function TravelRecoveryCard({ className = '' }: { className?: str
       <p className="mt-2 text-sm leading-relaxed text-zinc-200">{t.athleteBody(active.trip.travelHours, day(active.until))}</p>
 
       {note === null && (
-        <button
-          type="button"
-          onClick={getNote}
-          className="mt-4 inline-flex h-10 items-center gap-2 rounded-xl bg-white/10 px-4 text-sm font-semibold text-zinc-50 hover:bg-white/15"
-        >
+        <LiquidGlassButton onClick={getNote} className="mt-4">
           <QrCode size={16} />
           {t.noteButton}
-        </button>
+        </LiquidGlassButton>
       )}
       {note === 'loading' && <p className="mt-4 text-sm text-zinc-400">{t.noteLoading}</p>}
       {note === 'unavailable' && <p className="mt-4 text-sm text-zinc-400">{t.noteUnavailable}</p>}
@@ -96,6 +94,6 @@ export default function TravelRecoveryCard({ className = '' }: { className?: str
           </div>
         </div>
       )}
-    </section>
+    </LiquidGlassCard>
   );
 }

@@ -86,7 +86,7 @@ export const DX = {
   ru: {
     studio: {
       title: 'Дизайн-студия ADP',
-      subtitle: 'Три направления дизайна на одних и тех же данных. Выбираем одно для продукта.',
+      subtitle: 'Пять направлений дизайна на одних и тех же данных. Флагман — Liquid Glass.',
       compare: 'Сравнение',
       demoNote: 'Демо-данные, не реальный спортсмен. Числа движка — пример.',
       inspired: (r) => `референс: ${r}`,
@@ -172,7 +172,7 @@ export const DX = {
   lv: {
     studio: {
       title: 'ADP dizaina studija',
-      subtitle: 'Trīs dizaina virzieni uz vieniem un tiem pašiem datiem. Izvēlamies vienu produktam.',
+      subtitle: 'Pieci dizaina virzieni uz tiem pašiem datiem. Flagmanis — Liquid Glass.',
       compare: 'Salīdzinājums',
       demoNote: 'Demo dati, nav īsts sportists. Dzinēja skaitļi — piemērs.',
       inspired: (r) => `atsauce: ${r}`,
@@ -258,7 +258,7 @@ export const DX = {
   en: {
     studio: {
       title: 'ADP design studio',
-      subtitle: 'Three design directions on the same data. We pick one for the product.',
+      subtitle: 'Five design directions on the same data. Flagship: Liquid Glass.',
       compare: 'Compare',
       demoNote: 'Demo data, not a real athlete. Engine numbers are an example.',
       inspired: (r) => `reference: ${r}`,

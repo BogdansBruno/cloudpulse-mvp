@@ -2,14 +2,16 @@
 
 // adp/src/design-explorer/DesignStudio.tsx
 //
-// The design studio: three complete design directions for ADP, drawn over the
+// The design studio: five complete design directions for ADP, drawn over the
 // SAME demo athlete, so the team (and the jury) compare styles, not data.
 //
-//   [Performance Dark] [Gen-Z Energy] [Clean Health] [Compare]
+//   [Liquid Glass] [Night Feed] [Performance Dark] [Gen-Z Energy] [Clean Health] [Compare]
+//
+// Liquid Glass is the flagship and opens first (DEFAULT_THEME).
 //
 // One soreness map is shared by every direction: mark a muscle in any of them
 // and the plan (built by the real coach module, rules only) is rebuilt in all
-// three. No Supabase, no AI call, nothing stored.
+// of them. No Supabase, no AI call, nothing stored.
 
 import { useEffect, useMemo, useState, type ReactElement, type ReactNode } from 'react';
 import type { AdpLang } from '../components/labels';
@@ -17,8 +19,21 @@ import type { SorenessMap } from '../components/sorenessMap';
 import type { PlanView } from '../services/planView';
 import { DX } from './copy';
 import { DEMO_READINESS, DEMO_SORENESS, buildDemoPlan } from './demoData';
-import { THEMES, THEME_ORDER, type ThemeId, type ThemeTokens } from './themeStyles';
+import { DEFAULT_THEME, THEMES, THEME_ORDER, type ThemeId, type ThemeTokens } from './themeStyles';
 
+import GlassReadiness from './glass/ReadinessHeroCard';
+import GlassSoreness from './glass/SorenessSilhouetteWidget';
+import GlassPass from './glass/SafetyPassBadge';
+import GlassPlan from './glass/AICoachPlanWidget';
+import { AmbientMesh, GLASS_CSS } from './glass/ui';
+import FeedReadiness from './feed/ReadinessHeroCard';
+import FeedSoreness from './feed/SorenessSilhouetteWidget';
+import FeedPass from './feed/SafetyPassBadge';
+import FeedPlan from './feed/AICoachPlanWidget';
+import FeedPhone from './feed/FeedPhone';
+import { FEED } from './feed/copy';
+import LiquidGlassButton from '../components/ui/LiquidGlassButton';
+import PaletteMesh from '../components/ui/AmbientMesh';
 import WhoopReadiness from './whoop/ReadinessHeroCard';
 import WhoopSoreness from './whoop/SorenessSilhouetteWidget';
 import WhoopPass from './whoop/SafetyPassBadge';
@@ -42,6 +57,8 @@ type Kit = {
 };
 
 const KITS: Record<ThemeId, Kit> = {
+  glass: { Readiness: GlassReadiness, Soreness: GlassSoreness, Pass: GlassPass, Plan: GlassPlan },
+  feed: { Readiness: FeedReadiness, Soreness: FeedSoreness, Pass: FeedPass, Plan: FeedPlan },
   whoop: { Readiness: WhoopReadiness, Soreness: WhoopSoreness, Pass: WhoopPass, Plan: WhoopPlan },
   nike: { Readiness: NikeReadiness, Soreness: NikeSoreness, Pass: NikePass, Plan: NikePlan },
   apple: { Readiness: AppleReadiness, Soreness: AppleSoreness, Pass: ApplePass, Plan: ApplePlan },
@@ -60,6 +77,14 @@ const STUDIO_CSS = `
   .dx-flame, .dx-flame-core, .dx-pop { animation: none !important; }
 }
 `;
+
+/** The amber "storm" light shows when the day is not green or an exam is near. */
+const STORM = DEMO_READINESS.zone !== 'green' || DEMO_READINESS.penalties.some((p) => p.code === 'EXAM_SOON');
+
+function dotColor(t: ThemeTokens): string {
+  if (t.id === 'glass') return t.gradients.accent;
+  return t.id === 'apple' ? t.colors.info : t.colors.accent;
+}
 
 function isTab(v: string): v is Tab {
   return v === 'compare' || (THEME_ORDER as readonly string[]).includes(v);
@@ -147,7 +172,7 @@ export default function DesignStudio({
   backLabel?: string;
 }): ReactElement {
   const s = DX[lang].studio;
-  const [tab, setTab] = useState<Tab>('whoop');
+  const [tab, setTab] = useState<Tab>(DEFAULT_THEME);
   const [soreness, setSoreness] = useState<SorenessMap>(DEMO_SORENESS);
   const plan = useMemo(() => buildDemoPlan(lang, soreness), [lang, soreness]);
 
@@ -185,7 +210,7 @@ export default function DesignStudio({
 
   return (
     <div className="min-h-dvh" style={{ background: active ? active.gradients.page : '#0B0B10' }}>
-      <style>{STUDIO_CSS}</style>
+      <style>{STUDIO_CSS + GLASS_CSS}</style>
 
       {/* Sticky switcher */}
       <div
@@ -206,30 +231,27 @@ export default function DesignStudio({
               const on = tab === x.id;
               const th = x.id === 'compare' ? null : THEMES[x.id];
               return (
-                <button
+                <LiquidGlassButton
                   key={x.id}
-                  type="button"
                   role="tab"
                   aria-selected={on}
                   data-dx-tab={x.id}
+                  selected={on}
+                  size="sm"
                   onClick={() => choose(x.id)}
-                  className="flex shrink-0 items-center gap-2 whitespace-nowrap rounded-full px-3.5 py-1.5 text-[13px] font-semibold transition-colors"
-                  style={{
-                    background: on ? '#FFFFFF' : 'rgba(255,255,255,0.06)',
-                    color: on ? '#0B0B10' : 'rgba(255,255,255,0.72)',
-                  }}
+                  className="shrink-0 whitespace-nowrap"
                 >
                   {th ? (
-                    <span className="h-2.5 w-2.5 rounded-full" style={{ background: th.id === 'apple' ? th.colors.info : th.colors.accent, boxShadow: '0 0 0 1px rgba(0,0,0,0.25)' }} />
+                    <span className="h-2.5 w-2.5 rounded-full" style={{ background: dotColor(th), boxShadow: '0 0 0 1px rgba(0,0,0,0.25)' }} />
                   ) : (
                     <span className="flex gap-0.5" aria-hidden>
                       {THEME_ORDER.map((id) => (
-                        <span key={id} className="h-2.5 w-1 rounded-full" style={{ background: id === 'apple' ? THEMES[id].colors.info : THEMES[id].colors.accent }} />
+                        <span key={id} className="h-2.5 w-1 rounded-full" style={{ background: dotColor(THEMES[id]) }} />
                       ))}
                     </span>
                   )}
                   {x.label}
-                </button>
+                </LiquidGlassButton>
               );
             })}
           </nav>
@@ -238,10 +260,18 @@ export default function DesignStudio({
       </div>
 
       {active ? (
-        <main className="mx-auto max-w-6xl px-4 pb-16 pt-8">
+        <main className="relative mx-auto max-w-6xl px-4 pb-16 pt-8">
+          {active.id === 'glass' && <AmbientMesh storm={STORM} fixed />}
+          {active.id === 'feed' && <PaletteMesh palette="dune" storm={STORM} fixed />}
+          <div className="relative" style={{ zIndex: 1 }}>
           <ThemeHeader t={active} lang={lang} />
-          <Stack id={active.id} lang={lang} origin={origin} soreness={soreness} setSoreness={setSoreness} plan={plan} twoColumns />
+          {active.id === 'feed' ? (
+            <FeedShowcase lang={lang} origin={origin} soreness={soreness} setSoreness={setSoreness} plan={plan} />
+          ) : (
+            <Stack id={active.id} lang={lang} origin={origin} soreness={soreness} setSoreness={setSoreness} plan={plan} twoColumns />
+          )}
           <Footnotes t={active} lang={lang} />
+          </div>
         </main>
       ) : (
         <main className="pb-16">
@@ -251,13 +281,17 @@ export default function DesignStudio({
             <p className="mt-2 max-w-2xl text-xs leading-relaxed text-white/45">{s.linked}</p>
           </div>
           <div className="dx-scroll mt-5 overflow-x-auto" style={{ scrollSnapType: 'x mandatory' }}>
-            <div className="mx-auto grid" style={{ gridTemplateColumns: 'repeat(3, minmax(340px, 1fr))', minWidth: 1020, maxWidth: 1320 }}>
+            <div className="mx-auto grid" style={{ gridTemplateColumns: `repeat(${THEME_ORDER.length}, minmax(340px, 1fr))`, minWidth: THEME_ORDER.length * 340, maxWidth: THEME_ORDER.length * 430 }}>
               {THEME_ORDER.map((id) => {
                 const t = THEMES[id];
                 return (
-                  <section key={id} className="min-w-0 px-4 pb-8 pt-6" style={{ background: t.gradients.page, scrollSnapAlign: 'start' }}>
-                    <ThemeHeader t={t} lang={lang} compact />
-                    <Stack id={id} lang={lang} origin={origin} soreness={soreness} setSoreness={setSoreness} plan={plan} twoColumns={false} />
+                  <section key={id} className="relative min-w-0 overflow-hidden px-4 pb-8 pt-6" style={{ background: t.gradients.page, scrollSnapAlign: 'start' }}>
+                    {id === 'glass' && <AmbientMesh storm={STORM} />}
+                    {id === 'feed' && <PaletteMesh palette="dune" storm={STORM} />}
+                    <div className="relative" style={{ zIndex: 1 }}>
+                      <ThemeHeader t={t} lang={lang} compact />
+                      <Stack id={id} lang={lang} origin={origin} soreness={soreness} setSoreness={setSoreness} plan={plan} twoColumns={false} />
+                    </div>
                   </section>
                 );
               })}
@@ -266,6 +300,45 @@ export default function DesignStudio({
           <p className="mx-auto mt-6 max-w-6xl px-4 text-xs text-white/40">{s.demoNote}</p>
         </main>
       )}
+    </div>
+  );
+}
+
+/** Night Feed: the phone with three tabs + how the feed picks its cards. */
+function FeedShowcase({
+  lang,
+  origin,
+  soreness,
+  setSoreness,
+  plan,
+}: {
+  lang: AdpLang;
+  origin: string;
+  soreness: SorenessMap;
+  setSoreness: (m: SorenessMap) => void;
+  plan: PlanView;
+}): ReactElement {
+  const f = FEED[lang];
+  const t = THEMES.feed;
+  return (
+    <div className="grid items-start gap-8 lg:grid-cols-[420px_1fr]">
+      <FeedPhone lang={lang} origin={origin} data={DEMO_READINESS} soreness={soreness} setSoreness={setSoreness} plan={plan} />
+      <aside className="space-y-3 lg:pt-12" style={{ color: t.colors.text, fontFamily: t.font.body }}>
+        <h3 className="text-[20px] font-semibold tracking-[-0.01em]">{f.howTitle}</h3>
+        {(['morning', 'day', 'evening'] as const).map((p) => (
+          <div key={p} className="p-4" style={{ background: t.colors.surface, border: `1px solid ${t.colors.border}`, borderRadius: t.radius.inner }}>
+            <p className="text-[11px] font-semibold uppercase tracking-widest" style={{ color: t.colors.textFaint }}>
+              {f.daypart[p]}
+            </p>
+            <p className="mt-1 text-[14px] leading-relaxed" style={{ color: t.colors.textMuted }}>
+              {f.how[p]}
+            </p>
+          </div>
+        ))}
+        <p className="text-[13px] leading-relaxed" style={{ color: t.colors.textFaint }}>
+          {f.howNote}
+        </p>
+      </aside>
     </div>
   );
 }

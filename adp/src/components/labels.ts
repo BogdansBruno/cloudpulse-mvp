@@ -401,6 +401,18 @@ export type CoachLabels = {
   error: string;
   retry: string;
   draftNote: string;
+  /** Home-session timer on /training (a stopwatch — nothing is saved). */
+  timer: {
+    start: string;
+    pause: string;
+    resume: string;
+    next: string;
+    restart: string;
+    now: string;
+    done: string;
+    progress: (done: number, total: number) => string;
+    note: string;
+  };
   widgetTitle: string;
   widgetOpen: string;
   widgetNoCheckin: string;
@@ -469,6 +481,17 @@ export const COACH_LABELS = {
     error: 'Не удалось загрузить план. Попробуй ещё раз.',
     retry: 'Обновить',
     draftNote: 'Дозировки — черновик, их утверждает тренер по ОФП. Это не медицинская рекомендация.',
+    timer: {
+      start: 'Старт',
+      pause: 'Пауза',
+      resume: 'Продолжить',
+      next: 'Дальше',
+      restart: 'Сначала',
+      now: 'Сейчас',
+      done: 'Готово',
+      progress: (d, n) => `Сделано ${d} из ${n}`,
+      note: 'Таймер — просто секундомер, он ничего не сохраняет.',
+    },
     widgetTitle: 'Моя домашняя тренировка',
     widgetOpen: 'Открыть план',
     widgetNoCheckin: 'Пройди чек-ин — и план на сегодня появится здесь.',
@@ -535,6 +558,17 @@ export const COACH_LABELS = {
     error: 'Neizdevās ielādēt plānu. Mēģini vēlreiz.',
     retry: 'Atjaunot',
     draftNote: 'Devas ir melnraksts, tās apstiprina VFS treneris. Tas nav medicīnisks ieteikums.',
+    timer: {
+      start: 'Sākt',
+      pause: 'Pauze',
+      resume: 'Turpināt',
+      next: 'Tālāk',
+      restart: 'No sākuma',
+      now: 'Tagad',
+      done: 'Gatavs',
+      progress: (d, n) => `Izdarīti ${d} no ${n}`,
+      note: 'Taimeris ir tikai hronometrs, tas neko nesaglabā.',
+    },
     widgetTitle: 'Mans mājas treniņš',
     widgetOpen: 'Atvērt plānu',
     widgetNoCheckin: 'Aizpildi reģistrāciju — un šodienas plāns parādīsies šeit.',
@@ -601,6 +635,17 @@ export const COACH_LABELS = {
     error: 'Could not load the plan. Please try again.',
     retry: 'Refresh',
     draftNote: 'Doses are a draft for the S&C coach to approve. This is not medical advice.',
+    timer: {
+      start: 'Start',
+      pause: 'Pause',
+      resume: 'Resume',
+      next: 'Next',
+      restart: 'Restart',
+      now: 'Now',
+      done: 'Done',
+      progress: (d, n) => `${d} of ${n} done`,
+      note: 'The timer is just a stopwatch — it saves nothing.',
+    },
     widgetTitle: 'My home workout',
     widgetOpen: 'Open plan',
     widgetNoCheckin: 'Do your check-in and today’s plan appears here.',
