@@ -50,16 +50,18 @@ export type SorenessSilhouetteProps = {
 // LEFT half and mirrored for the right.
 // ---------------------------------------------------------------------------
 
-const W = 200;
-const H = 400;
-const MIRROR = `matrix(-1 0 0 1 ${W} 0)`;
+export const SILHOUETTE_W = 200;
+export const SILHOUETTE_H = 400;
+const W = SILHOUETTE_W;
+const H = SILHOUETTE_H;
+export const MIRROR = `matrix(-1 0 0 1 ${W} 0)`;
 
-type Shape =
+export type Shape =
   | { kind: 'ellipse'; cx: number; cy: number; rx: number; ry: number; rot?: number }
   | { kind: 'path'; d: string }
   | { kind: 'rect'; x: number; y: number; w: number; h: number; r: number };
 
-type ZoneShape = { zone: BodyZone; shape: Shape };
+export type ZoneShape = { zone: BodyZone; shape: Shape };
 
 const FRONT: readonly ZoneShape[] = [
   { zone: 'chest', shape: { kind: 'path', d: 'M72 74 Q100 67 128 74 L131 99 Q116 112 100 105 Q84 112 69 99 Z' } },
@@ -93,7 +95,10 @@ const BACK: readonly ZoneShape[] = [
 export const SILHOUETTE_SHAPES: Readonly<Record<SilhouetteView, readonly ZoneShape[]>> = { front: FRONT, back: BACK };
 
 /** The body outline (not tappable): head, neck, torso, pelvis, arms, legs — left half mirrored. */
-function BodyOutline(): ReactElement {
+export function BodyOutline({
+  fill = 'rgba(255,255,255,0.035)',
+  stroke = 'rgba(255,255,255,0.12)',
+}: { fill?: string; stroke?: string } = {}): ReactElement {
   const half = (
     <>
       <rect x={40} y={70} width={18} height={66} rx={9} transform="rotate(8 49 70)" />
@@ -105,7 +110,7 @@ function BodyOutline(): ReactElement {
     </>
   );
   return (
-    <g fill="rgba(255,255,255,0.035)" stroke="rgba(255,255,255,0.12)" strokeWidth={1}>
+    <g fill={fill} stroke={stroke} strokeWidth={1}>
       <ellipse cx={100} cy={29} rx={16} ry={19} />
       <rect x={92} y={46} width={16} height={16} rx={4} />
       <path d="M64 66 Q100 58 136 66 L141 110 Q134 150 131 184 L69 184 Q66 150 59 110 Z" />
@@ -116,7 +121,7 @@ function BodyOutline(): ReactElement {
   );
 }
 
-function ShapeEl({ shape, ...rest }: { shape: Shape } & SVGProps<SVGElement>): ReactElement {
+export function ShapeEl({ shape, ...rest }: { shape: Shape } & SVGProps<SVGElement>): ReactElement {
   const common = rest as SVGProps<SVGEllipseElement & SVGPathElement & SVGRectElement>;
   if (shape.kind === 'ellipse') {
     return (
