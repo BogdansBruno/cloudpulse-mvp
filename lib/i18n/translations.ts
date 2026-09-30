@@ -26,6 +26,7 @@ type Dict = {
     checkin: string;
     progress: string;
     calendar: string;
+    training: string;
     signOut: string;
   };
   chat: {
@@ -632,7 +633,7 @@ type Dict = {
 
 export const translations: Record<Lang, Dict> = {
   ru: {
-    nav: { brand: 'CloudPulse', chat: 'Чат', checkin: 'Чек-ин', progress: 'Прогресс', calendar: 'Календарь', signOut: 'Выйти' },
+    nav: { brand: 'CloudPulse', chat: 'Чат', checkin: 'Чек-ин', progress: 'Прогресс', calendar: 'Календарь', training: 'Тренировка', signOut: 'Выйти' },
     chat: {
       title: 'CloudPulse Coach',
       subtitle: 'Твой AI-партнёр по тренировкам',
@@ -1301,7 +1302,7 @@ export const translations: Record<Lang, Dict> = {
     common: { loading: 'Загружаю…' },
   },
   lv: {
-    nav: { brand: 'CloudPulse', chat: 'Tērzēšana', checkin: 'Pārbaude', progress: 'Progress', calendar: 'Kalendārs', signOut: 'Iziet' },
+    nav: { brand: 'CloudPulse', chat: 'Tērzēšana', checkin: 'Pārbaude', progress: 'Progress', calendar: 'Kalendārs', training: 'Treniņš', signOut: 'Iziet' },
     chat: {
       title: 'CloudPulse Coach',
       subtitle: 'Tavs AI treniņu partneris',
@@ -1957,7 +1958,7 @@ export const translations: Record<Lang, Dict> = {
     common: { loading: 'Ielādē…' },
   },
   en: {
-    nav: { brand: 'CloudPulse', chat: 'Chat', checkin: 'Check-in', progress: 'Progress', calendar: 'Calendar', signOut: 'Sign out' },
+    nav: { brand: 'CloudPulse', chat: 'Chat', checkin: 'Check-in', progress: 'Progress', calendar: 'Calendar', training: 'Workout', signOut: 'Sign out' },
     chat: {
       title: 'CloudPulse Coach',
       subtitle: 'Your AI fitness partner for better training',

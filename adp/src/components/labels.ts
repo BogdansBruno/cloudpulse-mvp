@@ -365,3 +365,243 @@ export const ADP_PREVIEW_LABELS = {
     back: 'Back to demo',
   },
 } satisfies Record<AdpLang, AdpPreviewLabels>;
+
+// ---------------------------------------------------------------------------
+// AI coach screen + home widget
+// ---------------------------------------------------------------------------
+
+type _LimitReason = import('../services/coachingLimits').LimitReason;
+type _PlanMode = import('../types/sportProfile').PlanMode;
+type _BlockKind = import('../types/sportProfile').BlockKind;
+type _Ceiling = import('../types/sportProfile').LoadCeiling;
+
+export type CoachLabels = {
+  title: string;
+  guardTitle: string;
+  guardBody: (rules: number, ceiling: string) => string;
+  sourceAi: string;
+  sourceRules: string;
+  ceiling: Record<_Ceiling, string>;
+  modes: Record<_PlanMode, string>;
+  total: (minutes: number, rpe: number) => string;
+  whyTitle: string;
+  reasons: Record<_LimitReason, string>;
+  noReasons: string;
+  roles: { relief: string; prehab: string; general: string };
+  kinds: Record<_BlockKind, string>;
+  min: string;
+  effort: (rpe: number) => string;
+  dose: (d: { sets?: number; reps?: number; seconds?: number; minutes?: number }, perSide: boolean) => string;
+  forZone: (zone: string) => string;
+  referredTitle: string;
+  noneBody: string;
+  noCheckinTitle: string;
+  noCheckinBody: string;
+  toCheckin: string;
+  error: string;
+  retry: string;
+  draftNote: string;
+  widgetTitle: string;
+  widgetOpen: string;
+  widgetNoCheckin: string;
+  widgetSummary: (minutes: number, blocks: number) => string;
+  navLabel: string;
+};
+
+export const COACH_LABELS = {
+  ru: {
+    title: 'Моя тренировка на сегодня',
+    guardTitle: 'Safety Guard активен',
+    guardBody: (rules, ceiling) =>
+      `План проверен кодом по ${rules} правилам и не выходит за лимит движка готовности (сегодня — ${ceiling}). Только упражнения из каталога, без медицинских советов.`,
+    sourceAi: 'Составил ИИ, проверил код',
+    sourceRules: 'Собран правилами движка, без ИИ',
+    ceiling: { green: 'зелёный', yellow: 'жёлтый', red: 'красный', blocked: 'стоп' },
+    modes: {
+      full: 'Дополнительное занятие',
+      micro_dose: 'Микро-доза',
+      recovery_only: 'Только восстановление',
+      rtp_progression: 'Постепенное возвращение',
+      none: 'Сегодня без тренировки',
+    },
+    total: (m, r) => `${m} мин · усилие до ${r}/10`,
+    whyTitle: 'Почему такой план',
+    reasons: {
+      ENGINE_CEILING: 'Движок готовности сегодня снизил допустимую нагрузку.',
+      RTP_NOT_CLEARED: 'После боли: пока только восстановление, пока тренер не подтвердит возвращение.',
+      RTP_PROGRESSION: 'Возвращение после паузы: нагрузка растёт по шагам.',
+      MATCH_NEAR: 'Матч сегодня или завтра — только лёгкая активация и подвижность.',
+      MATCH_AFTER: 'День после матча — восстановление.',
+      SEASON_PHASE: 'Фаза сезона ограничивает объём.',
+      EXAM_STORM_MICRO_DOSE: 'Скоро контрольная — короткая микро-доза вместо полной тренировки.',
+      SORE_ZONE_RELIEF_ONLY: 'Забитые мышцы получают только мягкую работу — никакой силовой нагрузки на них.',
+      SORE_ZONE_REFERRED: 'Некоторые зоны сегодня не нагружаем совсем.',
+    },
+    noReasons: 'Сегодня зелёный день — обычное дополнительное занятие.',
+    roles: { relief: 'Мягко для забитой мышцы', prehab: 'Профилактика для твоего спорта', general: 'Основная часть' },
+    kinds: {
+      mobility: 'Подвижность',
+      activation: 'Активация',
+      isometric: 'Удержание',
+      eccentric: 'Эксцентрика',
+      bodyweight_strength: 'Сила с весом тела',
+      aerobic_base: 'Лёгкая аэробика',
+      breathing_recovery: 'Дыхание',
+    },
+    min: 'мин',
+    effort: (r) => `усилие до ${r}/10`,
+    dose: (d, perSide) => {
+      const base =
+        d.minutes !== undefined
+          ? `${d.minutes} мин`
+          : d.reps !== undefined
+            ? `${d.sets} × ${d.reps}`
+            : `${d.sets} × ${d.seconds} с`;
+      return perSide ? `${base} на каждую сторону` : base;
+    },
+    forZone: (z) => `для зоны: ${z}`,
+    referredTitle: 'Эти зоны сегодня не трогаем',
+    noneBody: 'Движок готовности сегодня не разрешает дополнительную тренировку. Отдыхай; если что-то беспокоит — скажи тренеру.',
+    noCheckinTitle: 'Сначала чек-ин',
+    noCheckinBody: 'План строится по сегодняшнему чек-ину. Пройди его — это минута.',
+    toCheckin: 'К чек-ину',
+    error: 'Не удалось загрузить план. Попробуй ещё раз.',
+    retry: 'Обновить',
+    draftNote: 'Дозировки — черновик, их утверждает тренер по ОФП. Это не медицинская рекомендация.',
+    widgetTitle: 'Моя домашняя тренировка',
+    widgetOpen: 'Открыть план',
+    widgetNoCheckin: 'Пройди чек-ин — и план на сегодня появится здесь.',
+    widgetSummary: (m, n) => `${m} мин · ${n} ${n === 1 ? 'блок' : n < 5 ? 'блока' : 'блоков'}`,
+    navLabel: 'Тренировка',
+  },
+  lv: {
+    title: 'Mans šodienas treniņš',
+    guardTitle: 'Safety Guard aktīvs',
+    guardBody: (rules, ceiling) =>
+      `Plānu kods pārbaudīja pēc ${rules} noteikumiem, un tas nepārsniedz gatavības dzinēja robežu (šodien — ${ceiling}). Tikai vingrinājumi no kataloga, bez medicīniskiem padomiem.`,
+    sourceAi: 'Sastādīja AI, pārbaudīja kods',
+    sourceRules: 'Salikts pēc dzinēja noteikumiem, bez AI',
+    ceiling: { green: 'zaļš', yellow: 'dzeltens', red: 'sarkans', blocked: 'stop' },
+    modes: {
+      full: 'Papildu nodarbība',
+      micro_dose: 'Mikrodeva',
+      recovery_only: 'Tikai atjaunošanās',
+      rtp_progression: 'Pakāpeniska atgriešanās',
+      none: 'Šodien bez treniņa',
+    },
+    total: (m, r) => `${m} min · piepūle līdz ${r}/10`,
+    whyTitle: 'Kāpēc tāds plāns',
+    reasons: {
+      ENGINE_CEILING: 'Gatavības dzinējs šodien samazināja pieļaujamo slodzi.',
+      RTP_NOT_CLEARED: 'Pēc sāpēm: pagaidām tikai atjaunošanās, līdz treneris apstiprina atgriešanos.',
+      RTP_PROGRESSION: 'Atgriešanās pēc pauzes: slodze pieaug pa soļiem.',
+      MATCH_NEAR: 'Spēle šodien vai rīt — tikai viegla aktivācija un kustīgums.',
+      MATCH_AFTER: 'Diena pēc spēles — atjaunošanās.',
+      SEASON_PHASE: 'Sezonas fāze ierobežo apjomu.',
+      EXAM_STORM_MICRO_DOSE: 'Drīz kontroldarbs — īsa mikrodeva pilna treniņa vietā.',
+      SORE_ZONE_RELIEF_ONLY: 'Sasprindzinātie muskuļi saņem tikai maigu darbu — bez spēka slodzes.',
+      SORE_ZONE_REFERRED: 'Dažas zonas šodien nenoslogojam nemaz.',
+    },
+    noReasons: 'Šodien zaļā diena — parasta papildu nodarbība.',
+    roles: { relief: 'Maigi sasprindzinātajam muskulim', prehab: 'Profilakse tavam sporta veidam', general: 'Pamatdaļa' },
+    kinds: {
+      mobility: 'Kustīgums',
+      activation: 'Aktivācija',
+      isometric: 'Noturēšana',
+      eccentric: 'Ekscentrika',
+      bodyweight_strength: 'Spēks ar ķermeņa svaru',
+      aerobic_base: 'Viegla aerobika',
+      breathing_recovery: 'Elpošana',
+    },
+    min: 'min',
+    effort: (r) => `piepūle līdz ${r}/10`,
+    dose: (d, perSide) => {
+      const base =
+        d.minutes !== undefined
+          ? `${d.minutes} min`
+          : d.reps !== undefined
+            ? `${d.sets} × ${d.reps}`
+            : `${d.sets} × ${d.seconds} s`;
+      return perSide ? `${base} katrai pusei` : base;
+    },
+    forZone: (z) => `zonai: ${z}`,
+    referredTitle: 'Šīs zonas šodien neaiztiekam',
+    noneBody: 'Gatavības dzinējs šodien neatļauj papildu treniņu. Atpūties; ja kaut kas satrauc — pasaki trenerim.',
+    noCheckinTitle: 'Vispirms reģistrācija',
+    noCheckinBody: 'Plāns tiek veidots pēc šodienas reģistrācijas. Aizpildi to — tā ir minūte.',
+    toCheckin: 'Uz reģistrāciju',
+    error: 'Neizdevās ielādēt plānu. Mēģini vēlreiz.',
+    retry: 'Atjaunot',
+    draftNote: 'Devas ir melnraksts, tās apstiprina VFS treneris. Tas nav medicīnisks ieteikums.',
+    widgetTitle: 'Mans mājas treniņš',
+    widgetOpen: 'Atvērt plānu',
+    widgetNoCheckin: 'Aizpildi reģistrāciju — un šodienas plāns parādīsies šeit.',
+    widgetSummary: (m, n) => `${m} min · ${n} ${n === 1 ? 'bloks' : 'bloki'}`,
+    navLabel: 'Treniņš',
+  },
+  en: {
+    title: 'My workout for today',
+    guardTitle: 'Safety Guard on',
+    guardBody: (rules, ceiling) =>
+      `This plan was checked by code against ${rules} rules and stays within the readiness engine’s limit (today: ${ceiling}). Catalogue exercises only, no medical advice.`,
+    sourceAi: 'Written by AI, checked by code',
+    sourceRules: 'Built by the engine’s rules, no AI',
+    ceiling: { green: 'green', yellow: 'yellow', red: 'red', blocked: 'stop' },
+    modes: {
+      full: 'Extra session',
+      micro_dose: 'Micro-dose',
+      recovery_only: 'Recovery only',
+      rtp_progression: 'Gradual return',
+      none: 'No training today',
+    },
+    total: (m, r) => `${m} min · effort up to ${r}/10`,
+    whyTitle: 'Why this plan',
+    reasons: {
+      ENGINE_CEILING: 'The readiness engine lowered today’s allowed load.',
+      RTP_NOT_CLEARED: 'After pain: recovery only until your coach confirms your return.',
+      RTP_PROGRESSION: 'Coming back after a break: the load goes up step by step.',
+      MATCH_NEAR: 'Match today or tomorrow — light activation and mobility only.',
+      MATCH_AFTER: 'Day after a match — recovery.',
+      SEASON_PHASE: 'The season phase limits the volume.',
+      EXAM_STORM_MICRO_DOSE: 'Exam coming up — a short micro-dose instead of a full session.',
+      SORE_ZONE_RELIEF_ONLY: 'Tight muscles get gentle work only — no strength load on them.',
+      SORE_ZONE_REFERRED: 'Some areas get no load at all today.',
+    },
+    noReasons: 'A green day — a normal extra session.',
+    roles: { relief: 'Gentle work for a tight muscle', prehab: 'Prehab for your sport', general: 'Main part' },
+    kinds: {
+      mobility: 'Mobility',
+      activation: 'Activation',
+      isometric: 'Holds',
+      eccentric: 'Eccentric',
+      bodyweight_strength: 'Bodyweight strength',
+      aerobic_base: 'Easy aerobic',
+      breathing_recovery: 'Breathing',
+    },
+    min: 'min',
+    effort: (r) => `effort up to ${r}/10`,
+    dose: (d, perSide) => {
+      const base =
+        d.minutes !== undefined
+          ? `${d.minutes} min`
+          : d.reps !== undefined
+            ? `${d.sets} × ${d.reps}`
+            : `${d.sets} × ${d.seconds} s`;
+      return perSide ? `${base} per side` : base;
+    },
+    forZone: (z) => `for: ${z}`,
+    referredTitle: 'We leave these areas alone today',
+    noneBody: 'The readiness engine does not allow an extra session today. Rest; if something worries you, tell your coach.',
+    noCheckinTitle: 'Check in first',
+    noCheckinBody: 'The plan is built from today’s check-in. It takes a minute.',
+    toCheckin: 'Go to check-in',
+    error: 'Could not load the plan. Please try again.',
+    retry: 'Refresh',
+    draftNote: 'Doses are a draft for the S&C coach to approve. This is not medical advice.',
+    widgetTitle: 'My home workout',
+    widgetOpen: 'Open plan',
+    widgetNoCheckin: 'Do your check-in and today’s plan appears here.',
+    widgetSummary: (m, n) => `${m} min · ${n} ${n === 1 ? 'block' : 'blocks'}`,
+    navLabel: 'Workout',
+  },
+} satisfies Record<AdpLang, CoachLabels>;

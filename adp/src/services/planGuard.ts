@@ -53,6 +53,36 @@ export type PlanViolation =
   | { code: 'PERCENTAGE' }
   | { code: 'INVENTED_NUMBER'; value: string };
 
+/** Every rule the validator enforces — one code each. Shown as "checked by N rules". */
+export const PLAN_RULE_CODES = [
+  'NOT_JSON',
+  'BAD_SHAPE',
+  'MODE_MISMATCH',
+  'PLAN_IN_NONE_MODE',
+  'KIND_NOT_ALLOWED',
+  'UNKNOWN_DRILL',
+  'DRILL_NOT_ALLOWED',
+  'DRILL_KIND_MISMATCH',
+  'DRILL_REPEATED',
+  'RPE_OVER_LIMIT',
+  'RPE_BELOW_DRILL',
+  'BLOCK_TOO_SHORT',
+  'MINUTES_OVER_LIMIT',
+  'RELIEF_BLOCK_WRONG',
+  'RELIEF_ZONE_MISSING',
+  'REFERRED_ZONE_TARGETED',
+  'REFERRAL_MISSING',
+  'EXPLANATION_TOO_LONG',
+  'MEDICAL_LANGUAGE',
+  'PERCENTAGE',
+  'INVENTED_NUMBER',
+] as const satisfies readonly PlanViolation['code'][];
+
+// Compile-time check: the list above covers every violation code.
+type MissingRule = Exclude<PlanViolation['code'], (typeof PLAN_RULE_CODES)[number]>;
+const _allRulesListed: [MissingRule] extends [never] ? true : never = true;
+void _allRulesListed;
+
 /**
  * Words that turn training advice into medical advice (RU / LV / EN stems).
  * "врач / ārsts / doctor / физиотерапевт / physio" are allowed: referring is fine.

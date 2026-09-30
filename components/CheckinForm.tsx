@@ -14,6 +14,8 @@ import CheckinStreakCard from '@/components/CheckinStreakCard';
 import CoachReplyCard from '@/components/CoachReplyCard';
 import RtpAthleteCard from '@/components/RtpAthleteCard';
 import SorenessSilhouette from '@/adp/src/components/SorenessSilhouette';
+import { COACH_LABELS } from '@/adp/src/components/labels';
+import { CHECKIN_EVENT } from '@/lib/use-today-plan';
 import type { SorenessMap } from '@/adp/src/components/sorenessMap';
 import type { Lang } from '@/lib/i18n/translations';
 import { todayUtc } from '@/lib/checkin-streak';
@@ -334,6 +336,7 @@ export default function CheckinForm({ onSubmitted }: { onSubmitted?: () => void 
       const data: CheckinApiResponse = await res.json();
       dropQueuedToday();
       setResult(data);
+      window.dispatchEvent(new Event(CHECKIN_EVENT));
       onSubmitted?.();
     } catch (err) {
       if (isNetworkError(err)) saveOffline(payload);
@@ -488,6 +491,15 @@ export default function CheckinForm({ onSubmitted }: { onSubmitted?: () => void 
             {t.checkin.toPlan}
             <ArrowRight size={18} weight="bold" />
           </motion.button>
+
+          <button
+            type="button"
+            onClick={() => router.push('/training')}
+            className="mt-3 inline-flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-white/[0.06] text-sm font-semibold text-zinc-100 ring-1 ring-inset ring-white/10 transition-colors hover:bg-white/10"
+          >
+            {COACH_LABELS[lang].title}
+            <ArrowRight size={16} weight="bold" />
+          </button>
         </motion.div>
       </div>
     );

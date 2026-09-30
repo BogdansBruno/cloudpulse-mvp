@@ -20,6 +20,7 @@ import type { ReadinessHistoryPoint } from '@/lib/types/readiness';
 import QuickReplyQuestions from '@/components/QuickReplyQuestions';
 import WorkoutPlan from '@/components/WorkoutPlan';
 import { PerformancePanel, PerformanceStrip, zoneMeta, loadStatus, noRestColor, HUB } from '@/components/PerformancePanel';
+import HomeWorkoutCard from '@/components/HomeWorkoutCard';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -214,6 +215,7 @@ export default function ChatPage() {
         {/* Performance sidebar: heavier, darker material = structure. */}
         <aside className="hidden min-h-0 overflow-y-auto rounded-[28px] bg-[#0D0F13]/85 p-5 ring-1 ring-inset ring-white/[0.07] backdrop-blur-2xl lg:block">
           <PerformancePanel history={history} loading={historyLoading} />
+          <HomeWorkoutCard className="mt-4" />
         </aside>
 
         {/* Coach column */}
@@ -260,6 +262,9 @@ export default function ChatPage() {
 
           <div className="px-3 pt-3 sm:hidden">
             <PerformanceStrip history={history} />
+          </div>
+          <div className="px-3 pt-3 lg:hidden">
+            <HomeWorkoutCard compact />
           </div>
 
           {/* Messages */}

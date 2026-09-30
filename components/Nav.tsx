@@ -41,6 +41,7 @@ export default function Nav() {
       : [
           { href: '/chat', label: t.nav.chat },
           { href: '/checkin', label: t.nav.checkin },
+          { href: '/training', label: t.nav.training },
           { href: '/progress', label: t.nav.progress },
           { href: '/calendar', label: t.nav.calendar },
         ]),
