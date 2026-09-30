@@ -92,15 +92,29 @@ export const MEDICAL_WORDS =
 
 const INT = (v: unknown): v is number => typeof v === 'number' && Number.isInteger(v);
 
-/** Pulls the JSON object out of a model reply (tolerates ```json fences, nothing else). */
+/**
+ * Pulls the JSON object out of a model reply. Tolerates ```json fences and a
+ * stray sentence around the object; everything inside is still checked by
+ * validatePlan, so being lenient here cannot let anything unsafe through.
+ */
 export function parseModelReply(text: string): unknown | null {
   const trimmed = text.trim().replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/, '').trim();
-  if (!trimmed.startsWith('{') || !trimmed.endsWith('}')) return null;
-  try {
-    return JSON.parse(trimmed);
-  } catch {
-    return null;
+  const candidates = [trimmed];
+  const first = trimmed.indexOf('{');
+  const last = trimmed.lastIndexOf('}');
+  if (first > 0 || (last >= 0 && last < trimmed.length - 1)) {
+    if (first >= 0 && last > first) candidates.push(trimmed.slice(first, last + 1));
   }
+  for (const c of candidates) {
+    if (!c.startsWith('{') || !c.endsWith('}')) continue;
+    try {
+      const v: unknown = JSON.parse(c);
+      if (v && typeof v === 'object' && !Array.isArray(v)) return v;
+    } catch {
+      // try the next candidate
+    }
+  }
+  return null;
 }
 
 /** Every number the explanation is allowed to mention. */
@@ -140,6 +154,8 @@ export function allowedNumbers(ctx: CoachingContext, blocks: readonly PlanBlock[
     }
   }
   add(total);
+  // Numbers that are part of a drill name in the context ("90/90 switches").
+  for (const d of Object.values(ctx.drills)) for (const m of d.name.matchAll(/\d+/g)) nums.add(m[0]);
   return nums;
 }
 

@@ -13,11 +13,16 @@ import {
 import { adpSportFromProfile, engineLimitsFromCloudPulse } from '@/lib/adp-coach';
 import { fromSorenessRows, type SorenessZone, type SportType } from '@/adp/src/types/sportProfile';
 import { buildCoachingPrompt } from '@/adp/src/services/AIPromptBuilder';
-import { fallbackPlan } from '@/adp/src/services/planGuard';
-import { buildPlanView } from '@/adp/src/services/planView';
+import { safePlanFromRequest, type SafePlanResult } from '@/adp/src/services/claudeCoachService';
 import type { AdpLang } from '@/adp/src/components/labels';
+import { adpModelCall } from '@/lib/adp-claude';
+import { PlanCache, planKey } from '@/lib/adp-coach-cache';
 
 export const runtime = 'nodejs';
+// The model may take several seconds; the rules plan is the answer if it takes too long.
+export const maxDuration = 30;
+
+const cache = new PlanCache<SafePlanResult>();
 
 // POST /api/adp-coach  { lang }
 // Today's home workout for the signed-in athlete ("My workout", AI Guard).
@@ -26,9 +31,10 @@ export const runtime = 'nodejs';
 // → soreness map (14_soreness_map.sql) + sport + Return-to-Play → the ADP
 // coach module (limits only ever tightened) → plan → PlanView for the screen.
 //
-// Step 2 of the integration: the plan is built by the engine's rules alone
-// (fallbackPlan). Step 3 adds the Claude call in between; its answer will be
-// shown only if it passes the same 21-rule check, otherwise this plan stays.
+// Claude writes the plan inside the frozen context (lib/adp-claude.ts); its
+// answer is shown only if it passes all 21 rules. No key, rate limit, timeout,
+// API error or any broken rule → the engine's rules-only plan, silently.
+// One model call per athlete + exact inputs (lib/adp-coach-cache.ts).
 //
 // Every optional source degrades quietly: no soreness table yet → no map;
 // RTP tables missing → no RTP; no sport in the profile → no sport focus.
@@ -97,9 +103,25 @@ export async function POST(req: Request) {
     });
 
     const request = buildCoachingPrompt({ lang, soreness }, engine, { sportType: sport, seasonPhase: null });
-    const plan = fallbackPlan(request.context);
+    const who = user?.id ?? 'dev-test-user';
+    const key = planKey(who, request.context);
 
-    return NextResponse.json({ status: 'ok', view: buildPlanView(request.context, plan, 'rules') });
+    const cached = cache.get(key);
+    const result =
+      cached ??
+      (await cache.once(key, async () => {
+        const callModel = request.context.limits.mode !== 'none' && cache.takeAiCall(who) ? adpModelCall() : null;
+        const r = await safePlanFromRequest(request, callModel);
+        // Cache real outcomes only; after an error or the rate limit, try the AI again next time.
+        if (r.ai.status === 'used' || r.ai.status === 'rejected' || request.context.limits.mode === 'none') cache.set(key, r);
+        if (r.ai.status === 'rejected' || r.ai.status === 'error') {
+          // Codes only — no names, no answers, nothing personal.
+          console.warn('[/api/adp-coach] AI plan not used:', r.ai.status, r.ai.violations.join(','));
+        }
+        return r;
+      }));
+
+    return NextResponse.json({ status: 'ok', view: result.view, isFallback: result.isFallback, ai: result.ai.status });
   } catch (error) {
     console.error('[/api/adp-coach] error:', error);
     return NextResponse.json({ error: 'Upstream error' }, { status: 502 });
