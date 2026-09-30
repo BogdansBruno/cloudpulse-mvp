@@ -58,6 +58,9 @@ type Dict = {
     painFlag: string;
     painZonePlaceholder: string;
     trainedToday: string;
+    sorenessMapToggle: string;
+    sorenessMapHint: string;
+    sorenessMapNotSaved: string;
     submit: string;
     toPlan: string;
     whyScore: string;
@@ -661,6 +664,9 @@ export const translations: Record<Lang, Dict> = {
       painFlag: 'Есть боль или дискомфорт',
       painZonePlaceholder: 'Где болит? (например: колено)',
       trainedToday: 'Уже тренировался сегодня',
+      sorenessMapToggle: 'Отметить забитые мышцы (по желанию)',
+      sorenessMapHint: 'Карту видишь только ты. По ней ИИ-тренер даст забитой мышце только мягкую работу. На балл готовности она не влияет.',
+      sorenessMapNotSaved: 'Чек-ин сохранён, а карта мышц — нет. Попробуй отметить её ещё раз позже.',
       submit: 'Узнать готовность',
       toPlan: 'К плану тренировок',
       whyScore: 'Почему такой балл',
@@ -1327,6 +1333,9 @@ export const translations: Record<Lang, Dict> = {
       painFlag: 'Ir sāpes vai diskomforts',
       painZonePlaceholder: 'Kur sāp? (piemēram: celis)',
       trainedToday: 'Jau trenējos šodien',
+      sorenessMapToggle: 'Atzīmēt sasprindzinātos muskuļus (pēc izvēles)',
+      sorenessMapHint: 'Karti redzi tikai tu. Pēc tās AI treneris dos sasprindzinātajam muskulim tikai maigu darbu. Gatavības punktus tā neietekmē.',
+      sorenessMapNotSaved: 'Reģistrācija saglabāta, bet muskuļu karte — nē. Pamēģini to atzīmēt vēlāk vēlreiz.',
       submit: 'Uzzināt gatavību',
       toPlan: 'Uz treniņu plānu',
       whyScore: 'Kāpēc tāds rezultāts',
@@ -1980,6 +1989,9 @@ export const translations: Record<Lang, Dict> = {
       painFlag: 'I have pain or discomfort',
       painZonePlaceholder: 'Where does it hurt? (e.g. knee)',
       trainedToday: 'Already trained today',
+      sorenessMapToggle: 'Mark tight muscles (optional)',
+      sorenessMapHint: 'Only you see this map. The AI coach uses it to give a tight muscle gentle work only. It does not change your readiness score.',
+      sorenessMapNotSaved: 'Check-in saved, but the muscle map was not. Try marking it again later.',
       submit: 'Check my readiness',
       toPlan: 'Go to training plan',
       whyScore: 'Why this score',

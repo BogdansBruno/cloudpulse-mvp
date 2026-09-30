@@ -41,6 +41,8 @@ export type SorenessSilhouetteProps = {
   onChange: (next: SorenessMap) => void;
   lang?: AdpLang;
   className?: string;
+  /** false = no card background/padding, for use inside another card (the check-in). */
+  framed?: boolean;
 };
 
 // ---------------------------------------------------------------------------
@@ -138,7 +140,13 @@ function ShapeEl({ shape, ...rest }: { shape: Shape } & SVGProps<SVGElement>): R
 
 type Active = { zone: BodyZone; half: Half };
 
-export default function SorenessSilhouette({ value, onChange, lang = 'ru', className = '' }: SorenessSilhouetteProps): ReactElement {
+export default function SorenessSilhouette({
+  value,
+  onChange,
+  lang = 'ru',
+  className = '',
+  framed = true,
+}: SorenessSilhouetteProps): ReactElement {
   const t = SORENESS_LABELS[lang];
   const titleId = useId();
   const [active, setActive] = useState<Active | null>(null);
@@ -245,7 +253,7 @@ export default function SorenessSilhouette({ value, onChange, lang = 'ru', class
 
   return (
     <section
-      className={`rounded-3xl bg-white/[0.03] p-5 ring-1 ring-inset ring-white/[0.08] backdrop-blur-2xl ${className}`}
+      className={`${framed ? 'rounded-3xl bg-white/[0.03] p-5 ring-1 ring-inset ring-white/[0.08] backdrop-blur-2xl' : ''} ${className}`}
       aria-labelledby={titleId}
     >
       <header className="flex flex-wrap items-baseline justify-between gap-2">

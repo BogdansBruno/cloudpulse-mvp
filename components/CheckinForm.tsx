@@ -3,7 +3,7 @@
 import { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
-import { Moon, Brain, Lightning, Barbell, WarningOctagon, Info, ArrowRight, Bandaids, PersonSimpleRun, CloudCheck } from '@phosphor-icons/react';
+import { Moon, Brain, Lightning, Barbell, WarningOctagon, Info, ArrowRight, Bandaids, PersonSimpleRun, CloudCheck, Person } from '@phosphor-icons/react';
 import type { Icon } from '@phosphor-icons/react';
 import { supabase } from '@/lib/supabase';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
@@ -13,6 +13,8 @@ import { translatePenalty, translateViolation, translateInconsistency } from '@/
 import CheckinStreakCard from '@/components/CheckinStreakCard';
 import CoachReplyCard from '@/components/CoachReplyCard';
 import RtpAthleteCard from '@/components/RtpAthleteCard';
+import SorenessSilhouette from '@/adp/src/components/SorenessSilhouette';
+import type { SorenessMap } from '@/adp/src/components/sorenessMap';
 import type { Lang } from '@/lib/i18n/translations';
 import { todayUtc } from '@/lib/checkin-streak';
 import {
@@ -40,6 +42,8 @@ type ReadinessResult = {
 type CheckinApiResponse = {
   readiness: ReadinessResult;
   safetyViolations: SafetyViolation[];
+  /** null = no map sent; false = check-in saved but the map was not. */
+  sorenessSaved?: boolean | null;
 };
 
 const SPRING = { type: 'spring', bounce: 0, duration: 0.35 } as const;
@@ -236,6 +240,9 @@ export default function CheckinForm({ onSubmitted }: { onSubmitted?: () => void 
   const [trainedToday, setTrainedToday] = useState(false);
   const [rpe, setRpe] = useState(5);
   const [durationMinutes, setDurationMinutes] = useState(60);
+  // Optional step: where exactly it is tight (ADP soreness silhouette).
+  const [markMuscles, setMarkMuscles] = useState(false);
+  const [sorenessMap, setSorenessMap] = useState<SorenessMap>([]);
 
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -292,6 +299,7 @@ export default function CheckinForm({ onSubmitted }: { onSubmitted?: () => void 
       painFlag,
       painZone: painFlag && painZone.trim() ? painZone.trim() : undefined,
       session: trainedToday ? { rpe, durationMinutes } : undefined,
+      sorenessZones: markMuscles ? sorenessMap.map((z) => ({ ...z })) : undefined,
     };
 
     if (typeof navigator !== 'undefined' && navigator.onLine === false) {
@@ -460,6 +468,13 @@ export default function CheckinForm({ onSubmitted }: { onSubmitted?: () => void 
             </div>
           )}
 
+          {result.sorenessSaved === false && (
+            <div className="mt-3 flex gap-3 rounded-2xl bg-white/[0.03] p-4 text-sm leading-relaxed text-zinc-300 ring-1 ring-inset ring-white/[0.08]">
+              <Info size={18} className="mt-0.5 shrink-0 text-zinc-400" />
+              <span>{t.checkin.sorenessMapNotSaved}</span>
+            </div>
+          )}
+
           <CoachReplyCard className="mt-3" />
           <RtpAthleteCard className="mt-3" />
           <CheckinStreakCard showCta={false} className="mt-3" />
@@ -518,6 +533,31 @@ export default function CheckinForm({ onSubmitted }: { onSubmitted?: () => void 
             </div>
           </motion.section>
         ))}
+
+        <section className="rounded-3xl bg-white/[0.03] px-4 ring-1 ring-inset ring-white/[0.08] backdrop-blur-2xl">
+          <Toggle
+            checked={markMuscles}
+            onChange={setMarkMuscles}
+            label={t.checkin.sorenessMapToggle}
+            icon={Person}
+            activeColor={HUB.amber}
+          />
+          <AnimatePresence initial={false}>
+            {markMuscles && (
+              <motion.div {...reveal} className="overflow-hidden">
+                <div className="pb-4">
+                  <p className="mb-3 text-xs leading-relaxed text-zinc-400">{t.checkin.sorenessMapHint}</p>
+                  <SorenessSilhouette
+                    value={sorenessMap}
+                    onChange={setSorenessMap}
+                    lang={lang}
+                    framed={false}
+                  />
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </section>
 
         <section className="divide-y divide-white/[0.06] rounded-3xl bg-white/[0.03] px-4 ring-1 ring-inset ring-white/[0.08] backdrop-blur-2xl">
           <div>

@@ -35,6 +35,8 @@ export type CheckinPayload = {
   painFlag: boolean;
   painZone?: string;
   session?: { rpe: number; durationMinutes: number };
+  /** Optional soreness map from the silhouette; the server validates it. */
+  sorenessZones?: { zoneId: string; side: string; severity: number }[];
 };
 
 export type QueuedCheckin = {

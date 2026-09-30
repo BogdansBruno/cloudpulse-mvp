@@ -9,6 +9,7 @@ import {
   type UserContext,
 } from '@/lib/readiness-engine';
 import { isAcceptableCheckinDate } from '@/lib/offline-queue';
+import { parseSorenessZones, toSorenessRows, type SorenessZone } from '@/adp/src/types/sportProfile';
 
 export const runtime = 'nodejs';
 
@@ -77,7 +78,7 @@ export async function POST(req: Request) {
       );
     }
     const date: string = typeof body?.date === 'string' ? body.date : serverToday;
-    const { sleepQuality, stress, fatigue, soreness, painFlag, painZone, session } = body ?? {};
+    const { sleepQuality, stress, fatigue, soreness, painFlag, painZone, session, sorenessZones } = body ?? {};
 
     if (![sleepQuality, stress, fatigue, soreness].every(isValidScale)) {
       return NextResponse.json(
@@ -85,6 +86,23 @@ export async function POST(req: Request) {
         { status: 400 }
       );
     }
+
+    // Optional soreness map from the silhouette (ADP). Checked with the same
+    // rules as the UI and the database; a broken map is refused, never
+    // "fixed". Absent = the athlete skipped that step.
+    let zones: SorenessZone[] | null = null;
+    if (sorenessZones !== undefined && sorenessZones !== null) {
+      const parsed = parseSorenessZones(sorenessZones);
+      if (!parsed.ok) {
+        return NextResponse.json(
+          { error: 'Invalid soreness map', content: 'sorenessZones: up to 6 muscle zones, severity 1-5.', details: parsed.error },
+          { status: 400 }
+        );
+      }
+      zones = parsed.value;
+    }
+    // null = no map sent; true/false = whether it was stored.
+    let sorenessSaved: boolean | null = null;
 
     const checkin: DailyCheckin = {
       date,
@@ -134,6 +152,21 @@ export async function POST(req: Request) {
       );
       if (checkinError) throw checkinError;
 
+      // The soreness map lives in its own table (14_soreness_map.sql): only the
+      // athlete can read it — coaches see checkins, not this. It never blocks
+      // the check-in: if the table is missing or the write fails, the check-in
+      // and the readiness score still go through.
+      if (zones) {
+        const { error: mapError } = await client
+          .from('soreness_maps')
+          .upsert(
+            { user_id: userId, date, zones: toSorenessRows(zones), updated_at: new Date().toISOString() },
+            { onConflict: 'user_id,date' }
+          );
+        if (mapError) console.error('[/api/checkin POST] soreness map not saved:', mapError.message);
+        sorenessSaved = !mapError;
+      }
+
       if (sessionEntry) {
         const { error: sessionError } = await client.from('sessions_log').insert({
           user_id: userId,
@@ -180,7 +213,7 @@ export async function POST(req: Request) {
     const todaysCheckin = checkins.find((c) => c.date === date);
     const safetyViolations = detectSafetyViolations(todaysCheckin, date, context);
 
-    return NextResponse.json({ checkin, readiness, safetyViolations });
+    return NextResponse.json({ checkin, readiness, safetyViolations, sorenessSaved });
   } catch (error) {
     console.error('[/api/checkin POST] error:', error);
     return NextResponse.json(
