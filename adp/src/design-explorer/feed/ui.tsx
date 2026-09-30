@@ -6,7 +6,8 @@
 
 import type { CSSProperties, ReactElement, ReactNode } from 'react';
 import { Ring } from '../shared';
-import { SERIF, THEMES } from '../themeStyles';
+import { THEMES } from '../themeStyles';
+import { VERDICT_STYLE } from '../../components/ui/typography';
 
 const t = THEMES.feed;
 
@@ -16,6 +17,14 @@ export const METRIC = {
   load: ['#F59E0B', '#D97706'] as [string, string],
   good: ['#10B981', '#059669'] as [string, string],
 };
+
+/**
+ * Text-safe version of a metric colour: the deep indigo glow is fine for
+ * rings and bars but too dark for small text, so text uses indigo-300.
+ */
+export function textSafe(color: string): string {
+  return color === METRIC.sleep[0] || color === METRIC.sleep[1] ? '#A5B4FC' : color;
+}
 
 export function readinessGradient(zone: 'green' | 'yellow' | 'red'): [string, string] {
   if (zone === 'green') return METRIC.good;
@@ -58,7 +67,7 @@ export function FeedCard({
 /** Small caps label: `tracking-widest text-[11px]`. */
 export function Caps({ children, color, className = '' }: { children: ReactNode; color?: string; className?: string }): ReactElement {
   return (
-    <p className={`text-[11px] font-semibold uppercase tracking-widest ${className}`} style={{ color: color ?? t.colors.textFaint }}>
+    <p className={`text-[11px] font-semibold uppercase tracking-widest ${className}`} style={{ color: color ? textSafe(color) : t.colors.textFaint }}>
       {children}
     </p>
   );
@@ -148,7 +157,7 @@ export const PILL_BTN: CSSProperties = {
 /** The engine's verdict in the editorial serif — white, calm, short. */
 export function Verdict({ children, className = '' }: { children: ReactNode; className?: string }): ReactElement {
   return (
-    <h3 className={`text-[28px] leading-[1.15] ${className}`} style={{ fontFamily: SERIF, fontWeight: 500, color: '#FFFFFF', letterSpacing: '-0.01em' }}>
+    <h3 className={`text-[28px] ${className}`} style={VERDICT_STYLE}>
       {children}
     </h3>
   );
@@ -189,7 +198,7 @@ export function RangeScale({
         <span className="text-[14px]" style={{ color: t.colors.textMuted }}>
           {label}
         </span>
-        <span className="text-[15px] font-semibold" style={{ fontVariantNumeric: 'tabular-nums', color: inNorm ? t.colors.text : color }}>
+        <span className="text-[15px] font-semibold" style={{ fontVariantNumeric: 'tabular-nums', color: inNorm ? t.colors.text : textSafe(color) }}>
           {valueText}
         </span>
       </div>
@@ -203,11 +212,11 @@ export function RangeScale({
         <span
           aria-hidden
           className="absolute top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full"
-          style={{ left: pos(value), background: '#FFFFFF', boxShadow: `0 0 0 3px rgba(12,13,18,0.9), 0 0 14px ${inNorm ? color : '#FFFFFF'}` }}
+          style={{ left: pos(value), background: '#FFFFFF', boxShadow: '0 0 0 3px rgba(12,13,18,0.9), 0 0 10px rgba(255,255,255,0.8)' }}
         />
         {hereLabel && (
           <span
-            className="absolute -top-6 -translate-x-1/2 whitespace-nowrap rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-widest"
+            className="absolute -top-6 -translate-x-1/2 whitespace-nowrap rounded-full px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wider"
             style={{ left: `clamp(48px, ${pos(value)}, calc(100% - 48px))`, background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.18)', color: '#FFFFFF' }}
           >
             {hereLabel}
@@ -215,10 +224,70 @@ export function RangeScale({
         )}
       </div>
       {note && (
-        <p className="mt-1.5 text-[11px]" style={{ color: t.colors.textFaint }}>
+        <p className="mt-1.5 text-[12px]" style={{ color: t.colors.textFaint }}>
           {note}
         </p>
       )}
     </div>
+  );
+}
+
+/**
+ * Capsule buttons for Night Feed. `inline` — compact paired actions inside a
+ * card; `cta` — the wide main action at the bottom of a card.
+ */
+export function PillButton({
+  children,
+  onClick,
+  variant = 'inline',
+  tone = 'glass',
+  ariaLabel,
+}: {
+  children: ReactNode;
+  onClick?: () => void;
+  variant?: 'inline' | 'cta';
+  tone?: 'glass' | 'light';
+  ariaLabel?: string;
+}): ReactElement {
+  const light = tone === 'light';
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={ariaLabel}
+      className={`inline-flex items-center justify-center gap-1.5 rounded-full font-semibold transition-[transform,background-color] duration-200 ease-out active:scale-[0.96] ${
+        variant === 'cta' ? 'w-full px-5 py-3 text-[14px]' : 'px-4 py-1.5 text-[13px]'
+      } ${light ? 'bg-white text-[#0C0D12] hover:bg-white/90' : 'border border-white/15 bg-white/10 text-white hover:bg-white/20'}`}
+      style={light ? { boxShadow: '0 8px 24px -10px rgba(255,255,255,0.5)' } : { boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.12)' }}
+    >
+      {children}
+    </button>
+  );
+}
+
+/** Oval status tag on the right of a card header, with a chevron when tappable. */
+export function StatusTag({ text, color, onClick }: { text: string; color: string; onClick?: () => void }): ReactElement {
+  const c = textSafe(color);
+  const body = (
+    <>
+      <span className="h-1.5 w-1.5 rounded-full" style={{ background: c, boxShadow: `0 0 6px ${c}` }} />
+      {text}
+      {onClick && (
+        <svg width="12" height="12" viewBox="0 0 24 24" aria-hidden>
+          <path d="m9 6 6 6-6 6" fill="none" stroke="currentColor" strokeWidth={2.4} strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      )}
+    </>
+  );
+  const cls = 'inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-1 text-[12px] font-semibold';
+  const style = { background: `${c}1F`, border: `1px solid ${c}55`, color: c };
+  return onClick ? (
+    <button type="button" onClick={onClick} className={cls} style={style}>
+      {body}
+    </button>
+  ) : (
+    <span className={cls} style={style}>
+      {body}
+    </span>
   );
 }

@@ -116,7 +116,7 @@ export default function AICoachPlanWidget({ lang, plan }: { lang: AdpLang; plan:
         <p className="mt-2 text-[13px] leading-relaxed" style={{ color: t.colors.textMuted }}>
           {plan.stopRule}
         </p>
-        <p className="mt-2 text-[11px]" style={{ color: t.colors.textFaint }}>
+        <p className="mt-2 text-[12px]" style={{ color: t.colors.textFaint }}>
           {L.draftNote}
         </p>
         <button type="button" onClick={timer.reset} className="mt-3 text-[13px] font-medium" style={{ color: t.colors.info }}>

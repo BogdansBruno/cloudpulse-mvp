@@ -64,7 +64,7 @@ export default function SafetyPassBadge({ lang, origin }: { lang: AdpLang; origi
             {formatId(DEMO_PASS.id)}
           </p>
         </div>
-        <p className="max-w-[55%] text-right text-[11px] leading-snug" style={{ color: t.colors.textFaint }}>
+        <p className="max-w-[55%] text-right text-[12px] leading-snug" style={{ color: t.colors.textFaint }}>
           {c.noHealth}. {c.demoQr}.
         </p>
       </div>

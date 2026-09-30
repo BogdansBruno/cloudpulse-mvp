@@ -30,6 +30,8 @@ export type FeedCopy = {
   verdict: { green: string; yellow: string; red: string };
   chart: { title: string; caption: string; unit: string; today: string; usual: string; formula: string };
   scales: { title: string; legend: string; here: string; hooperNorm: (baseline: number) => string; better: string };
+  tags: { inNorm: string; belowNorm: string; outOfNorm: (n: number, total: number) => string; soon: string; limited: string };
+  actions: { markedAll: string; editMap: string; markedToday: string; start: string; details: string; showPass: string; quickAdd: string };
 };
 
 export const FEED: Record<AdpLang, FeedCopy> = {
@@ -55,6 +57,16 @@ export const FEED: Record<AdpLang, FeedCopy> = {
       evening: 'Карта забитости и напоминание про сон — данные для завтрашнего плана.',
     },
     howNote: 'Лента не придумывает данные: каждая карточка берёт числа из чек-ина и движка готовности.',
+    tags: { inNorm: 'В норме', belowNorm: 'Ниже нормы', outOfNorm: (n, t) => `${n} из ${t} вне нормы`, soon: 'Скоро', limited: 'Ограничено' },
+    actions: {
+      markedAll: '✓ Всё отметил',
+      editMap: '✎ Изменить карту',
+      markedToday: 'Отмечено на сегодня — завтрашний план это учтёт.',
+      start: '▶ Начать',
+      details: 'Подробнее',
+      showPass: 'Показать Safety Pass',
+      quickAdd: 'Отметить самочувствие',
+    },
     verdict: { green: 'Оптимальное состояние', yellow: 'Сегодня — день полегче', red: 'Сегодня — день восстановления' },
     chart: {
       title: 'Нагрузка за неделю',
@@ -94,6 +106,16 @@ export const FEED: Record<AdpLang, FeedCopy> = {
       evening: 'Noguruma karte un atgādinājums par miegu — dati rītdienas plānam.',
     },
     howNote: 'Lenta neizdomā datus: katra kartīte ņem skaitļus no pieteikšanās un gatavības dzinēja.',
+    tags: { inNorm: 'Normā', belowNorm: 'Zem normas', outOfNorm: (n, t) => `${n} no ${t} ārpus normas`, soon: 'Drīz', limited: 'Ierobežots' },
+    actions: {
+      markedAll: '✓ Viss atzīmēts',
+      editMap: '✎ Mainīt karti',
+      markedToday: 'Atzīmēts šodienai — rītdienas plāns to ņems vērā.',
+      start: '▶ Sākt',
+      details: 'Sīkāk',
+      showPass: 'Parādīt Safety Pass',
+      quickAdd: 'Atzīmēt pašsajūtu',
+    },
     verdict: { green: 'Optimāls stāvoklis', yellow: 'Šodien — vieglāka diena', red: 'Šodien — atjaunošanās diena' },
     chart: {
       title: 'Slodze nedēļā',
@@ -133,6 +155,16 @@ export const FEED: Record<AdpLang, FeedCopy> = {
       evening: 'The soreness map and a sleep reminder — input for tomorrow’s plan.',
     },
     howNote: 'The feed invents nothing: every card takes its numbers from the check-in and the readiness engine.',
+    tags: { inNorm: 'Normal', belowNorm: 'Below normal', outOfNorm: (n, t) => `${n} of ${t} out of range`, soon: 'Soon', limited: 'Restricted' },
+    actions: {
+      markedAll: '✓ All marked',
+      editMap: '✎ Edit map',
+      markedToday: 'Marked for today — tomorrow’s plan will use it.',
+      start: '▶ Start',
+      details: 'Details',
+      showPass: 'Show Safety Pass',
+      quickAdd: 'Log how you feel',
+    },
     verdict: { green: 'Optimal state', yellow: 'Today is a lighter day', red: 'Today is a recovery day' },
     chart: {
       title: 'Load this week',

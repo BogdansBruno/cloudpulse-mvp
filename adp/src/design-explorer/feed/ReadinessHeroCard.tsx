@@ -46,6 +46,7 @@ export default function ReadinessHeroCard({ lang, data, greeting }: { lang: AdpL
       </div>
 
       <div className="mt-7 flex flex-col items-center text-center">
+        <div style={{ filter: `drop-shadow(0 0 12px ${g[0]}59)` }}>
         <GlowRing value={data.score} size={t.ring.size} stroke={t.ring.stroke} gradient={g}>
           <span className="text-[64px] font-semibold leading-none tracking-[-0.04em]" style={{ fontVariantNumeric: 'tabular-nums' }}>
             {data.score}
@@ -54,6 +55,7 @@ export default function ReadinessHeroCard({ lang, data, greeting }: { lang: AdpL
             / 100
           </span>
         </GlowRing>
+        </div>
         <Caps className="mt-4" color={g[0]}>
           {c.zone[data.zone]}
         </Caps>

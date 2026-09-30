@@ -58,8 +58,8 @@ const SYSTEM_SANS =
   "-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif";
 const GEIST = "var(--font-geist-sans), system-ui, sans-serif";
 const MONO = "var(--font-geist-mono), ui-monospace, 'SF Mono', Menlo, monospace";
-/** Editorial serif for engine verdicts (loaded in app/layout.tsx; Georgia if missing). */
-export const SERIF = "var(--font-adp-serif), 'Cormorant Garamond', Georgia, 'Times New Roman', serif";
+/** Editorial serif for engine verdicts — see components/ui/typography.ts. */
+export { SERIF } from '../components/ui/typography';
 const SF_INTER =
   "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', Inter, var(--font-geist-sans), 'Segoe UI', Roboto, sans-serif";
 
@@ -129,10 +129,11 @@ export const THEMES: Readonly<Record<ThemeId, ThemeTokens>> = {
       bg: '#0C0D12',
       surface: 'rgba(24,25,34,0.80)',
       surfaceAlt: '#1F2130',
-      border: 'rgba(255,255,255,0.10)',
+      border: 'rgba(255,255,255,0.12)',
       text: '#F4F5F7',
-      textMuted: '#A7ADBD',
-      textFaint: '#8A90A2',
+      // Raised for phones: muted ≈ slate-300, faint ≈ zinc-400 — both ≥ 7:1 on the glass.
+      textMuted: '#CBD5E1',
+      textFaint: '#A8AFBF',
       good: '#10B981',
       warn: '#F59E0B',
       bad: '#F43F5E',
@@ -149,7 +150,8 @@ export const THEMES: Readonly<Record<ThemeId, ThemeTokens>> = {
     },
     radius: { card: 28, inner: 18, pill: 999 },
     shadow: {
-      card: '0 1px 0 rgba(255,255,255,0.04) inset, 0 18px 40px -20px rgba(0,0,0,0.85)',
+      // Top-edge light inside the glass + a soft floating shadow (matches /training).
+      card: 'inset 0 1px 1px 0 rgba(255,255,255,0.15), 0 10px 30px -5px rgba(0,0,0,0.3)',
       raised: '0 10px 30px -14px rgba(0,0,0,0.9)',
       glow: (c) => `0 0 40px -10px ${c}`,
     },

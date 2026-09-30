@@ -18,14 +18,14 @@ import ReadinessHeroCard from './ReadinessHeroCard';
 import SafetyPassBadge from './SafetyPassBadge';
 import SorenessSilhouetteWidget from './SorenessSilhouetteWidget';
 import { FEED, daypartOf, type Daypart } from './copy';
-import { Caps, Chevron, FeedCard, METRIC, PILL_BTN, RangeScale, readinessGradient } from './ui';
+import { Caps, Chevron, FeedCard, METRIC, PillButton, RangeScale, StatusTag, readinessGradient } from './ui';
 
 const t = THEMES.feed;
 type TabId = 'today' | 'body' | 'pass';
 const LOCALE = { ru: 'ru-RU', lv: 'lv-LV', en: 'en-GB' } as const;
 
 function Icon({ id, on }: { id: TabId; on: boolean }): ReactElement {
-  const s = on ? '#FFFFFF' : t.colors.textFaint;
+  const s = on ? '#FFFFFF' : t.colors.textMuted;
   const common = { fill: 'none', stroke: s, strokeWidth: 1.7, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const };
   return (
     <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden>
@@ -51,25 +51,37 @@ function Icon({ id, on }: { id: TabId; on: boolean }): ReactElement {
   );
 }
 
-function SmallCard({ caps, capsColor, title, children, glow, onOpen }: { caps: string; capsColor?: string; title: string; children?: ReactNode; glow?: string; onOpen?: () => void }): ReactElement {
-  const head = (
-    <span className="flex items-start justify-between gap-3">
-      <span className="min-w-0">
-        <Caps color={capsColor}>{caps}</Caps>
-        <span className="mt-1 block text-[17px] font-semibold leading-snug tracking-[-0.01em]">{title}</span>
-      </span>
-      {onOpen && <Chevron />}
-    </span>
-  );
+function SmallCard({
+  caps,
+  capsColor,
+  title,
+  children,
+  glow,
+  onOpen,
+  tag,
+}: {
+  caps: string;
+  capsColor?: string;
+  title: string;
+  children?: ReactNode;
+  glow?: string;
+  onOpen?: () => void;
+  /** Oval status tag on the right of the header. */
+  tag?: { text: string; color: string };
+}): ReactElement {
   return (
     <FeedCard glow={glow} className="p-5">
-      {onOpen ? (
-        <button type="button" onClick={onOpen} className="block w-full text-left">
-          {head}
-        </button>
-      ) : (
-        head
-      )}
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <Caps color={capsColor}>{caps}</Caps>
+          <h4 className="mt-1 text-[17px] font-semibold leading-snug tracking-[-0.01em]">{title}</h4>
+        </div>
+        {tag ? <StatusTag text={tag.text} color={tag.color} onClick={onOpen} /> : onOpen && (
+          <button type="button" onClick={onOpen} aria-label={title} className="p-1">
+            <Chevron />
+          </button>
+        )}
+      </div>
       {children}
     </FeedCard>
   );
@@ -95,6 +107,7 @@ export default function FeedPhone({
   const [tab, setTab] = useState<TabId>('today');
   const [part, setPart] = useState<Daypart>('morning');
   const [planOpen, setPlanOpen] = useState(false);
+  const [marked, setMarked] = useState(false);
   const scroller = useRef<HTMLDivElement>(null);
 
   // Start on the real time of day; the switch above the phone is for the demo.
@@ -112,20 +125,23 @@ export default function FeedPhone({
   const acwr = acwrState(data.acwr);
   const exam = data.penalties.find((p) => p.code === 'EXAM_SOON');
   const planPreview = (
-    <SmallCard caps={COACH_LABELS[lang].modes[plan.mode]} capsColor={readinessGradient(data.zone)[0]} title={f.plan.title} glow={METRIC.good[0]} onOpen={() => setPlanOpen((o) => !o)}>
+    <SmallCard caps={COACH_LABELS[lang].modes[plan.mode]} capsColor={readinessGradient(data.zone)[0]} title={f.plan.title} glow={METRIC.good[0]}>
       <p className="mt-1 text-[14px]" style={{ color: t.colors.textMuted }}>
         {f.plan.blocks(plan.blocks.length, plan.totalMinutes)}
       </p>
       {!planOpen && (
-        <button type="button" onClick={() => setPlanOpen(true)} className="mt-3 px-4 py-1.5 text-[13px] font-semibold" style={PILL_BTN}>
-          {f.plan.open}
-        </button>
+        <div className="mt-4 flex flex-wrap gap-2">
+          <PillButton tone="light" onClick={() => setPlanOpen(true)}>
+            {f.actions.start}
+          </PillButton>
+          <PillButton onClick={() => setPlanOpen(true)}>{f.actions.details}</PillButton>
+        </div>
       )}
     </SmallCard>
   );
 
   const sleepCard = (
-    <SmallCard caps={f.mini.sleep} capsColor={METRIC.sleep[0]} title={f.sleep.title} glow={METRIC.sleep[0]}>
+    <SmallCard caps={f.mini.sleep} capsColor={METRIC.sleep[0]} title={f.sleep.title} glow={METRIC.sleep[0]} tag={data.sleep >= 5 ? { text: f.tags.inNorm, color: t.colors.good } : { text: f.tags.belowNorm, color: METRIC.sleep[0] }}>
       <div className="mt-4">
         <RangeScale label={c.readiness.sleep} valueText={c.readiness.scale7(data.sleep)} min={1} max={7} value={data.sleep} normFrom={5} normTo={7} color={METRIC.sleep[0]} hereLabel={f.scales.here} />
       </div>
@@ -135,7 +151,7 @@ export default function FeedPhone({
     </SmallCard>
   );
   const loadCard = (
-    <SmallCard caps={f.mini.load} capsColor={METRIC.load[0]} title={f.chart.title} glow={METRIC.load[0]}>
+    <SmallCard caps={f.mini.load} capsColor={METRIC.load[0]} title={f.chart.title} glow={METRIC.load[0]} tag={{ text: c.readiness.acwrState[acwr], color: acwr === 'ok' ? t.colors.good : acwr === 'spike' ? t.colors.bad : t.colors.warn }}>
       <div className="mt-4">
         <LoadWeekChart lang={lang} loads={data.weekLoad} usual={usualDailyLoad(data)} />
       </div>
@@ -145,7 +161,7 @@ export default function FeedPhone({
     </SmallCard>
   );
   const examCard = exam && (
-    <SmallCard caps={c.readiness.penalties.EXAM_SOON} capsColor={t.colors.warn} title={f.exam.title} glow={t.colors.warn}>
+    <SmallCard caps={c.readiness.penalties.EXAM_SOON} capsColor={t.colors.warn} title={f.exam.title} glow={t.colors.warn} tag={{ text: f.tags.soon, color: t.colors.warn }}>
       <p className="mt-2 text-[13px] leading-relaxed" style={{ color: t.colors.textMuted }}>
         {f.exam.body}
       </p>
@@ -155,21 +171,45 @@ export default function FeedPhone({
     </SmallCard>
   );
   const passMini = (
-    <SmallCard caps={c.pass.title} capsColor={t.colors.bad} title={f.passMini.title} glow={t.colors.bad} onOpen={() => go('pass')}>
+    <SmallCard caps={c.pass.title} capsColor={t.colors.bad} title={f.passMini.title} glow={t.colors.bad} tag={{ text: f.tags.limited, color: t.colors.bad }} onOpen={() => go('pass')}>
       <p className="mt-2 text-[13px] leading-relaxed" style={{ color: t.colors.textMuted }}>
         {f.passMini.body}
       </p>
+      <div className="mt-4">
+        <PillButton variant="cta" onClick={() => go('pass')}>
+          {f.actions.showPass}
+        </PillButton>
+      </div>
     </SmallCard>
   );
   const windDown = (
     <SmallCard caps={f.daypart.evening} capsColor={METRIC.sleep[0]} title={f.windDown.title} glow={METRIC.sleep[0]}>
       <p className="mt-2 text-[13px] leading-relaxed" style={{ color: t.colors.textMuted }}>
-        {f.windDown.body}
+        {marked ? f.actions.markedToday : f.windDown.body}
       </p>
+      {!marked && (
+        <div className="mt-4 flex flex-wrap gap-2">
+          <PillButton onClick={() => setMarked(true)}>{f.actions.markedAll}</PillButton>
+          <PillButton onClick={() => go('body')}>{f.actions.editMap}</PillButton>
+        </div>
+      )}
     </SmallCard>
   );
+  const outOfNorm = [
+    data.acwr < 0.8 || data.acwr > 1.3,
+    data.hooper > data.hooperBaseline,
+    data.sleep < 5,
+    data.stress < 5,
+    data.fatigue < 5,
+    data.soreness < 5,
+  ].filter(Boolean).length;
   const factors = (
-    <SmallCard caps={f.mini.readiness} capsColor={readinessGradient(data.zone)[0]} title={f.scales.title}>
+    <SmallCard
+      caps={f.mini.readiness}
+      capsColor={readinessGradient(data.zone)[0]}
+      title={f.scales.title}
+      tag={outOfNorm === 0 ? { text: f.tags.inNorm, color: t.colors.good } : { text: f.tags.outOfNorm(outOfNorm, 6), color: t.colors.warn }}
+    >
       <p className="mt-1 flex items-center gap-2 text-[12px]" style={{ color: t.colors.textFaint }}>
         <span className="inline-block h-2 w-5 rounded-full" style={{ background: `${METRIC.load[0]}66` }} />
         {f.scales.legend}
@@ -248,36 +288,53 @@ export default function FeedPhone({
           </div>
         </div>
 
-        {/* 3-tab bar */}
-        <nav
-          className="absolute inset-x-3 bottom-3 z-10 grid grid-cols-3 p-1.5"
-          style={{
-            background: 'rgba(18,19,26,0.85)',
-            backdropFilter: 'blur(24px) saturate(160%)',
-            WebkitBackdropFilter: 'blur(24px) saturate(160%)',
-            border: '1px solid rgba(255,255,255,0.10)',
-            borderRadius: 28,
-            boxShadow: '0 12px 30px -10px rgba(0,0,0,0.8)',
-          }}
-          aria-label={title}
-        >
-          {(['today', 'body', 'pass'] as const).map((id) => {
-            const on = tab === id;
-            return (
-              <button
-                key={id}
-                type="button"
-                onClick={() => go(id)}
-                aria-current={on ? 'page' : undefined}
-                className="flex flex-col items-center gap-0.5 py-1.5 text-[11px] font-medium"
-                style={{ background: on ? 'rgba(255,255,255,0.08)' : 'transparent', borderRadius: 22, color: on ? '#FFFFFF' : t.colors.textFaint }}
-              >
-                <Icon id={id} on={on} />
-                {id === 'today' ? f.tabs.today : id === 'body' ? f.tabs.body : f.tabs.pass}
-              </button>
-            );
-          })}
-        </nav>
+        {/* Floating capsule tab bar + a separate round "log how you feel" button */}
+        <div className="absolute inset-x-3 bottom-3 z-10 flex items-center gap-2">
+          <nav
+            className="grid flex-1 grid-cols-3 rounded-full border border-white/10 px-2 py-1.5"
+            style={{
+              background: 'rgba(22,23,34,0.90)',
+              backdropFilter: 'blur(24px) saturate(160%)',
+              WebkitBackdropFilter: 'blur(24px) saturate(160%)',
+              boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.10), 0 12px 30px -10px rgba(0,0,0,0.8)',
+            }}
+            aria-label={title}
+          >
+            {(['today', 'body', 'pass'] as const).map((id) => {
+              const on = tab === id;
+              return (
+                <button
+                  key={id}
+                  type="button"
+                  onClick={() => go(id)}
+                  aria-current={on ? 'page' : undefined}
+                  className="flex flex-col items-center gap-0.5 rounded-full py-1.5 text-[11px] font-medium transition-colors"
+                  style={{ background: on ? 'rgba(255,255,255,0.10)' : 'transparent', color: on ? '#FFFFFF' : t.colors.textMuted }}
+                >
+                  <Icon id={id} on={on} />
+                  {id === 'today' ? f.tabs.today : id === 'body' ? f.tabs.body : f.tabs.pass}
+                </button>
+              );
+            })}
+          </nav>
+          <button
+            type="button"
+            onClick={() => go('body')}
+            aria-label={f.actions.quickAdd}
+            title={f.actions.quickAdd}
+            className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full border border-white/10 transition-transform duration-200 active:scale-95"
+            style={{
+              background: 'rgba(22,23,34,0.90)',
+              backdropFilter: 'blur(24px) saturate(160%)',
+              WebkitBackdropFilter: 'blur(24px) saturate(160%)',
+              boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.10), 0 12px 30px -10px rgba(0,0,0,0.8)',
+            }}
+          >
+            <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden>
+              <path d="M12 5v14M5 12h14" stroke="#FFFFFF" strokeWidth={2} strokeLinecap="round" />
+            </svg>
+          </button>
+        </div>
       </div>
     </div>
   );

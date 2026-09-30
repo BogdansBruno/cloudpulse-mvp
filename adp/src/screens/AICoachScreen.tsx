@@ -23,6 +23,7 @@ import { SEVERITY_COLOR } from '../components/sorenessMap';
 import GlassRing from '../components/ui/GlassRing';
 import LiquidGlassButton from '../components/ui/LiquidGlassButton';
 import LiquidGlassCard from '../components/ui/LiquidGlassCard';
+import { VERDICT_STYLE } from '../components/ui/typography';
 import { mmss, useDrillTimer } from '../services/drillTimer';
 import type { BlockRole, BlockView, PlanView } from '../services/planView';
 
@@ -45,8 +46,9 @@ const GOOD = '#34D399';
 const WARN = '#FBBF24';
 const BAD = '#FB7185';
 const INFO = '#67E8F9';
-const MUTED = '#CBD5E1';
-const FAINT = '#94A3B8';
+// Secondary text raised for phones: muted ≈ slate-200/300, faint ≈ zinc-400+.
+const MUTED = '#D5DCE6';
+const FAINT = '#AEB8C8';
 
 const CEILING_COLOR = { green: GOOD, yellow: WARN, red: BAD, blocked: BAD } as const;
 const ROLE_COLOR: Readonly<Record<BlockRole, string>> = { relief: WARN, prehab: GOOD, general: INFO };
@@ -157,6 +159,11 @@ function PlanScreen({ view: v, lang, header, titleId, className }: { view: PlanV
     <section className={`space-y-3 ${className}`} aria-labelledby={titleId}>
       {header}
 
+      {/* The engine's verdict, in the editorial serif */}
+      <p className="-mt-1 pb-1 text-[26px]" style={VERDICT_STYLE}>
+        {t.verdict[v.engine.ceiling]}
+      </p>
+
       {/* Mode + totals */}
       <div className="flex flex-wrap items-center gap-2 pb-1">
         <Pill color={ceilingColor}>{t.modes[v.mode]}</Pill>
@@ -187,7 +194,7 @@ function PlanScreen({ view: v, lang, header, titleId, className }: { view: PlanV
 
       {/* Why */}
       <LiquidGlassCard radius={28} className="p-5">
-        <h2 className="text-[11px] font-semibold uppercase tracking-[0.14em]" style={{ color: FAINT }}>
+        <h2 className="text-[12px] font-semibold uppercase tracking-widest" style={{ color: FAINT }}>
           {t.whyTitle}
         </h2>
         <p className="mt-2 text-[16px] leading-relaxed text-white">{v.explanation}</p>
@@ -266,7 +273,7 @@ function PlanScreen({ view: v, lang, header, titleId, className }: { view: PlanV
         <p className="text-[13px] leading-relaxed" style={{ color: MUTED }}>
           {v.stopRule}
         </p>
-        <p className="mt-2 text-xs leading-relaxed" style={{ color: FAINT }}>
+        <p className="mt-2 text-[13px] leading-relaxed" style={{ color: FAINT }}>
           {t.draftNote} {t.timer.note}
         </p>
       </LiquidGlassCard>

@@ -81,16 +81,16 @@ export default function TravelRecoveryCard({ className = '' }: { className?: str
           {t.noteButton}
         </LiquidGlassButton>
       )}
-      {note === 'loading' && <p className="mt-4 text-sm text-zinc-400">{t.noteLoading}</p>}
-      {note === 'unavailable' && <p className="mt-4 text-sm text-zinc-400">{t.noteUnavailable}</p>}
+      {note === 'loading' && <p className="mt-4 text-sm text-zinc-300">{t.noteLoading}</p>}
+      {note === 'unavailable' && <p className="mt-4 text-sm text-zinc-300">{t.noteUnavailable}</p>}
       {note && typeof note === 'object' && (
         <div className="mt-4 flex flex-col items-center gap-3 rounded-2xl bg-black/30 p-4 sm:flex-row sm:items-start">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={note.qr} alt="QR" width={160} height={160} className="rounded-xl bg-white" />
           <div className="text-sm leading-relaxed text-zinc-300">
             <p>{t.noteShow}</p>
-            <p className="mt-2 font-mono text-xs text-zinc-500">#{note.id}</p>
-            <p className="mt-2 text-xs text-zinc-500">{t.noteHint}</p>
+            <p className="mt-2 font-mono text-xs text-zinc-400">#{note.id}</p>
+            <p className="mt-2 text-[13px] text-zinc-300">{t.noteHint}</p>
           </div>
         </div>
       )}

@@ -377,6 +377,8 @@ type _Ceiling = import('../types/sportProfile').LoadCeiling;
 
 export type CoachLabels = {
   title: string;
+  /** The engine's verdict for the day, shown in the editorial serif. */
+  verdict: Record<_Ceiling, string>;
   guardTitle: string;
   guardBody: (rules: number, ceiling: string) => string;
   sourceAi: string;
@@ -422,6 +424,7 @@ export type CoachLabels = {
 
 export const COACH_LABELS = {
   ru: {
+    verdict: { green: 'Оптимальное состояние', yellow: 'Сегодня — день полегче', red: 'Сегодня — день восстановления', blocked: 'Сегодня — только восстановление' },
     title: 'Моя тренировка на сегодня',
     guardTitle: 'Safety Guard активен',
     guardBody: (rules, ceiling) =>
@@ -499,6 +502,7 @@ export const COACH_LABELS = {
     navLabel: 'Тренировка',
   },
   lv: {
+    verdict: { green: 'Optimāls stāvoklis', yellow: 'Šodien — vieglāka diena', red: 'Šodien — atjaunošanās diena', blocked: 'Šodien — tikai atjaunošanās' },
     title: 'Mans šodienas treniņš',
     guardTitle: 'Safety Guard aktīvs',
     guardBody: (rules, ceiling) =>
@@ -576,6 +580,7 @@ export const COACH_LABELS = {
     navLabel: 'Treniņš',
   },
   en: {
+    verdict: { green: 'Optimal state', yellow: 'Today is a lighter day', red: 'Today is a recovery day', blocked: 'Today: recovery only' },
     title: 'My workout for today',
     guardTitle: 'Safety Guard on',
     guardBody: (rules, ceiling) =>
