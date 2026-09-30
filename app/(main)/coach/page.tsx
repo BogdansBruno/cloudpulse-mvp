@@ -13,7 +13,9 @@ import MatchRosterCard from '@/components/MatchRosterCard';
 import CoachAlertsCard from '@/components/CoachAlertsCard';
 import RtpCoachCard, { type RtpCoachEntry } from '@/components/RtpCoachCard';
 import ExamStormCard from '@/components/ExamStormCard';
-import type { StormAthlete } from '@/lib/exam-storm';
+import TeamPulseCard from '@/components/TeamPulseCard';
+import TeamTripsCard from '@/components/TeamTripsCard';
+import { examStorm, type StormAthlete } from '@/lib/exam-storm';
 import { useTeamLive } from '@/lib/use-team-live';
 import {
   RTP_LOOKBACK_DAYS,
@@ -480,8 +482,18 @@ export default function CoachPage() {
               />
             )}
 
+            {/* Team pulse: stress / sleep / fatigue / soreness totals, no names */}
+            <TeamPulseCard
+              today={today}
+              refreshKey={refreshKey + liveKey}
+              examWindowToday={stormAthletes ? (examStorm(stormAthletes, today, 1).days[0]?.inWindow ?? 0) : 0}
+            />
+
             {/* Exam storm: next 14 days, counts only */}
             {stormAthletes && <ExamStormCard athletes={stormAthletes} today={today} />}
+
+            {/* Away trips: 48 h recovery after long journeys */}
+            <TeamTripsCard today={today} />
 
             {/* Roster picker */}
             <div>

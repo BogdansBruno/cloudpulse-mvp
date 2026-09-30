@@ -7,6 +7,7 @@
 import { useLanguage } from '@/lib/i18n/LanguageContext';
 import { useTodayPlan } from '@/lib/use-today-plan';
 import AICoachScreen from '@/adp/src/screens/AICoachScreen';
+import TravelRecoveryCard from '@/components/TravelRecoveryCard';
 
 export default function TrainingPage() {
   const { lang } = useLanguage();
@@ -17,6 +18,7 @@ export default function TrainingPage() {
       <div className="pointer-events-none absolute -top-40 left-1/2 h-[480px] w-[480px] -translate-x-1/2 rounded-full bg-[#CCFF00]/[0.05] blur-[140px]" />
       <div className="relative mx-auto max-w-lg">
         <AICoachScreen state={state} lang={lang} onRetry={reload} />
+        <TravelRecoveryCard className="mt-3" />
       </div>
     </div>
   );

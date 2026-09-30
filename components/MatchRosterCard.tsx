@@ -17,6 +17,7 @@ import {
   type RosterReason,
 } from '@/lib/match-roster';
 import type { OpenRtp } from '@/lib/return-to-play';
+import { EXTRA } from '@/lib/i18n/extra';
 
 // ---------------------------------------------------------------------------
 // "Match squad" on /coach: the whole team in four groups (lib/match-roster.ts),
@@ -67,7 +68,7 @@ export default function MatchRosterCard({
       case 'LOW_READINESS':
         return r.reasonLowReadiness(reason.score);
       case 'LOAD_SPIKE':
-        return r.reasonLoadSpike(reason.acwr.toFixed(2));
+        return r.reasonLoadSpike(reason.acwr !== null ? reason.acwr.toFixed(2) : '> 1.50');
       case 'RTP_RESTRICTED':
         return r.reasonRtpRestricted(reason.cleanDays, reason.required);
       case 'RTP_AWAITING':
@@ -162,6 +163,7 @@ export default function MatchRosterCard({
       </div>
 
       <p className="mt-4 text-[11px] leading-relaxed text-zinc-500">{r.basis}</p>
+      <p className="mt-1 text-[11px] leading-relaxed text-zinc-500">{EXTRA[lang].brief.coachHint}</p>
     </section>
   );
 }

@@ -11,7 +11,8 @@
 //   - MATCH_DAY / PRE_MATCH / POST_MATCH pass through as reason codes, and the
 //     coach module turns them into "activation only" / "recovery" days;
 //   - EXAM_SOON (exam within 3 days) → the 12-minute micro-dose;
-//   - Return-to-Play: not cleared → recovery only; cleared → graded return.
+//   - Return-to-Play: not cleared → recovery only; cleared → graded return;
+//   - 48 h after a long away trip → POST_TRAVEL (easy work only).
 
 import type { ReadinessResult, SafetyViolation } from './readiness-engine';
 import type { RtpStatus } from './return-to-play';
@@ -34,6 +35,8 @@ export function engineLimitsFromCloudPulse(input: {
   readiness: ReadinessResult;
   safetyViolations: readonly SafetyViolation[];
   rtp: RtpStatus;
+  /** Inside the 48 h after a long away trip (lib/travel.ts). */
+  travelRecovery?: boolean;
 }): EngineLimits {
   const { date, readiness, safetyViolations, rtp } = input;
   const violationCodes = safetyViolations.map((v) => v.code);
@@ -41,6 +44,7 @@ export function engineLimitsFromCloudPulse(input: {
   const ceiling: LoadCeiling = pain ? 'blocked' : readiness.zone;
 
   const reasonCodes = [...new Set<string>([...violationCodes, ...readiness.penalties.map((p) => p.code)])];
+  if (input.travelRecovery) reasonCodes.push('POST_TRAVEL');
 
   const rtpLimits: EngineLimits['rtp'] =
     rtp.state === 'none'

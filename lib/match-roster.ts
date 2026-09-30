@@ -32,6 +32,11 @@ export type RosterCheckin = {
   acwr: number | null;
   painBlocked: boolean;
   painZone: string | null;
+  /**
+   * Set instead of `acwr` where the number itself must not be shown (the
+   * parent's pre-match brief gets only "load spike: yes/no" from the database).
+   */
+  loadSpike?: boolean;
 };
 
 export type RosterGroup = 'out' | 'limited' | 'unknown' | 'available';
@@ -42,7 +47,7 @@ export const ROSTER_GROUPS: readonly RosterGroup[] = ['out', 'limited', 'unknown
 export type RosterReason =
   | { code: 'PAIN'; zone: string | null }
   | { code: 'LOW_READINESS'; score: number | null }
-  | { code: 'LOAD_SPIKE'; acwr: number }
+  | { code: 'LOAD_SPIKE'; acwr: number | null }
   | { code: 'RTP_RESTRICTED'; cleanDays: number; required: number }
   | { code: 'RTP_AWAITING' }
   | { code: 'NO_CHECKIN' }
@@ -57,18 +62,26 @@ export type RosterVerdict = { group: RosterGroup; reasons: RosterReason[] };
 /** Clean days Return-to-Play asks for (same number as lib/return-to-play.ts). */
 const RTP_REQUIRED = 2;
 
+function spikeOf(c: RosterCheckin): RosterReason | null {
+  if (c.acwr !== null && c.acwr > ACWR_SPIKE) return { code: 'LOAD_SPIKE', acwr: c.acwr };
+  if (c.loadSpike) return { code: 'LOAD_SPIKE', acwr: null };
+  return null;
+}
+
 /** One athlete's group, with every reason that applies (most serious first). */
 export function classifyForMatch(checkin: RosterCheckin | null, rtp: OpenRtp | null = null): RosterVerdict {
   // Pain today is the strongest reason; Return-to-Play adds nothing to it.
   if (checkin?.painBlocked) {
     const reasons: RosterReason[] = [{ code: 'PAIN', zone: checkin.painZone?.trim() || null }];
-    if (checkin.acwr !== null && checkin.acwr > ACWR_SPIKE) reasons.push({ code: 'LOAD_SPIKE', acwr: checkin.acwr });
+    const spike = spikeOf(checkin);
+    if (spike) reasons.push(spike);
     return { group: 'out', reasons };
   }
 
   const load: RosterReason[] = [];
   if (checkin && checkin.zone === 'red') load.push({ code: 'LOW_READINESS', score: checkin.score });
-  if (checkin && checkin.acwr !== null && checkin.acwr > ACWR_SPIKE) load.push({ code: 'LOAD_SPIKE', acwr: checkin.acwr });
+  const spike = checkin ? spikeOf(checkin) : null;
+  if (spike) load.push(spike);
 
   if (rtp?.state === 'restricted') {
     return {

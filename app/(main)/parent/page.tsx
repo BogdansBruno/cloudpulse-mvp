@@ -28,6 +28,9 @@ import {
   type ParentOverview,
   type Zone,
 } from '@/lib/parent-view';
+import { parseMatchBriefs, type MatchBrief } from '@/lib/match-brief';
+import ParentMatchBriefCard from '@/components/ParentMatchBriefCard';
+import ParentScoutApprovals from '@/components/ParentScoutApprovals';
 
 // ---------------------------------------------------------------------------
 // Parent view. Reads ONLY through database functions — parents have no access
@@ -50,10 +53,13 @@ export default function ParentPage() {
   const reduce = useReducedMotion();
   const [rows, setRows] = useState<ParentOverview[] | null>(null);
   const [error, setError] = useState(false);
+  // Pre-match brief (SQL 15); empty until a match is within 7 days and both consents are on.
+  const [briefs, setBriefs] = useState<MatchBrief[]>([]);
 
   const load = useCallback(async () => {
     if (typeof navigator !== 'undefined' && !navigator.onLine) return;
-    const overview = await supabase.rpc('parent_overview');
+    const [overview, brief] = await Promise.all([supabase.rpc('parent_overview'), supabase.rpc('parent_match_brief')]);
+    setBriefs(brief.error ? [] : parseMatchBriefs(brief.data as unknown[]));
     if (!overview.error) {
       setError(false);
       setRows(((overview.data as unknown[] | null) ?? []).flatMap((r) => parseOverview(r) ?? []));
@@ -124,6 +130,7 @@ export default function ParentPage() {
 
         {rows && rows.length > 0 && (
           <div className="space-y-3">
+            <ParentScoutApprovals fallbackName={p.athleteFallback} />
             {rows.map((row, i) => {
               const name = row.athleteLabel || p.athleteFallback;
               const todayRow = row.today;
@@ -213,6 +220,13 @@ export default function ParentPage() {
                       </div>
                     )}
                   </section>
+
+                  {/* Before the match: the coach's verdict for this child */}
+                  {briefs
+                    .filter((b) => b.linkId === row.linkId)
+                    .map((b) => (
+                      <ParentMatchBriefCard key={b.linkId} brief={b} today={today} />
+                    ))}
 
                   {/* Last 7 days */}
                   {row.consent && row.week && row.week.length > 0 && (

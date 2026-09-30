@@ -11,6 +11,7 @@ import {
   type RtpStatus,
 } from '@/lib/return-to-play';
 import { adpSportFromProfile, engineLimitsFromCloudPulse } from '@/lib/adp-coach';
+import { activeTravel, parseTrips } from '@/lib/travel';
 import { fromSorenessRows, type SorenessZone, type SportType } from '@/adp/src/types/sportProfile';
 import { buildCoachingPrompt } from '@/adp/src/services/AIPromptBuilder';
 import { safePlanFromRequest, type SafePlanResult } from '@/adp/src/services/claudeCoachService';
@@ -60,11 +61,12 @@ export async function POST(req: Request) {
     let sport: SportType | null = null;
     let soreness: SorenessZone[] = [];
     let rtp: RtpStatus = { state: 'none' };
+    let travelRecovery = false;
 
     if (!devMode && user) {
       const client = createUserScopedClient(token!);
       const since = addDays(today.date, -RTP_LOOKBACK_DAYS);
-      const [profileRes, mapRes, checkinsRes, clearancesRes, followupsRes] = await Promise.all([
+      const [profileRes, mapRes, checkinsRes, clearancesRes, followupsRes, tripsRes] = await Promise.all([
         client.from('profiles').select('sport').eq('id', user.id).maybeSingle(),
         client.from('soreness_maps').select('zones').eq('user_id', user.id).eq('date', today.date).maybeSingle(),
         client.from('checkins').select('user_id, date, pain_flag, pain_zone').eq('user_id', user.id).gte('date', since).lte('date', today.date),
@@ -74,7 +76,12 @@ export async function POST(req: Request) {
           .select('athlete_id, pain_date, day_offset, trend, saw_specialist, answered_at')
           .eq('athlete_id', user.id)
           .gte('pain_date', since),
+        // Trips of the athlete's coaches (RLS: team_trips_athlete_select, SQL 15).
+        client.from('team_trips').select('id, title, match_date, return_date, travel_hours').gte('return_date', addDays(today.date, -3)),
       ]);
+
+      // Table missing (SQL 15 not run yet) → no travel rule, nothing breaks.
+      if (!tripsRes.error) travelRecovery = activeTravel(parseTrips(tripsRes.data), today.date) !== null;
 
       if (!profileRes.error) sport = adpSportFromProfile(profileRes.data?.sport ?? null);
 
@@ -100,6 +107,7 @@ export async function POST(req: Request) {
       readiness: today.readiness,
       safetyViolations: today.safetyViolations,
       rtp,
+      travelRecovery,
     });
 
     const request = buildCoachingPrompt({ lang, soreness }, engine, { sportType: sport, seasonPhase: null });

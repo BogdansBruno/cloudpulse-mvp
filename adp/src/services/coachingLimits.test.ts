@@ -136,3 +136,12 @@ describe('candidateDrills — the only ids the AI may use', () => {
     expect(allowedIds(candidateDrills(l, 'football')).size).toBe(0);
   });
 });
+
+describe('after a long away trip', () => {
+  it('POST_TRAVEL → easy recovery kinds, low effort, and the reason is shown', () => {
+    const l = resolveLimits(engine({ reasonCodes: ['POST_TRAVEL'] }), { seasonPhase: null }, []);
+    expect(l.allowedKinds).toEqual(['mobility', 'aerobic_base', 'breathing_recovery']);
+    expect(l.maxRpe).toBe(3);
+    expect(l.reasons).toContain('TRAVEL_RECOVERY');
+  });
+});

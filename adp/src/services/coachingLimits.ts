@@ -76,6 +76,8 @@ export const MATCH_RULES = {
   afterCodes: ['POST_MATCH'],
   afterKinds: ['mobility', 'breathing_recovery', 'aerobic_base'] as readonly BlockKind[],
   afterMaxRpe: 3,
+  /** Back from a long away trip (CloudPulse team_trips, 48 h): the same easy work as after a match. */
+  travelCodes: ['POST_TRAVEL'],
 } as const;
 
 // ---------------------------------------------------------------------------
@@ -88,6 +90,7 @@ export const LIMIT_REASONS = [
   'RTP_PROGRESSION',
   'MATCH_NEAR',
   'MATCH_AFTER',
+  'TRAVEL_RECOVERY',
   'SEASON_PHASE',
   'EXAM_STORM_MICRO_DOSE',
   'SORE_ZONE_RELIEF_ONLY',
@@ -194,6 +197,12 @@ export function resolveLimits(
   } else if (engine.reasonCodes.some((c) => (MATCH_RULES.afterCodes as readonly string[]).includes(c))) {
     tighten(d, { kinds: MATCH_RULES.afterKinds, maxRpe: MATCH_RULES.afterMaxRpe });
     addReason(d, 'MATCH_AFTER');
+  }
+
+  // 3b. Back from a long trip: easy recovery work only (may add to a match rule).
+  if (engine.reasonCodes.some((c) => (MATCH_RULES.travelCodes as readonly string[]).includes(c))) {
+    tighten(d, { kinds: MATCH_RULES.afterKinds, maxRpe: MATCH_RULES.afterMaxRpe });
+    addReason(d, 'TRAVEL_RECOVERY');
   }
 
   // 4. Season phase (null = not set: no phase adjustment)
