@@ -3,8 +3,9 @@
 // adp/src/screens/AICoachScreen.tsx
 //
 // "My workout for today" — the athlete's plan, built from today's check-in.
-// Liquid Glass edition: every card is a LiquidGlassCard, every button a
-// LiquidGlassButton (spring press), the current block carries a timer.
+// "Dark Editorial Biohacking": editorial glass cards (LiquidGlassCard,
+// tone="editorial"), capsule buttons with spring press, the engine's verdict
+// in the serif, the current block carries a timer.
 //
 // Purely presentational: the page fetches a PlanView from /api/adp-coach and
 // passes it in. What the screen always shows, whatever the plan:
@@ -23,7 +24,7 @@ import { SEVERITY_COLOR } from '../components/sorenessMap';
 import GlassRing from '../components/ui/GlassRing';
 import LiquidGlassButton from '../components/ui/LiquidGlassButton';
 import LiquidGlassCard from '../components/ui/LiquidGlassCard';
-import { VERDICT_STYLE } from '../components/ui/typography';
+import { MICRO_LABEL, SLATE_300, SLATE_400, VERDICT_STYLE } from '../components/ui/typography';
 import { mmss, useDrillTimer } from '../services/drillTimer';
 import type { BlockRole, BlockView, PlanView } from '../services/planView';
 
@@ -41,14 +42,15 @@ export type AICoachScreenProps = {
   className?: string;
 };
 
-// Status colours on dark glass (all ≥ 4.5:1 against the glass over the mesh).
-const GOOD = '#34D399';
-const WARN = '#FBBF24';
-const BAD = '#FB7185';
+// ADP "Dark Editorial Biohacking": teal = optimal, yellow = caution, coral = strain.
+// All ≥ 4.5:1 on the editorial glass (rgba(22,23,33,0.75) over #0C0D12).
+const GOOD = '#2DD4BF';
+const WARN = '#FACC15';
+const BAD = '#FB923C';
 const INFO = '#67E8F9';
-// Secondary text raised for phones: muted ≈ slate-200/300, faint ≈ zinc-400+.
-const MUTED = '#D5DCE6';
-const FAINT = '#AEB8C8';
+// Body = slate-300, micro labels = slate-400 (both ≥ 7:1 on the glass).
+const MUTED = SLATE_300;
+const FAINT = SLATE_400;
 
 const CEILING_COLOR = { green: GOOD, yellow: WARN, red: BAD, blocked: BAD } as const;
 const ROLE_COLOR: Readonly<Record<BlockRole, string>> = { relief: WARN, prehab: GOOD, general: INFO };
@@ -63,15 +65,15 @@ const WELL: CSSProperties = {
 
 function tinted(color: string): CSSProperties {
   return {
-    background: `linear-gradient(180deg, ${color}26, rgba(255,255,255,0.05))`,
-    border: `1px solid ${color}55`,
+    background: `linear-gradient(180deg, ${color}1F, rgba(22,23,33,0.75) 70%)`,
+    border: `1px solid ${color}4D`,
   };
 }
 
 function Pill({ color, children }: { color?: string; children: ReactNode }): ReactElement {
   return (
     <span
-      className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1 text-[13px] font-medium"
+      className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1.5 ${MICRO_LABEL}`}
       style={{
         background: color ? `linear-gradient(180deg, ${color}2E, ${color}12)` : 'linear-gradient(180deg, rgba(255,255,255,0.14), rgba(255,255,255,0.05))',
         border: `1px solid ${color ? `${color}66` : 'rgba(255,255,255,0.16)'}`,
@@ -111,7 +113,7 @@ export default function AICoachScreen({ state, lang, onRetry, checkinHref = '/ch
       <section className={`space-y-3 ${className}`} aria-labelledby={titleId} aria-busy>
         {header}
         {[0, 1, 2].map((i) => (
-          <LiquidGlassCard key={i} interactive={false} radius={28} className="h-28 animate-pulse" />
+          <LiquidGlassCard tone="editorial" key={i} interactive={false} radius={28} className="h-28 animate-pulse" />
         ))}
       </section>
     );
@@ -122,7 +124,7 @@ export default function AICoachScreen({ state, lang, onRetry, checkinHref = '/ch
     return (
       <section className={`space-y-4 ${className}`} aria-labelledby={titleId}>
         {header}
-        <LiquidGlassCard radius={28} className="p-5">
+        <LiquidGlassCard tone="editorial" radius={28} className="p-5">
           <p className="text-base font-semibold text-white">{noCheckin ? t.noCheckinTitle : t.error}</p>
           {noCheckin && (
             <p className="mt-1.5 text-sm leading-relaxed" style={{ color: MUTED }}>
@@ -131,11 +133,11 @@ export default function AICoachScreen({ state, lang, onRetry, checkinHref = '/ch
           )}
           <div className="mt-4">
             {noCheckin ? (
-              <LiquidGlassButton variant="primary" size="lg" onClick={() => window.location.assign(checkinHref)}>
+              <LiquidGlassButton tone="editorial" size="lg" onClick={() => window.location.assign(checkinHref)}>
                 {t.toCheckin}
               </LiquidGlassButton>
             ) : (
-              <LiquidGlassButton size="lg" onClick={onRetry}>
+              <LiquidGlassButton tone="editorial" size="lg" onClick={onRetry}>
                 {t.retry}
               </LiquidGlassButton>
             )}
@@ -160,7 +162,7 @@ function PlanScreen({ view: v, lang, header, titleId, className }: { view: PlanV
       {header}
 
       {/* The engine's verdict, in the editorial serif */}
-      <p className="-mt-1 pb-1 text-[26px]" style={VERDICT_STYLE}>
+      <p className="-mt-1 pb-1" style={VERDICT_STYLE}>
         {t.verdict[v.engine.ceiling]}
       </p>
 
@@ -175,17 +177,17 @@ function PlanScreen({ view: v, lang, header, titleId, className }: { view: PlanV
       </div>
 
       {/* Safety Guard plaque */}
-      <LiquidGlassCard radius={28} className="p-4" style={tinted(GOOD)}>
+      <LiquidGlassCard tone="editorial" radius={28} className="p-4" style={tinted(GOOD)}>
         <div className="flex gap-3">
           <span className="mt-0.5">
             <ShieldIcon color={GOOD} />
           </span>
           <div className="min-w-0">
             <p className="text-[15px] font-semibold text-white">{t.guardTitle}</p>
-            <p className="mt-1 text-[13px] leading-relaxed" style={{ color: MUTED }}>
+            <p className="mt-1 text-xs leading-relaxed" style={{ color: MUTED }}>
               {t.guardBody(v.rulesChecked, t.ceiling[v.engine.ceiling])}
             </p>
-            <p className="mt-2 inline-flex rounded-full px-2.5 py-0.5 text-[11px] font-medium" style={{ color: MUTED, background: 'rgba(0,0,0,0.25)', border: '1px solid rgba(255,255,255,0.12)' }}>
+            <p className={`mt-2 inline-flex rounded-full px-2.5 py-1 ${MICRO_LABEL}`} style={{ color: MUTED, background: 'rgba(0,0,0,0.25)', border: '1px solid rgba(255,255,255,0.12)' }}>
               {v.source === 'ai' ? t.sourceAi : t.sourceRules}
             </p>
           </div>
@@ -193,8 +195,8 @@ function PlanScreen({ view: v, lang, header, titleId, className }: { view: PlanV
       </LiquidGlassCard>
 
       {/* Why */}
-      <LiquidGlassCard radius={28} className="p-5">
-        <h2 className="text-[12px] font-semibold uppercase tracking-widest" style={{ color: FAINT }}>
+      <LiquidGlassCard tone="editorial" radius={28} className="p-5">
+        <h2 className={MICRO_LABEL} style={{ color: FAINT }}>
           {t.whyTitle}
         </h2>
         <p className="mt-2 text-[16px] leading-relaxed text-white">{v.explanation}</p>
@@ -223,7 +225,7 @@ function PlanScreen({ view: v, lang, header, titleId, className }: { view: PlanV
 
       {/* Nothing today */}
       {v.mode === 'none' && (
-        <LiquidGlassCard radius={28} className="p-5">
+        <LiquidGlassCard tone="editorial" radius={28} className="p-5">
           <p className="text-sm leading-relaxed text-white">{t.noneBody}</p>
         </LiquidGlassCard>
       )}
@@ -232,10 +234,10 @@ function PlanScreen({ view: v, lang, header, titleId, className }: { view: PlanV
       {v.blocks.length > 0 && (
         <>
           <div className="flex items-center justify-between px-1 pt-2">
-            <p className="text-[13px] font-medium" style={{ color: MUTED, fontVariantNumeric: 'tabular-nums' }}>
+            <p className={MICRO_LABEL} style={{ color: FAINT, fontVariantNumeric: 'tabular-nums' }}>
               {t.timer.progress(timer.finished.size, v.blocks.length)}
             </p>
-            <LiquidGlassButton size="sm" onClick={timer.reset}>
+            <LiquidGlassButton tone="editorial" size="sm" onClick={timer.reset}>
               {t.timer.restart}
             </LiquidGlassButton>
           </div>
@@ -259,21 +261,21 @@ function PlanScreen({ view: v, lang, header, titleId, className }: { view: PlanV
 
       {/* Zones we leave alone */}
       {v.soreness.referredZones.length > 0 && (
-        <LiquidGlassCard radius={28} className="p-4" style={tinted(WARN)}>
+        <LiquidGlassCard tone="editorial" radius={28} className="p-4" style={tinted(WARN)}>
           <p className="text-sm font-semibold text-white">{t.referredTitle}</p>
           <p className="mt-1 text-sm text-white">{v.soreness.referredZones.map((z) => zones.zones[z]).join(', ')}</p>
-          <p className="mt-2 text-[13px] leading-relaxed" style={{ color: '#FDE68A' }}>
+          <p className="mt-2 text-xs leading-relaxed" style={{ color: '#FEF08A' }}>
             {v.referral}
           </p>
         </LiquidGlassCard>
       )}
 
       {/* Stop rule + draft note */}
-      <LiquidGlassCard radius={28} interactive={false} className="p-4">
-        <p className="text-[13px] leading-relaxed" style={{ color: MUTED }}>
+      <LiquidGlassCard tone="editorial" radius={28} interactive={false} className="p-4">
+        <p className="text-xs leading-relaxed" style={{ color: MUTED }}>
           {v.stopRule}
         </p>
-        <p className="mt-2 text-[13px] leading-relaxed" style={{ color: FAINT }}>
+        <p className="mt-2 text-xs leading-relaxed" style={{ color: FAINT }}>
           {t.draftNote} {t.timer.note}
         </p>
       </LiquidGlassCard>
@@ -305,7 +307,7 @@ function BlockCard({
   const color = ROLE_COLOR[b.role];
 
   return (
-    <LiquidGlassCard radius={28} className="p-4" style={current ? { border: `1px solid ${color}80` } : undefined}>
+    <LiquidGlassCard tone="editorial" radius={28} className="p-4" style={current ? { border: `1px solid ${color}80` } : undefined}>
       <button type="button" onClick={onSelect} className="flex w-full items-start gap-3 text-left" aria-current={current ? 'step' : undefined}>
         <span
           className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-sm font-semibold"
@@ -320,7 +322,7 @@ function BlockCard({
           {done ? '✓' : index + 1}
         </span>
         <span className="min-w-0 flex-1">
-          <span className="block text-[11px] font-semibold uppercase tracking-[0.1em]" style={{ color }}>
+          <span className={`block ${MICRO_LABEL}`} style={{ color }}>
             {current && !done ? `${t.timer.now} · ` : ''}
             {t.roles[b.role]}
             {b.targetZone && b.role === 'relief' && <span className="normal-case tracking-normal"> · {zones.zones[b.targetZone]}</span>}
@@ -339,15 +341,17 @@ function BlockCard({
       {timer && (
         <div className="mt-4 flex items-center gap-4 p-4" style={WELL}>
           <GlassRing value={timer.total - timer.left} max={timer.total} size={92} color={color}>
-            <span className="text-[20px] font-light text-white" style={{ fontVariantNumeric: 'tabular-nums' }}>
+            <span className="text-[22px] font-bold tracking-tight text-white" style={{ fontVariantNumeric: 'tabular-nums' }}>
               {mmss(timer.left)}
             </span>
           </GlassRing>
           <div className="flex flex-wrap gap-2">
-            <LiquidGlassButton variant="primary" onClick={timer.toggle}>
+            <LiquidGlassButton tone="editorial" size="sm" variant="tint" tint={color} onClick={timer.toggle}>
               {timer.running ? t.timer.pause : timer.left < timer.total ? t.timer.resume : t.timer.start}
             </LiquidGlassButton>
-            <LiquidGlassButton onClick={timer.next}>{t.timer.done}</LiquidGlassButton>
+            <LiquidGlassButton tone="editorial" size="sm" onClick={timer.next}>
+              {t.timer.done}
+            </LiquidGlassButton>
           </div>
         </div>
       )}
@@ -363,7 +367,7 @@ function BlockCard({
                 {t.dose(d.dose, d.perSide)}
               </p>
             </div>
-            <p className="mt-1 text-[13px] leading-relaxed" style={{ color: MUTED }}>
+            <p className="mt-1 text-xs leading-relaxed" style={{ color: MUTED }}>
               {d.cue}
             </p>
           </div>

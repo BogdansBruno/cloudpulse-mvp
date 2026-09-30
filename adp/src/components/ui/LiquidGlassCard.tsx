@@ -50,7 +50,7 @@ export default function LiquidGlassCard({
       style={{
         ...glassSurface(tone, interactive && hover),
         borderRadius: radius,
-        color: tone === 'dark' ? '#F8FAFC' : '#0B1024',
+        color: tone === 'light' ? '#0B1024' : '#F8FAFC',
         // No lift on cards: moving a large blurred layer can soften its text
         // for a frame. Cards react with light only; buttons do the physics.
         transition: `box-shadow 420ms ${EASE_GLASS}, background 420ms ${EASE_GLASS}`,

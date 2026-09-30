@@ -68,7 +68,7 @@ export default function LoadWeekChart({ lang, loads, usual }: { lang: AdpLang; l
         })}
 
         {/* usual daily load (chronic) */}
-        <line x1="4" x2={W - 4} y1={y(usual)} y2={y(usual)} stroke="rgba(255,255,255,0.45)" strokeWidth="1" strokeDasharray="3 4" />
+        <line x1="4" x2={W - 4} y1={y(usual)} y2={y(usual)} stroke="rgba(255,255,255,0.28)" strokeWidth="1" strokeDasharray="3 4" />
         {/* legend for the dashed line, above the plot so it never covers a bar */}
         <line x1="4" x2="22" y1="10" y2="10" stroke="rgba(255,255,255,0.6)" strokeWidth="1" strokeDasharray="3 4" />
         <text x="28" y="14" fontSize="11" fill={t.colors.textMuted} style={{ fontVariantNumeric: 'tabular-nums' }}>
@@ -76,7 +76,7 @@ export default function LoadWeekChart({ lang, loads, usual }: { lang: AdpLang; l
         </text>
 
         {/* today's point */}
-        <circle cx={cx} cy={y(last)} r="9" fill="#FFFFFF" opacity="0.55" filter={`url(#g${uid})`} />
+        <circle cx={cx} cy={y(last)} r="12" fill="#FFFFFF" opacity="0.7" filter={`url(#g${uid})`} />
         <circle cx={cx} cy={y(last)} r="4.5" fill="#FFFFFF" />
         <text x={cx} y={y(last) - 12} textAnchor="middle" fontSize="12" fontWeight="600" fill="#FFFFFF" style={{ fontVariantNumeric: 'tabular-nums' }}>
           {last}

@@ -4,7 +4,8 @@
 // neon points of light, a compact level picker in the card.
 
 import type { ReactElement } from 'react';
-import { SORENESS_LABELS, type AdpLang } from '../../components/labels';
+import { COACH_LABELS, SORENESS_LABELS, type AdpLang } from '../../components/labels';
+import { FEED } from './copy';
 import { isReferred, type SorenessMap } from '../../components/sorenessMap';
 import { SORENESS_SEVERITIES } from '../../types/sportProfile';
 import { DX } from '../copy';
@@ -115,10 +116,22 @@ export default function SorenessSilhouetteWidget({
               {L.severity[ed.current]}
             </p>
           )}
-          {ed.current && isReferred(ed.active.zone, ed.current) && (
-            <p className="mt-2.5 p-3 text-[13px] leading-relaxed" style={{ background: `${t.colors.warn}1A`, border: `1px solid ${t.colors.warn}4D`, borderRadius: 14, color: '#FCD34D' }}>
-              {L.referHint}
-            </p>
+          {ed.current && (
+            // What this muscle means for today's session — the same rules the plan uses.
+            <div
+              className="mt-3 p-3"
+              style={{
+                background: 'linear-gradient(180deg, rgba(249,115,22,0.16), rgba(249,115,22,0.06))',
+                border: '1px solid rgba(249,115,22,0.40)',
+                borderRadius: 16,
+                boxShadow: '0 0 18px -6px rgba(249,115,22,0.5)',
+              }}
+            >
+              <Caps color="#FB923C">{FEED[lang].restriction}</Caps>
+              <p className="mt-1 text-xs leading-relaxed" style={{ color: '#FED7AA' }}>
+                {isReferred(ed.active.zone, ed.current) ? L.referHint : COACH_LABELS[lang].reasons.SORE_ZONE_RELIEF_ONLY}
+              </p>
+            </div>
           )}
           {ed.tooMany && (
             <p className="mt-2.5 text-[13px]" style={{ color: t.colors.bad }}>

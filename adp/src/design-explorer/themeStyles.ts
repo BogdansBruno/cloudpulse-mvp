@@ -127,23 +127,24 @@ export const THEMES: Readonly<Record<ThemeId, ThemeTokens>> = {
     mode: 'dark',
     colors: {
       bg: '#0C0D12',
-      surface: 'rgba(24,25,34,0.80)',
+      surface: 'rgba(22,23,33,0.75)',
       surfaceAlt: '#1F2130',
       border: 'rgba(255,255,255,0.12)',
       text: '#F4F5F7',
-      // Raised for phones: muted ≈ slate-300, faint ≈ zinc-400 — both ≥ 7:1 on the glass.
+      // Body = slate-300, micro labels = slate-400 — both ≥ 7:1 on the glass.
       textMuted: '#CBD5E1',
-      textFaint: '#A8AFBF',
-      good: '#10B981',
-      warn: '#F59E0B',
-      bad: '#F43F5E',
+      textFaint: '#94A3B8',
+      // teal = optimal, yellow = caution, coral = strain.
+      good: '#2DD4BF',
+      warn: '#FACC15',
+      bad: '#FB923C',
       info: '#818CF8',
-      accent: '#10B981',
+      accent: '#2DD4BF',
       onAccent: '#03140D',
       track: 'rgba(255,255,255,0.08)',
     },
     gradients: {
-      page: 'linear-gradient(180deg, #2A1D1A 0%, #1A1416 38%, #12131A 70%, #0C0D12 100%)',
+      page: 'radial-gradient(circle at 50% 20%, rgba(66,45,34,0.35) 0%, rgba(18,19,26,0) 70%), #0C0D12',
       hero: 'linear-gradient(180deg, rgba(82,54,43,0.55) 0%, rgba(24,25,34,0.80) 60%)',
       accent: 'linear-gradient(135deg, #10B981 0%, #059669 100%)',
       cool: 'linear-gradient(135deg, #6366F1 0%, #4F46E5 100%)',
@@ -151,7 +152,7 @@ export const THEMES: Readonly<Record<ThemeId, ThemeTokens>> = {
     radius: { card: 28, inner: 18, pill: 999 },
     shadow: {
       // Top-edge light inside the glass + a soft floating shadow (matches /training).
-      card: 'inset 0 1px 1px 0 rgba(255,255,255,0.15), 0 10px 30px -5px rgba(0,0,0,0.3)',
+      card: 'inset 0 1px 1px 0 rgba(255,255,255,0.18), 0 12px 32px -4px rgba(0,0,0,0.5)',
       raised: '0 10px 30px -14px rgba(0,0,0,0.9)',
       glow: (c) => `0 0 40px -10px ${c}`,
     },
@@ -304,7 +305,7 @@ export function zoneColor(t: ThemeTokens, zone: 'green' | 'yellow' | 'red' | 'bl
 /** Soreness severity 1..5 → colour, per theme (low = calm, 5 = the theme's red). */
 export function severityColor(t: ThemeTokens, s: 1 | 2 | 3 | 4 | 5): string {
   if (t.id === 'glass') return ['#67E8F9', '#6EE7B7', '#FCD34D', '#FDBA74', '#FB7185'][s - 1];
-  if (t.id === 'feed') return ['#818CF8', '#34D399', '#FBBF24', '#FB923C', '#F43F5E'][s - 1];
+  if (t.id === 'feed') return ['#818CF8', '#2DD4BF', '#FACC15', '#FB923C', '#F97316'][s - 1];
   if (t.id === 'whoop') return ['#00F2FE', '#7CF8A0', '#FFC21A', '#FF7A2E', '#FF0844'][s - 1];
   if (t.id === 'nike') return ['#35E0FF', '#B8FF1F', '#FFD600', '#FF6A13', '#FF3B6B'][s - 1];
   return ['#8EC5FF', '#9BDDB4', '#F6C66E', '#F29B62', '#EF6B6F'][s - 1];

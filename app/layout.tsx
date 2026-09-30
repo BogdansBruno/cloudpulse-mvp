@@ -21,7 +21,7 @@ const geistMono = Geist_Mono({
 const adpSerif = Cormorant_Garamond({
   variable: "--font-adp-serif",
   subsets: ["latin", "latin-ext", "cyrillic"],
-  weight: ["500", "600"],
+  weight: ["400", "500", "600"],
   display: "swap",
 });
 

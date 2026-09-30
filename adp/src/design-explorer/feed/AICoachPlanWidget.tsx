@@ -113,7 +113,7 @@ export default function AICoachPlanWidget({ lang, plan }: { lang: AdpLang; plan:
 
       <FeedCard className="p-5">
         <p className="text-[14px] leading-relaxed">{plan.explanation}</p>
-        <p className="mt-2 text-[13px] leading-relaxed" style={{ color: t.colors.textMuted }}>
+        <p className="mt-2 text-xs leading-relaxed" style={{ color: t.colors.textMuted }}>
           {plan.stopRule}
         </p>
         <p className="mt-2 text-[12px]" style={{ color: t.colors.textFaint }}>

@@ -131,7 +131,7 @@ export default function FeedPhone({
       </p>
       {!planOpen && (
         <div className="mt-4 flex flex-wrap gap-2">
-          <PillButton tone="light" onClick={() => setPlanOpen(true)}>
+          <PillButton onClick={() => setPlanOpen(true)}>
             {f.actions.start}
           </PillButton>
           <PillButton onClick={() => setPlanOpen(true)}>{f.actions.details}</PillButton>
@@ -145,7 +145,7 @@ export default function FeedPhone({
       <div className="mt-4">
         <RangeScale label={c.readiness.sleep} valueText={c.readiness.scale7(data.sleep)} min={1} max={7} value={data.sleep} normFrom={5} normTo={7} color={METRIC.sleep[0]} hereLabel={f.scales.here} />
       </div>
-      <p className="mt-3 text-[13px] leading-relaxed" style={{ color: t.colors.textMuted }}>
+      <p className="mt-3 text-xs leading-relaxed" style={{ color: t.colors.textMuted }}>
         {f.sleep.body}
       </p>
     </SmallCard>
@@ -155,14 +155,14 @@ export default function FeedPhone({
       <div className="mt-4">
         <LoadWeekChart lang={lang} loads={data.weekLoad} usual={usualDailyLoad(data)} />
       </div>
-      <p className="mt-3 text-[13px] leading-relaxed" style={{ color: t.colors.textMuted }}>
+      <p className="mt-3 text-xs leading-relaxed" style={{ color: t.colors.textMuted }}>
         {f.load.body(data.acwr.toFixed(2), c.readiness.acwrState[acwr])}
       </p>
     </SmallCard>
   );
   const examCard = exam && (
     <SmallCard caps={c.readiness.penalties.EXAM_SOON} capsColor={t.colors.warn} title={f.exam.title} glow={t.colors.warn} tag={{ text: f.tags.soon, color: t.colors.warn }}>
-      <p className="mt-2 text-[13px] leading-relaxed" style={{ color: t.colors.textMuted }}>
+      <p className="mt-2 text-xs leading-relaxed" style={{ color: t.colors.textMuted }}>
         {f.exam.body}
       </p>
       <p className="mt-3 text-[13px] font-semibold" style={{ color: t.colors.bad, fontVariantNumeric: 'tabular-nums' }}>
@@ -172,7 +172,7 @@ export default function FeedPhone({
   );
   const passMini = (
     <SmallCard caps={c.pass.title} capsColor={t.colors.bad} title={f.passMini.title} glow={t.colors.bad} tag={{ text: f.tags.limited, color: t.colors.bad }} onOpen={() => go('pass')}>
-      <p className="mt-2 text-[13px] leading-relaxed" style={{ color: t.colors.textMuted }}>
+      <p className="mt-2 text-xs leading-relaxed" style={{ color: t.colors.textMuted }}>
         {f.passMini.body}
       </p>
       <div className="mt-4">
@@ -184,7 +184,7 @@ export default function FeedPhone({
   );
   const windDown = (
     <SmallCard caps={f.daypart.evening} capsColor={METRIC.sleep[0]} title={f.windDown.title} glow={METRIC.sleep[0]}>
-      <p className="mt-2 text-[13px] leading-relaxed" style={{ color: t.colors.textMuted }}>
+      <p className="mt-2 text-xs leading-relaxed" style={{ color: t.colors.textMuted }}>
         {marked ? f.actions.markedToday : f.windDown.body}
       </p>
       {!marked && (
@@ -288,53 +288,45 @@ export default function FeedPhone({
           </div>
         </div>
 
-        {/* Floating capsule tab bar + a separate round "log how you feel" button */}
-        <div className="absolute inset-x-3 bottom-3 z-10 flex items-center gap-2">
-          <nav
-            className="grid flex-1 grid-cols-3 rounded-full border border-white/10 px-2 py-1.5"
-            style={{
-              background: 'rgba(22,23,34,0.90)',
-              backdropFilter: 'blur(24px) saturate(160%)',
-              WebkitBackdropFilter: 'blur(24px) saturate(160%)',
-              boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.10), 0 12px 30px -10px rgba(0,0,0,0.8)',
-            }}
-            aria-label={title}
-          >
-            {(['today', 'body', 'pass'] as const).map((id) => {
-              const on = tab === id;
-              return (
-                <button
-                  key={id}
-                  type="button"
-                  onClick={() => go(id)}
-                  aria-current={on ? 'page' : undefined}
-                  className="flex flex-col items-center gap-0.5 rounded-full py-1.5 text-[11px] font-medium transition-colors"
-                  style={{ background: on ? 'rgba(255,255,255,0.10)' : 'transparent', color: on ? '#FFFFFF' : t.colors.textMuted }}
-                >
-                  <Icon id={id} on={on} />
-                  {id === 'today' ? f.tabs.today : id === 'body' ? f.tabs.body : f.tabs.pass}
-                </button>
-              );
-            })}
-          </nav>
+        {/* Floating capsule tab bar: three tabs + the round "+" (log how you feel) inside, on the right */}
+        <nav
+          className="absolute bottom-6 left-1/2 z-10 flex -translate-x-1/2 items-center gap-6 rounded-full border border-white/[0.12] px-5 py-2.5 shadow-2xl"
+          style={{
+            background: 'rgba(21,22,32,0.85)',
+            backdropFilter: 'blur(40px) saturate(150%)',
+            WebkitBackdropFilter: 'blur(40px) saturate(150%)',
+            boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.12), 0 20px 40px -12px rgba(0,0,0,0.8)',
+          }}
+          aria-label={title}
+        >
+          {(['today', 'body', 'pass'] as const).map((id) => {
+            const on = tab === id;
+            return (
+              <button
+                key={id}
+                type="button"
+                onClick={() => go(id)}
+                aria-current={on ? 'page' : undefined}
+                className="flex flex-col items-center gap-0.5 text-[10px] font-semibold tracking-wide transition-colors"
+                style={{ color: on ? '#FFFFFF' : t.colors.textFaint }}
+              >
+                <Icon id={id} on={on} />
+                {id === 'today' ? f.tabs.today : id === 'body' ? f.tabs.body : f.tabs.pass}
+              </button>
+            );
+          })}
           <button
             type="button"
             onClick={() => go('body')}
             aria-label={f.actions.quickAdd}
             title={f.actions.quickAdd}
-            className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full border border-white/10 transition-transform duration-200 active:scale-95"
-            style={{
-              background: 'rgba(22,23,34,0.90)',
-              backdropFilter: 'blur(24px) saturate(160%)',
-              WebkitBackdropFilter: 'blur(24px) saturate(160%)',
-              boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.10), 0 12px 30px -10px rgba(0,0,0,0.8)',
-            }}
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/20 bg-white/15 text-white transition-transform duration-200 active:scale-95"
           >
-            <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden>
+            <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden>
               <path d="M12 5v14M5 12h14" stroke="#FFFFFF" strokeWidth={2} strokeLinecap="round" />
             </svg>
           </button>
-        </div>
+        </nav>
       </div>
     </div>
   );

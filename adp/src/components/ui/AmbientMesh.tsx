@@ -9,7 +9,7 @@
 //
 // Two palettes:
 //   liquid — indigo / cyan / pink / emerald: the Liquid Glass flagship;
-//   dune   — warm sand and bronze over near-black: the ADP "biohacking" look.
+//   dune   — warm sand and bronze over #0C0D12: ADP "Dark Editorial Biohacking".
 // The amber "storm" blob lights up when the day is not green or an exam is
 // close; otherwise it stays dim. Colour never carries information alone —
 // every state is also written in words on the cards.
@@ -44,17 +44,18 @@ const PALETTES: Record<MeshPalette, Blob[]> = {
     { w: '34vmax', pos: { right: '2%', bottom: '12%' }, color: 'rgba(251,191,36,0.50)', drift: 'a', storm: true },
   ],
   dune: [
-    { w: '52vmax', pos: { left: '-14vmax', top: '-16vmax' }, color: 'rgba(82,54,43,0.95)', drift: 'a' },
-    { w: '44vmax', pos: { right: '-12vmax', top: '4%' }, color: 'rgba(138,94,66,0.55)', drift: 'b' },
-    { w: '46vmax', pos: { left: '4%', top: '40%' }, color: 'rgba(42,29,26,0.95)', drift: 'c' },
-    { w: '36vmax', pos: { left: '-8vmax', bottom: '-6vmax' }, color: 'rgba(40,52,84,0.55)', drift: 'b' },
-    { w: '34vmax', pos: { right: '0%', bottom: '10%' }, color: 'rgba(214,150,84,0.45)', drift: 'a', storm: true },
+    { w: '52vmax', pos: { left: '-14vmax', top: '-16vmax' }, color: 'rgba(82,54,43,0.70)', drift: 'a' },
+    { w: '44vmax', pos: { right: '-12vmax', top: '4%' }, color: 'rgba(138,94,66,0.35)', drift: 'b' },
+    { w: '46vmax', pos: { left: '4%', top: '40%' }, color: 'rgba(66,45,34,0.45)', drift: 'c' },
+    { w: '36vmax', pos: { left: '-8vmax', bottom: '-6vmax' }, color: 'rgba(20,184,166,0.16)', drift: 'b' },
+    { w: '34vmax', pos: { right: '0%', bottom: '10%' }, color: 'rgba(234,179,8,0.22)', drift: 'a', storm: true },
   ],
 };
 
 export const MESH_BASE: Record<MeshPalette, string> = {
   liquid: 'radial-gradient(120% 80% at 50% 0%, #1B2350 0%, #0A0F24 55%, #060913 100%)',
-  dune: 'linear-gradient(180deg, #2A1D1A 0%, #1A1416 38%, #12131A 70%, #0C0D12 100%)',
+  // Base #0C0D12 with a soft sand-bronze glow at the top (ADP editorial look).
+  dune: 'radial-gradient(circle at 50% 20%, rgba(66,45,34,0.35) 0%, rgba(18,19,26,0) 70%), #0C0D12',
 };
 
 export default function AmbientMesh({

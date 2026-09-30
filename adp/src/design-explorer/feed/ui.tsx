@@ -7,7 +7,7 @@
 import type { CSSProperties, ReactElement, ReactNode } from 'react';
 import { Ring } from '../shared';
 import { THEMES } from '../themeStyles';
-import { VERDICT_STYLE } from '../../components/ui/typography';
+import { MICRO_LABEL, VERDICT_STYLE } from '../../components/ui/typography';
 
 const t = THEMES.feed;
 
@@ -15,7 +15,7 @@ const t = THEMES.feed;
 export const METRIC = {
   sleep: ['#6366F1', '#4F46E5'] as [string, string],
   load: ['#F59E0B', '#D97706'] as [string, string],
-  good: ['#10B981', '#059669'] as [string, string],
+  good: ['#2DD4BF', '#14B8A6'] as [string, string],
 };
 
 /**
@@ -28,8 +28,8 @@ export function textSafe(color: string): string {
 
 export function readinessGradient(zone: 'green' | 'yellow' | 'red'): [string, string] {
   if (zone === 'green') return METRIC.good;
-  if (zone === 'yellow') return ['#FBBF24', '#D97706'];
-  return ['#FB7185', '#E11D48'];
+  if (zone === 'yellow') return ['#FACC15', '#EAB308'];
+  return ['#FB923C', '#F97316'];
 }
 
 /** A floating dark-glass card (#181922 at 80 % + blur); `glow` tints its top corner. */
@@ -49,8 +49,8 @@ export function FeedCard({
       className={`relative overflow-hidden ${className}`}
       style={{
         background: glow ? `radial-gradient(120% 70% at 0% 0%, ${glow}26 0%, transparent 55%), ${t.colors.surface}` : t.colors.surface,
-        backdropFilter: 'blur(24px) saturate(140%)',
-        WebkitBackdropFilter: 'blur(24px) saturate(140%)',
+        backdropFilter: 'blur(40px) saturate(150%)',
+        WebkitBackdropFilter: 'blur(40px) saturate(150%)',
         border: `1px solid ${t.colors.border}`,
         borderRadius: t.radius.card,
         boxShadow: t.shadow.card,
@@ -67,7 +67,7 @@ export function FeedCard({
 /** Small caps label: `tracking-widest text-[11px]`. */
 export function Caps({ children, color, className = '' }: { children: ReactNode; color?: string; className?: string }): ReactElement {
   return (
-    <p className={`text-[11px] font-semibold uppercase tracking-widest ${className}`} style={{ color: color ? textSafe(color) : t.colors.textFaint }}>
+    <p className={`${MICRO_LABEL} ${className}`} style={{ color: color ? textSafe(color) : t.colors.textFaint }}>
       {children}
     </p>
   );
@@ -157,7 +157,7 @@ export const PILL_BTN: CSSProperties = {
 /** The engine's verdict in the editorial serif — white, calm, short. */
 export function Verdict({ children, className = '' }: { children: ReactNode; className?: string }): ReactElement {
   return (
-    <h3 className={`text-[28px] ${className}`} style={VERDICT_STYLE}>
+    <h3 className={className} style={VERDICT_STYLE}>
       {children}
     </h3>
   );
@@ -212,11 +212,11 @@ export function RangeScale({
         <span
           aria-hidden
           className="absolute top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full"
-          style={{ left: pos(value), background: '#FFFFFF', boxShadow: '0 0 0 3px rgba(12,13,18,0.9), 0 0 10px rgba(255,255,255,0.8)' }}
+          style={{ left: pos(value), background: '#FFFFFF', boxShadow: '0 0 0 3px rgba(12,13,18,0.9), 0 0 10px rgba(255,255,255,0.9)' }}
         />
         {hereLabel && (
           <span
-            className="absolute -top-6 -translate-x-1/2 whitespace-nowrap rounded-full px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wider"
+            className={`absolute -top-6 -translate-x-1/2 whitespace-nowrap rounded-full px-2 py-0.5 ${MICRO_LABEL}`}
             style={{ left: `clamp(48px, ${pos(value)}, calc(100% - 48px))`, background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.18)', color: '#FFFFFF' }}
           >
             {hereLabel}
@@ -240,25 +240,24 @@ export function PillButton({
   children,
   onClick,
   variant = 'inline',
-  tone = 'glass',
   ariaLabel,
 }: {
   children: ReactNode;
   onClick?: () => void;
   variant?: 'inline' | 'cta';
-  tone?: 'glass' | 'light';
   ariaLabel?: string;
 }): ReactElement {
-  const light = tone === 'light';
   return (
     <button
       type="button"
       onClick={onClick}
       aria-label={ariaLabel}
-      className={`inline-flex items-center justify-center gap-1.5 rounded-full font-semibold transition-[transform,background-color] duration-200 ease-out active:scale-[0.96] ${
-        variant === 'cta' ? 'w-full px-5 py-3 text-[14px]' : 'px-4 py-1.5 text-[13px]'
-      } ${light ? 'bg-white text-[#0C0D12] hover:bg-white/90' : 'border border-white/15 bg-white/10 text-white hover:bg-white/20'}`}
-      style={light ? { boxShadow: '0 8px 24px -10px rgba(255,255,255,0.5)' } : { boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.12)' }}
+      className={
+        variant === 'cta'
+          ? 'w-full rounded-full border border-white/20 bg-white/10 py-3.5 text-center text-sm font-medium text-white backdrop-blur-md transition-all duration-200 hover:bg-white/20 active:scale-[0.98]'
+          : 'inline-flex h-8 items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.08] px-4 text-xs font-medium text-white transition-all duration-200 hover:bg-white/[0.15] active:scale-[0.96]'
+      }
+      style={{ boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.12)' }}
     >
       {children}
     </button>
@@ -279,7 +278,7 @@ export function StatusTag({ text, color, onClick }: { text: string; color: strin
       )}
     </>
   );
-  const cls = 'inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-1 text-[12px] font-semibold';
+  const cls = `inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-1.5 ${MICRO_LABEL}`;
   const style = { background: `${c}1F`, border: `1px solid ${c}55`, color: c };
   return onClick ? (
     <button type="button" onClick={onClick} className={cls} style={style}>

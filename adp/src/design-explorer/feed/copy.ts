@@ -32,6 +32,8 @@ export type FeedCopy = {
   scales: { title: string; legend: string; here: string; hooperNorm: (baseline: number) => string; better: string };
   tags: { inNorm: string; belowNorm: string; outOfNorm: (n: number, total: number) => string; soon: string; limited: string };
   actions: { markedAll: string; editMap: string; markedToday: string; start: string; details: string; showPass: string; quickAdd: string };
+  /** Plaque under a tapped muscle: what it means for today's training. */
+  restriction: string;
 };
 
 export const FEED: Record<AdpLang, FeedCopy> = {
@@ -57,6 +59,7 @@ export const FEED: Record<AdpLang, FeedCopy> = {
       evening: 'Карта забитости и напоминание про сон — данные для завтрашнего плана.',
     },
     howNote: 'Лента не придумывает данные: каждая карточка берёт числа из чек-ина и движка готовности.',
+    restriction: 'Ограничение на тренировку',
     tags: { inNorm: 'В норме', belowNorm: 'Ниже нормы', outOfNorm: (n, t) => `${n} из ${t} вне нормы`, soon: 'Скоро', limited: 'Ограничено' },
     actions: {
       markedAll: '✓ Всё отметил',
@@ -106,6 +109,7 @@ export const FEED: Record<AdpLang, FeedCopy> = {
       evening: 'Noguruma karte un atgādinājums par miegu — dati rītdienas plānam.',
     },
     howNote: 'Lenta neizdomā datus: katra kartīte ņem skaitļus no pieteikšanās un gatavības dzinēja.',
+    restriction: 'Ierobežojums treniņam',
     tags: { inNorm: 'Normā', belowNorm: 'Zem normas', outOfNorm: (n, t) => `${n} no ${t} ārpus normas`, soon: 'Drīz', limited: 'Ierobežots' },
     actions: {
       markedAll: '✓ Viss atzīmēts',
@@ -155,6 +159,7 @@ export const FEED: Record<AdpLang, FeedCopy> = {
       evening: 'The soreness map and a sleep reminder — input for tomorrow’s plan.',
     },
     howNote: 'The feed invents nothing: every card takes its numbers from the check-in and the readiness engine.',
+    restriction: 'Training restriction',
     tags: { inNorm: 'Normal', belowNorm: 'Below normal', outOfNorm: (n, t) => `${n} of ${t} out of range`, soon: 'Soon', limited: 'Restricted' },
     actions: {
       markedAll: '✓ All marked',

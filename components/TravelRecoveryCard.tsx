@@ -65,7 +65,7 @@ export default function TravelRecoveryCard({ className = '' }: { className?: str
   }
 
   return (
-    <LiquidGlassCard radius={28} className={`p-5 ${className}`} style={{ background: 'linear-gradient(180deg, rgba(251,191,36,0.16), rgba(255,255,255,0.05))', border: '1px solid rgba(251,191,36,0.35)' }}>
+    <LiquidGlassCard tone="editorial" radius={28} className={`p-5 ${className}`} style={{ background: 'linear-gradient(180deg, rgba(234,179,8,0.14), rgba(22,23,33,0.75) 70%)', border: '1px solid rgba(234,179,8,0.35)' }}>
       <div className="flex items-start justify-between gap-3">
         <h2 className="inline-flex items-center gap-2 text-base font-semibold text-zinc-50">
           <Bus size={18} weight="fill" style={{ color: HUB.amber }} />
@@ -76,7 +76,7 @@ export default function TravelRecoveryCard({ className = '' }: { className?: str
       <p className="mt-2 text-sm leading-relaxed text-zinc-200">{t.athleteBody(active.trip.travelHours, day(active.until))}</p>
 
       {note === null && (
-        <LiquidGlassButton onClick={getNote} className="mt-4">
+        <LiquidGlassButton tone="editorial" size="sm" onClick={getNote} className="mt-4">
           <QrCode size={16} />
           {t.noteButton}
         </LiquidGlassButton>

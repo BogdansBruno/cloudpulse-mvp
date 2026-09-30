@@ -62,10 +62,27 @@ export function useReducedMotion(): boolean {
   return reduced;
 }
 
-export type GlassTone = 'dark' | 'light';
+/**
+ * dark      — clear Liquid Glass over a bright mesh (studio flagship);
+ * light     — the same on light backgrounds;
+ * editorial — ADP "Dark Editorial Biohacking": tinted dark glass
+ *             rgba(22,23,33,0.75), blur 40px, white/12 rim, inner top light.
+ */
+export type GlassTone = 'dark' | 'light' | 'editorial';
 
-/** Glass surface optics from the spec (double highlight border). */
+/** Glass surface optics (double highlight border). */
 export function glassSurface(tone: GlassTone, lifted = false) {
+  if (tone === 'editorial') {
+    return {
+      background: lifted ? 'rgba(28,29,41,0.80)' : 'rgba(22,23,33,0.75)',
+      border: '1px solid rgba(255,255,255,0.12)',
+      backdropFilter: 'blur(40px) saturate(150%)',
+      WebkitBackdropFilter: 'blur(40px) saturate(150%)',
+      boxShadow: lifted
+        ? 'inset 0 1px 1px 0 rgba(255,255,255,0.26), 0 14px 36px -4px rgba(0,0,0,0.55)'
+        : 'inset 0 1px 1px 0 rgba(255,255,255,0.18), 0 12px 32px -4px rgba(0,0,0,0.5)',
+    } as const;
+  }
   const dark = tone === 'dark';
   return {
     background: dark ? (lifted ? 'rgba(255,255,255,0.10)' : 'rgba(255,255,255,0.07)') : lifted ? 'rgba(255,255,255,0.22)' : 'rgba(255,255,255,0.15)',

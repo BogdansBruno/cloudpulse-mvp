@@ -112,7 +112,7 @@ export function SilhouetteSvg({
           fill: color ? `${color}${alpha}` : colors.zoneIdle,
           stroke: isActive ? colors.activeStroke : color ?? colors.zoneStroke,
           strokeWidth: isActive ? 2 : 1,
-          filter: color && colors.glow ? `drop-shadow(0 0 8px ${color}99)` : undefined,
+          filter: color && colors.glow ? `drop-shadow(0 0 8px ${color}80)` : undefined,
           transition: 'fill 150ms, stroke 150ms',
           outline: 'none',
         }}

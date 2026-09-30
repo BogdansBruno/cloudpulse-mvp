@@ -25,7 +25,8 @@ export type LiquidGlassButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   selected?: boolean;
 };
 
-const PAD = { sm: 'px-3 py-1 text-[13px]', md: 'px-4 py-1.5 text-[14px]', lg: 'px-5 py-2.5 text-[15px]' } as const;
+// sm = in-card action (h-8 px-4 text-xs), lg = the wide main CTA (py-3.5 text-sm).
+const PAD = { sm: 'h-8 px-4 text-xs font-medium', md: 'h-9 px-4 text-[13px] font-semibold', lg: 'w-full py-3.5 px-5 text-sm font-medium' } as const;
 
 export default function LiquidGlassButton({
   variant = 'glass',
@@ -75,7 +76,17 @@ export default function LiquidGlassButton({
             border: `1px solid ${tint}99`,
             color: '#FFFFFF',
           }
-        : { ...surface, color: tone === 'dark' ? '#F8FAFC' : '#0B1024' };
+        : tone === 'editorial'
+          ? {
+              // Pill system: bg white/8 → /15 on hover, rim white/10 (white/20 for the wide CTA).
+              background: hover || pressed ? 'rgba(255,255,255,0.15)' : size === 'lg' ? 'rgba(255,255,255,0.10)' : 'rgba(255,255,255,0.08)',
+              border: `1px solid ${size === 'lg' ? 'rgba(255,255,255,0.20)' : 'rgba(255,255,255,0.10)'}`,
+              backdropFilter: 'blur(12px)',
+              WebkitBackdropFilter: 'blur(12px)',
+              boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.14)',
+              color: '#FFFFFF',
+            }
+          : { ...surface, color: tone === 'dark' ? '#F8FAFC' : '#0B1024' };
 
   // Squash: instant in, spring out. The uneven X/Y is the "liquid" give.
   const transform = reduced ? 'none' : pressed ? 'scale(0.955, 0.925)' : hover ? 'translateY(-1px) scale(1.015)' : 'none';
@@ -89,7 +100,7 @@ export default function LiquidGlassButton({
       type="button"
       disabled={disabled}
       aria-pressed={rest.role ? undefined : selected || undefined}
-      className={`relative inline-flex select-none items-center justify-center gap-2 overflow-hidden font-semibold outline-none focus-visible:ring-2 focus-visible:ring-white/70 disabled:opacity-40 ${PAD[size]} ${className}`}
+      className={`relative inline-flex select-none items-center justify-center gap-2 overflow-hidden outline-none focus-visible:ring-2 focus-visible:ring-white/70 disabled:opacity-40 ${PAD[size]} ${className}`}
       style={{
         ...base,
         borderRadius: 9999,
