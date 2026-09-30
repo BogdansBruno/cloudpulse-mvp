@@ -152,3 +152,216 @@ export function formatDay(iso: string, lang: AdpLang): string {
     new Date(`${iso}T12:00:00Z`)
   );
 }
+
+// ---------------------------------------------------------------------------
+// Soreness silhouette (idea A)
+// ---------------------------------------------------------------------------
+
+export type SorenessLabels = {
+  title: string;
+  subtitle: string;
+  front: string;
+  back: string;
+  /** Short marks at the figure's edges so nobody mixes up left and right. */
+  leftMark: string;
+  rightMark: string;
+  zones: Record<import('../types/sportProfile').BodyZone, string>;
+  sides: { left: string; right: string; both: string; center: string };
+  severity: Record<1 | 2 | 3 | 4 | 5, string>;
+  pickLevel: string;
+  bothSides: string;
+  remove: string;
+  done: string;
+  empty: string;
+  selected: (n: number, max: number) => string;
+  tooMany: (max: number) => string;
+  referHint: string;
+  notPain: string;
+  zoneAria: (zone: string, side: string, level: string | null) => string;
+};
+
+export const SORENESS_LABELS = {
+  ru: {
+    title: 'Карта усталости',
+    subtitle: 'Нажми на мышцу, которая сегодня забита, и выбери уровень.',
+    front: 'Спереди',
+    back: 'Сзади',
+    leftMark: 'Л',
+    rightMark: 'П',
+    zones: {
+      chest: 'Грудь',
+      shoulder_front: 'Плечо спереди',
+      biceps: 'Бицепс',
+      forearm: 'Предплечье',
+      abdominals: 'Пресс',
+      obliques: 'Косые мышцы живота',
+      hip_flexors: 'Сгибатели бедра',
+      adductors: 'Внутренняя поверхность бедра',
+      quadriceps: 'Квадрицепс',
+      shins: 'Голень спереди',
+      neck_upper_traps: 'Шея и трапеция',
+      shoulder_back: 'Плечо сзади',
+      upper_back: 'Верх спины',
+      lower_back: 'Поясница',
+      triceps: 'Трицепс',
+      glutes: 'Ягодицы',
+      hamstrings: 'Задняя поверхность бедра',
+      calves: 'Икры',
+    },
+    sides: { left: 'левая', right: 'правая', both: 'обе стороны', center: '' },
+    severity: {
+      1: 'едва заметно',
+      2: 'лёгкая забитость',
+      3: 'заметно забито',
+      4: 'сильно забито',
+      5: 'очень сильно, мешает двигаться',
+    },
+    pickLevel: 'Насколько забито?',
+    bothSides: 'Обе стороны',
+    remove: 'Убрать',
+    done: 'Готово',
+    empty: 'Ничего не забито — отлично.',
+    selected: (n, max) => `Отмечено: ${n} из ${max}`,
+    tooMany: (max) => `Можно отметить не больше ${max} зон. Если забито почти всё — это общая усталость, её учитывает чек-ин.`,
+    referHint:
+      'Для этой зоны план не даст упражнений. Скажи тренеру; если не проходит — врач, школьная медсестра или физиотерапевт.',
+    notPain:
+      'Острая боль, отёк или боль в суставе — это не забитость. Отметь боль в чек-ине и скажи тренеру.',
+    zoneAria: (zone, side, level) => `${zone}${side ? `, ${side}` : ''}: ${level ?? 'не отмечено'}`,
+  },
+  lv: {
+    title: 'Noguruma karte',
+    subtitle: 'Pieskaries muskulim, kas šodien ir sasprindzis, un izvēlies līmeni.',
+    front: 'No priekšas',
+    back: 'No mugurpuses',
+    leftMark: 'K',
+    rightMark: 'L',
+    zones: {
+      chest: 'Krūtis',
+      shoulder_front: 'Plecs priekšā',
+      biceps: 'Bicepss',
+      forearm: 'Apakšdelms',
+      abdominals: 'Vēdera prese',
+      obliques: 'Slīpie vēdera muskuļi',
+      hip_flexors: 'Gūžas saliecēji',
+      adductors: 'Augšstilba iekšpuse',
+      quadriceps: 'Kvadricepss',
+      shins: 'Apakšstilbs priekšā',
+      neck_upper_traps: 'Kakls un trapecveida muskulis',
+      shoulder_back: 'Plecs aizmugurē',
+      upper_back: 'Muguras augšdaļa',
+      lower_back: 'Muguras lejasdaļa',
+      triceps: 'Tricepss',
+      glutes: 'Sēžamvieta',
+      hamstrings: 'Augšstilba aizmugure',
+      calves: 'Ikri',
+    },
+    sides: { left: 'kreisā', right: 'labā', both: 'abas puses', center: '' },
+    severity: {
+      1: 'tikko jūtams',
+      2: 'viegli sasprindzis',
+      3: 'jūtami sasprindzis',
+      4: 'stipri sasprindzis',
+      5: 'ļoti stipri, traucē kustēties',
+    },
+    pickLevel: 'Cik stipri?',
+    bothSides: 'Abas puses',
+    remove: 'Noņemt',
+    done: 'Gatavs',
+    empty: 'Nekas nav sasprindzis — lieliski.',
+    selected: (n, max) => `Atzīmēts: ${n} no ${max}`,
+    tooMany: (max) => `Var atzīmēt ne vairāk kā ${max} zonas. Ja sasprindzis ir gandrīz viss — tas ir vispārējs nogurums, to ņem vērā reģistrācija.`,
+    referHint:
+      'Šai zonai plāns nedos vingrinājumus. Pasaki trenerim; ja nepāriet — ārsts, skolas medmāsa vai fizioterapeits.',
+    notPain:
+      'Akūtas sāpes, tūska vai sāpes locītavā nav sasprindzinājums. Atzīmē sāpes reģistrācijā un pasaki trenerim.',
+    zoneAria: (zone, side, level) => `${zone}${side ? `, ${side}` : ''}: ${level ?? 'nav atzīmēts'}`,
+  },
+  en: {
+    title: 'Soreness map',
+    subtitle: 'Tap a muscle that feels tight today and pick a level.',
+    front: 'Front',
+    back: 'Back',
+    leftMark: 'L',
+    rightMark: 'R',
+    zones: {
+      chest: 'Chest',
+      shoulder_front: 'Front shoulder',
+      biceps: 'Biceps',
+      forearm: 'Forearm',
+      abdominals: 'Abs',
+      obliques: 'Obliques',
+      hip_flexors: 'Hip flexors',
+      adductors: 'Inner thigh',
+      quadriceps: 'Quads',
+      shins: 'Front of shin',
+      neck_upper_traps: 'Neck and upper traps',
+      shoulder_back: 'Back of shoulder',
+      upper_back: 'Upper back',
+      lower_back: 'Lower back',
+      triceps: 'Triceps',
+      glutes: 'Glutes',
+      hamstrings: 'Hamstrings',
+      calves: 'Calves',
+    },
+    sides: { left: 'left', right: 'right', both: 'both sides', center: '' },
+    severity: {
+      1: 'barely notice it',
+      2: 'a little tight',
+      3: 'clearly tight',
+      4: 'very tight',
+      5: 'so tight it limits movement',
+    },
+    pickLevel: 'How tight?',
+    bothSides: 'Both sides',
+    remove: 'Remove',
+    done: 'Done',
+    empty: 'Nothing feels tight — great.',
+    selected: (n, max) => `Marked: ${n} of ${max}`,
+    tooMany: (max) => `You can mark up to ${max} zones. If almost everything is tight, that is general fatigue — the check-in covers it.`,
+    referHint:
+      'No drills for this zone today. Tell your coach; if it does not ease — a doctor, the school nurse or a physio.',
+    notPain: 'Sharp pain, swelling or pain in a joint is not tightness. Report pain in the check-in and tell your coach.',
+    zoneAria: (zone, side, level) => `${zone}${side ? `, ${side}` : ''}: ${level ?? 'not marked'}`,
+  },
+} satisfies Record<AdpLang, SorenessLabels>;
+
+// ---------------------------------------------------------------------------
+// Preview page /demo/adp-ai-coach
+// ---------------------------------------------------------------------------
+
+export type AdpPreviewLabels = {
+  badge: string;
+  title: string;
+  subtitle: string;
+  outputTitle: string;
+  outputNote: string;
+  back: string;
+};
+
+export const ADP_PREVIEW_LABELS = {
+  ru: {
+    badge: 'Превью ADP · безопасный ИИ-тренер',
+    title: 'Карта усталости',
+    subtitle: 'Отметь забитые мышцы — из этого модуль тренера соберёт план на сегодня в пределах лимита движка готовности.',
+    outputTitle: 'Что уходит в модуль тренера',
+    outputNote: 'Ровно этот массив сохраняется в чек-ине (adp.check_ins.soreness_zones). Имени и id спортсмена в нём нет.',
+    back: 'К демо',
+  },
+  lv: {
+    badge: 'ADP priekšskatījums · drošs AI treneris',
+    title: 'Noguruma karte',
+    subtitle: 'Atzīmē sasprindzinātos muskuļus — no tā trenera modulis saliks šodienas plānu gatavības dzinēja robežās.',
+    outputTitle: 'Kas nonāk trenera modulī',
+    outputNote: 'Tieši šis masīvs tiek saglabāts reģistrācijā (adp.check_ins.soreness_zones). Sportista vārda un id tajā nav.',
+    back: 'Uz demo',
+  },
+  en: {
+    badge: 'ADP preview · safe AI coach',
+    title: 'Soreness map',
+    subtitle: 'Mark the tight muscles — the coach module builds today’s plan from this, within the readiness engine’s limit.',
+    outputTitle: 'What goes to the coach module',
+    outputNote: 'Exactly this array is stored with the check-in (adp.check_ins.soreness_zones). No name or athlete id in it.',
+    back: 'Back to demo',
+  },
+} satisfies Record<AdpLang, AdpPreviewLabels>;
