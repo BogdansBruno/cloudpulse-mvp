@@ -7,7 +7,7 @@
 
 import type { CSSProperties } from 'react';
 
-export const SERIF = "var(--font-adp-serif), 'Cormorant Garamond', Georgia, 'Times New Roman', serif";
+export const SERIF = "var(--font-adp-serif, 'Cormorant Garamond'), Georgia, 'Times New Roman', serif";
 
 /** H1 / engine verdict: serif 26px, normal weight, white, leading 1.18, tracking-tight. */
 export const VERDICT_STYLE: CSSProperties = {
