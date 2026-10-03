@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "./ds-tokens.css";
+@import "./np-theme.css";
 
 :root {
   --background: #07080a;

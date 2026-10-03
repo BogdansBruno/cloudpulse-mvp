@@ -95,7 +95,7 @@ export default function SafetyPassSheet({ open, onClose, lang, status, date, pas
   const StatusIcon = isBlock ? ShieldWarning : Warning;
 
   return (
-    <div className="ds-app fixed inset-0 z-50 flex items-end justify-center bg-black/60 sm:items-center sm:p-6" onClick={onClose}>
+    <div className="ds-app fixed inset-0 z-[60] flex items-end justify-center bg-black/60 sm:items-center sm:p-6" onClick={onClose}>
       <article
         ref={dialogRef}
         tabIndex={-1}

@@ -95,7 +95,32 @@ export default function ProChart({
   const low = valued.length ? valued.reduce((a, b) => (b.v < a.v ? b : a)) : null;
 
   const dayLabel = (iso: string) => new Date(`${iso}T12:00:00`).toLocaleDateString(LOCALE[lang], { day: 'numeric', month: 'short' });
-  const labelEvery = Math.max(1, Math.ceil(n / Math.max(2, Math.floor((W - L) / 76))));
+  // At most 5 evenly spaced date labels (3 on a narrow chart): first, quarter points, last.
+  // The first is left-aligned and the last right-aligned, so neither crosses the plot edge,
+  // and a label is dropped if it would touch its neighbour (~7 px per character at 11 px).
+  const labelIdx = (() => {
+    const want = Math.min(n, W < 480 ? 3 : 5);
+    if (want <= 0) return [] as number[];
+    const idx = Array.from(new Set(Array.from({ length: want }, (_, k) => (want === 1 ? 0 : Math.round((k * (n - 1)) / (want - 1))))));
+    const span = (i: number) => dayLabel(points[i].date).length * 7;
+    const box = (i: number): [number, number] => {
+      const px = x(i);
+      const w = span(i);
+      return i === 0 ? [px, px + w] : i === n - 1 ? [px - w, px] : [px - w / 2, px + w / 2];
+    };
+    const kept: number[] = [];
+    for (const i of idx) {
+      const b = box(i);
+      const prev = kept.length ? box(kept[kept.length - 1]) : null;
+      if (prev && b[0] < prev[1] + 12) {
+        // keep the last label, drop the previous middle one instead
+        if (i === n - 1 && kept.length > 1) kept.pop();
+        else continue;
+      }
+      kept.push(i);
+    }
+    return kept;
+  })();
   const active = hover ?? selected;
   const ap = points[active];
   const cp = compare?.[active];
@@ -198,14 +223,12 @@ export default function ProChart({
             </g>
           )}
 
-          {/* date labels */}
-          {points.map((p, i) =>
-            i % labelEvery === 0 || i === n - 1 ? (
-              <text key={p.date} x={x(i)} y={height - 9} textAnchor={i === 0 ? 'start' : i === n - 1 ? 'end' : 'middle'} fontSize="11" fill="#8B93A3">
-                {dayLabel(p.date)}
-              </text>
-            ) : null
-          )}
+          {/* date labels: ≤ 5, first start-aligned, last end-aligned */}
+          {labelIdx.map((i) => (
+            <text key={points[i].date} x={x(i)} y={height - 9} textAnchor={i === 0 ? 'start' : i === n - 1 ? 'end' : 'middle'} fontSize="11" fill="#8B93A3">
+              {dayLabel(points[i].date)}
+            </text>
+          ))}
         </svg>
       )}
 

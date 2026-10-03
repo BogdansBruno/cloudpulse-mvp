@@ -7,7 +7,7 @@
 // Keeping them apart means the engine can be reused (e.g. in a coach
 // dashboard aggregation job) without dragging HTTP-shape assumptions along.
 
-import type { ReadinessZone, Penalty, SafetyViolation, InconsistencyFlag } from '@/lib/readiness-engine';
+import type { ReadinessZone, Penalty, PenaltyCode, SafetyViolation, InconsistencyFlag } from '@/lib/readiness-engine';
 
 // ---- POST /api/checkin ----------------------------------------------------
 
@@ -61,9 +61,13 @@ export type ReadinessHistoryPoint = {
   acwr: number | null;
   acuteLoad: number;
   chronicLoad: number;
+  /** Session load of this day only (RPE × minutes, AU). Optional: older clients and fixtures may omit it. */
+  dailyLoad?: number;
   monotony: number | null;
   hooperScore: number;
   trainingStreak: number;
+  /** Engine penalty codes of this day (EXAM_SOON, ACWR_RISING, …). Optional for the same reason. */
+  penaltyCodes?: PenaltyCode[];
   hasCheckin: boolean;
   sleepQuality: number | null;
   stress: number | null;

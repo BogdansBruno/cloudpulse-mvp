@@ -4,6 +4,7 @@ import { loadDevStore, saveDevStore } from '@/lib/dev-store';
 import {
   calculateReadiness,
   detectSafetyViolations,
+  sessionLoad,
   type SessionEntry,
   type DailyCheckin,
   type UserContext,
@@ -299,9 +300,12 @@ export async function GET(req: Request) {
         acwr: result.acwr,
         acuteLoad: result.acuteLoad,
         chronicLoad: result.chronicLoad,
+        // Session load of this one day (RPE × minutes, AU) — feeds the 0–100 ADP Load Index (lib/load-index.ts).
+        dailyLoad: sessions.filter((s) => s.date === dateStr).reduce((sum, s) => sum + sessionLoad(s.rpe, s.durationMinutes), 0),
         monotony: result.monotony,
         hooperScore: result.hooperScore,
         trainingStreak: result.trainingStreak,
+        penaltyCodes: result.penalties.map((p) => p.code),
         hasCheckin: Boolean(dayCheckin),
         sleepQuality: dayCheckin?.sleepQuality ?? null,
         stress: dayCheckin?.stress ?? null,
