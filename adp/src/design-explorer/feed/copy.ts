@@ -30,11 +30,18 @@ export type FeedCopy = {
   verdict: { green: string; yellow: string; red: string };
   chart: { title: string; caption: string; unit: string; today: string; usual: string; formula: string };
   scales: { title: string; legend: string; here: string; hooperNorm: (baseline: number) => string; better: string };
-  tags: { inNorm: string; belowNorm: string; outOfNorm: (n: number, total: number) => string; soon: string; limited: string };
+  tags: { inNorm: string; belowNorm: string; aboveNorm: string; outOfNorm: (n: number, total: number) => string; soon: string; limited: string };
+  /** Safety Guard capsule: one line by zone + the main reason; details sit behind (i). */
+  guard: { line: { green: string; yellow: string; red: string }; main: (reason: string) => string; info: string; hide: string; reasons: string };
+  /** Vitals list: the norm under each slider. */
+  norm: (range: string) => string;
   actions: { markedAll: string; editMap: string; markedToday: string; start: string; details: string; showPass: string; quickAdd: string };
   /** Plaque under a tapped muscle: what it means for today's training. */
   restriction: string;
 };
+
+/** Lower-case the first letter so a label reads inside a sentence (keeps "ACWR"). */
+const lc = (s: string) => (/^[A-Z]{2}/.test(s) ? s : s.charAt(0).toLowerCase() + s.slice(1));
 
 export const FEED: Record<AdpLang, FeedCopy> = {
   ru: {
@@ -60,7 +67,15 @@ export const FEED: Record<AdpLang, FeedCopy> = {
     },
     howNote: 'Лента не придумывает данные: каждая карточка берёт числа из чек-ина и движка готовности.',
     restriction: 'Ограничение на тренировку',
-    tags: { inNorm: 'В норме', belowNorm: 'Ниже нормы', outOfNorm: (n, t) => `${n} из ${t} вне нормы`, soon: 'Скоро', limited: 'Ограничено' },
+    guard: {
+      line: { green: 'Нагрузка в пределах нормы — тренируйся по плану.', yellow: 'Сегодня без максимальных усилий.', red: 'Сегодня только восстановление.' },
+      main: (r) => `Главное: ${lc(r)}.`,
+      info: 'Как это проверено',
+      hide: 'Скрыть',
+      reasons: 'Что снизило балл',
+    },
+    norm: (r) => `норма ${r}`,
+    tags: { inNorm: 'В норме', belowNorm: 'Ниже нормы', aboveNorm: 'Выше нормы', outOfNorm: (n, t) => `${n} из ${t} вне нормы`, soon: 'Скоро', limited: 'Ограничено' },
     actions: {
       markedAll: '✓ Всё отметил',
       editMap: '✎ Изменить карту',
@@ -110,7 +125,15 @@ export const FEED: Record<AdpLang, FeedCopy> = {
     },
     howNote: 'Lenta neizdomā datus: katra kartīte ņem skaitļus no pieteikšanās un gatavības dzinēja.',
     restriction: 'Ierobežojums treniņam',
-    tags: { inNorm: 'Normā', belowNorm: 'Zem normas', outOfNorm: (n, t) => `${n} no ${t} ārpus normas`, soon: 'Drīz', limited: 'Ierobežots' },
+    guard: {
+      line: { green: 'Slodze normas robežās — trenējies pēc plāna.', yellow: 'Šodien bez maksimālas piepūles.', red: 'Šodien tikai atjaunošanās.' },
+      main: (r) => `Galvenais: ${lc(r)}.`,
+      info: 'Kā tas pārbaudīts',
+      hide: 'Paslēpt',
+      reasons: 'Kas samazināja punktus',
+    },
+    norm: (r) => `norma ${r}`,
+    tags: { inNorm: 'Normā', belowNorm: 'Zem normas', aboveNorm: 'Virs normas', outOfNorm: (n, t) => `${n} no ${t} ārpus normas`, soon: 'Drīz', limited: 'Ierobežots' },
     actions: {
       markedAll: '✓ Viss atzīmēts',
       editMap: '✎ Mainīt karti',
@@ -160,7 +183,15 @@ export const FEED: Record<AdpLang, FeedCopy> = {
     },
     howNote: 'The feed invents nothing: every card takes its numbers from the check-in and the readiness engine.',
     restriction: 'Training restriction',
-    tags: { inNorm: 'Normal', belowNorm: 'Below normal', outOfNorm: (n, t) => `${n} of ${t} out of range`, soon: 'Soon', limited: 'Restricted' },
+    guard: {
+      line: { green: 'Load is within range — train to plan.', yellow: 'No maximal efforts today.', red: 'Recovery only today.' },
+      main: (r) => `Main reason: ${lc(r)}.`,
+      info: 'How this is checked',
+      hide: 'Hide',
+      reasons: 'What lowered the score',
+    },
+    norm: (r) => `normal ${r}`,
+    tags: { inNorm: 'Normal', belowNorm: 'Below normal', aboveNorm: 'Above normal', outOfNorm: (n, t) => `${n} of ${t} out of range`, soon: 'Soon', limited: 'Restricted' },
     actions: {
       markedAll: '✓ All marked',
       editMap: '✎ Edit map',

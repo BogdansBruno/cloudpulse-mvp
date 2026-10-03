@@ -126,10 +126,11 @@ export const THEMES: Readonly<Record<ThemeId, ThemeTokens>> = {
     reference: 'dark health-feed apps',
     mode: 'dark',
     colors: {
-      bg: '#0C0D12',
-      surface: 'rgba(22,23,33,0.75)',
+      bg: '#0B0C10',
+      // Dark Editorial Mobile: near-transparent cards, the ambient glow shows through.
+      surface: 'rgba(255,255,255,0.04)',
       surfaceAlt: '#1F2130',
-      border: 'rgba(255,255,255,0.12)',
+      border: 'rgba(255,255,255,0.08)',
       text: '#F4F5F7',
       // Body = slate-300, micro labels = slate-400 — both ≥ 7:1 on the glass.
       textMuted: '#CBD5E1',
@@ -144,15 +145,15 @@ export const THEMES: Readonly<Record<ThemeId, ThemeTokens>> = {
       track: 'rgba(255,255,255,0.08)',
     },
     gradients: {
-      page: 'radial-gradient(circle at 50% 20%, rgba(66,45,34,0.35) 0%, rgba(18,19,26,0) 70%), #0C0D12',
-      hero: 'linear-gradient(180deg, rgba(82,54,43,0.55) 0%, rgba(24,25,34,0.80) 60%)',
+      page: '#0B0C10',
+      hero: 'rgba(255,255,255,0.04)',
       accent: 'linear-gradient(135deg, #10B981 0%, #059669 100%)',
       cool: 'linear-gradient(135deg, #6366F1 0%, #4F46E5 100%)',
     },
-    radius: { card: 28, inner: 18, pill: 999 },
+    radius: { card: 24, inner: 16, pill: 999 },
     shadow: {
       // Top-edge light inside the glass + a soft floating shadow (matches /training).
-      card: 'inset 0 1px 1px 0 rgba(255,255,255,0.18), 0 12px 32px -4px rgba(0,0,0,0.5)',
+      card: 'inset 0 1px 0 0 rgba(255,255,255,0.06)',
       raised: '0 10px 30px -14px rgba(0,0,0,0.9)',
       glow: (c) => `0 0 40px -10px ${c}`,
     },
