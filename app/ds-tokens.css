@@ -1,0 +1,51 @@
+/* app/ds-tokens.css — ADP "Dark Minimal" design tokens (Tailwind v4).
+   Imported from globals.css right after `@import "tailwindcss"`.
+   Utilities: bg-ds-bg, bg-ds-surface, border-ds-line, text-ds-text-2,
+   text-ds-accent, rounded-card / rounded-ctrl / rounded-tag, shadow-modal. */
+
+@theme {
+  --color-ds-bg: #090a0f;
+  --color-ds-surface: #12141a;
+  --color-ds-surface-2: #181b22;
+  --color-ds-line: rgb(255 255 255 / 0.1);
+  --color-ds-line-strong: rgb(255 255 255 / 0.16);
+  --color-ds-text: #f2f4f7;
+  --color-ds-text-2: #a1a8b5;
+  --color-ds-text-3: #7d8594;
+  --color-ds-accent: #ccff00;
+  --color-ds-warn: #d9a441;
+  --color-ds-danger: #e5636f;
+
+  --radius-card: 12px;
+  --radius-ctrl: 8px;
+  --radius-tag: 6px;
+
+  --shadow-modal: 0 24px 64px -16px rgb(0 0 0 / 0.7);
+}
+
+/* Every number in the new screens uses tabular figures. */
+.ds-app {
+  font-variant-numeric: tabular-nums;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Live dot under the Safety Pass QR. */
+@keyframes ds-pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.3;
+    transform: scale(0.75);
+  }
+}
+.ds-pulse {
+  animation: ds-pulse 1.6s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .ds-pulse {
+    animation: none;
+  }
+}
