@@ -1,5 +1,10 @@
 'use client';
 
+// /chat — the athlete's home: readiness sidebar + the AI coach.
+// ADP "Dark Editorial Biohacking" look: #0C0D12 with a soft sand glow,
+// editorial glass panels, serif headline, capsule controls. The logic
+// (engine numbers, chat API, questions, plans, voice) is unchanged.
+
 import { useState, useRef, useEffect } from 'react';
 import { AnimatePresence, LayoutGroup, motion, useReducedMotion } from 'motion/react';
 import {
@@ -19,8 +24,10 @@ import { useLanguage } from '@/lib/i18n/LanguageContext';
 import type { ReadinessHistoryPoint } from '@/lib/types/readiness';
 import QuickReplyQuestions from '@/components/QuickReplyQuestions';
 import WorkoutPlan from '@/components/WorkoutPlan';
-import { PerformancePanel, PerformanceStrip, zoneMeta, loadStatus, noRestColor, HUB } from '@/components/PerformancePanel';
+import { EditorialPerformancePanel, EditorialPerformanceStrip, ED, edLoadColor, edNoRestColor, edZone } from '@/components/EditorialPerformancePanel';
 import HomeWorkoutCard from '@/components/HomeWorkoutCard';
+import AmbientMesh, { MESH_BASE } from '@/adp/src/components/ui/AmbientMesh';
+import { MICRO_LABEL, SERIF, SLATE_300, SLATE_400 } from '@/adp/src/components/ui/typography';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -52,6 +59,16 @@ function getSpeechCtor(): SpeechCtor | null {
 const SPEECH_LANG = { ru: 'ru-RU', lv: 'lv-LV', en: 'en-US' } as const;
 const CHIP_ICONS = [CalendarBlank, Moon, ForkKnife];
 const SPRING = { type: 'spring', bounce: 0, duration: 0.4 } as const;
+
+// Editorial glass panel (same values as LiquidGlassCard tone="editorial").
+const PANEL = {
+  background: 'rgba(22,23,33,0.75)',
+  border: '1px solid rgba(255,255,255,0.12)',
+  backdropFilter: 'blur(40px) saturate(150%)',
+  WebkitBackdropFilter: 'blur(40px) saturate(150%)',
+  boxShadow: 'inset 0 1px 1px 0 rgba(255,255,255,0.18), 0 12px 32px -4px rgba(0,0,0,0.5)',
+} as const;
+const PILL = `inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.06] px-3 py-1.5 ${MICRO_LABEL}`;
 
 export default function ChatPage() {
   const { t, lang } = useLanguage();
@@ -204,66 +221,72 @@ export default function ChatPage() {
   ];
 
   const showWelcome = !seeded && messages.length === 1;
+  // Amber light in the background when today is not a green day.
+  const storm = Boolean(today && today.hasCheckin && today.zone !== 'green');
 
   return (
-    <div className="relative h-[calc(100dvh-7rem)] overflow-hidden bg-[#07080A] text-zinc-100 sm:h-[calc(100dvh-4.25rem)] md:h-[calc(100dvh-4.5rem)]">
-      {/* One quiet light source behind the readiness ring; everything else stays dark. */}
-      <div className="pointer-events-none absolute -left-40 -top-40 h-[520px] w-[520px] rounded-full bg-[#CCFF00]/[0.06] blur-[140px]" />
-      <div className="bg-grid-dots pointer-events-none absolute inset-0 opacity-50 [mask-image:radial-gradient(ellipse_70%_60%_at_20%_0%,black,transparent)]" />
+    <div
+      className="relative h-[calc(100dvh-7rem)] overflow-hidden text-white sm:h-[calc(100dvh-4.25rem)] md:h-[calc(100dvh-4.5rem)]"
+      style={{ background: MESH_BASE.dune }}
+    >
+      <AmbientMesh palette="dune" storm={storm} />
 
-      <div className="relative mx-auto grid h-full max-w-7xl gap-4 px-3 pb-3 pt-3 md:px-6 lg:grid-cols-[340px_minmax(0,1fr)]">
-        {/* Performance sidebar: heavier, darker material = structure. */}
-        <aside className="hidden min-h-0 overflow-y-auto rounded-[28px] bg-[#0D0F13]/85 p-5 ring-1 ring-inset ring-white/[0.07] backdrop-blur-2xl lg:block">
-          <PerformancePanel history={history} loading={historyLoading} />
-          <HomeWorkoutCard className="mt-4" />
+      <div className="relative mx-auto grid h-full max-w-7xl gap-4 px-3 pb-3 pt-3 md:px-6 lg:grid-cols-[340px_minmax(0,1fr)]" style={{ zIndex: 1 }}>
+        {/* Readiness sidebar */}
+        <aside className="hidden min-h-0 space-y-3 overflow-y-auto pb-2 lg:block" style={{ scrollbarWidth: 'none' }}>
+          <EditorialPerformancePanel history={history} loading={historyLoading} />
+          <HomeWorkoutCard />
         </aside>
 
         {/* Coach column */}
-        <section className="flex min-h-0 flex-col overflow-hidden rounded-[28px] bg-white/[0.02] ring-1 ring-inset ring-white/[0.07]">
+        <section className="flex min-h-0 flex-col overflow-hidden rounded-[28px]" style={PANEL}>
           {/* Header: what the coach is grounded in right now */}
-          <header className="flex flex-wrap items-center gap-2 border-b border-white/[0.06] px-4 py-3 md:px-5">
-            <div className="mr-auto flex items-center gap-2.5">
-              <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#CCFF00] text-zinc-950">
+          <header className="flex flex-wrap items-center gap-2 border-b border-white/[0.08] px-4 py-3 md:px-5">
+            <div className="mr-auto flex items-center gap-3">
+              <span
+                className="flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-white/10 text-[#CCFF00]"
+                style={{ boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.2)' }}
+              >
                 <Lightning size={16} weight="fill" />
               </span>
               <div className="leading-tight">
-                <p className="text-sm font-semibold tracking-[-0.01em] text-zinc-50">{t.chat.title}</p>
-                <p className="text-[11px] text-zinc-500">{t.hub.coachSees}</p>
+                <p className="text-sm font-semibold tracking-[-0.01em] text-white">{t.chat.title}</p>
+                <p className={`mt-0.5 ${MICRO_LABEL}`} style={{ color: SLATE_400 }}>
+                  {t.hub.coachSees}
+                </p>
               </div>
             </div>
             {today && today.hasCheckin && (
-              <span
-                className="hidden items-center gap-1.5 rounded-full bg-white/[0.04] px-2.5 py-1 text-xs ring-1 ring-inset ring-white/[0.08] sm:inline-flex"
-                style={{ color: zoneMeta(today.zone).color }}
-              >
-                <span className="text-zinc-400">{t.hub.readiness}</span>
-                <span className="font-mono tabular-nums">{today.score}</span>
+              <span className={`hidden sm:inline-flex ${PILL}`} style={{ color: SLATE_300 }}>
+                {t.hub.readiness}
+                <span className="tabular-nums" style={{ color: edZone(today.zone).color }}>
+                  {today.score}
+                </span>
               </span>
             )}
             {today && today.acwr !== null && (
-              <span className="hidden items-center gap-1.5 rounded-full bg-white/[0.04] px-2.5 py-1 text-xs ring-1 ring-inset ring-white/[0.08] sm:inline-flex">
-                <span className="text-zinc-400">ACWR</span>
-                <span
-                  className="font-mono tabular-nums"
-                  style={{ color: loadStatus(today.acwr) === 'ok' ? HUB.lime : loadStatus(today.acwr) === 'spike' ? HUB.red : HUB.amber }}
-                >
+              <span className={`hidden sm:inline-flex ${PILL}`} style={{ color: SLATE_300 }}>
+                ACWR
+                <span className="tabular-nums" style={{ color: edLoadColor(today.acwr) }}>
                   {today.acwr.toFixed(2)}
                 </span>
               </span>
             )}
             {today && (
-              <span className="hidden items-center gap-1 rounded-full bg-white/[0.04] px-2.5 py-1 text-xs text-zinc-300 ring-1 ring-inset ring-white/[0.08] sm:inline-flex">
-                <Barbell size={12} weight="fill" style={{ color: noRestColor(today.trainingStreak) }} />
-                <span className="font-mono tabular-nums">{today.trainingStreak}</span>
-                <span className="text-zinc-500">{t.hub.streak}</span>
+              <span className={`hidden sm:inline-flex ${PILL}`} style={{ color: SLATE_300 }}>
+                <Barbell size={12} weight="fill" style={{ color: edNoRestColor(today.trainingStreak) }} />
+                <span className="tabular-nums" style={{ color: edNoRestColor(today.trainingStreak) }}>
+                  {today.trainingStreak}
+                </span>
+                {t.hub.streak}
               </span>
             )}
           </header>
 
-          <div className="px-3 pt-3 sm:hidden">
-            <PerformanceStrip history={history} />
-          </div>
-          <div className="px-3 pt-3 lg:hidden">
+          <div className="space-y-2 px-3 pt-3 lg:hidden">
+            <div className="sm:hidden">
+              <EditorialPerformanceStrip history={history} />
+            </div>
             <HomeWorkoutCard compact />
           </div>
 
@@ -277,13 +300,19 @@ export default function ChatPage() {
                   transition={SPRING}
                   className="pt-4 md:pt-10"
                 >
-                  <h1 className="text-[28px] font-semibold leading-[1.1] tracking-[-0.03em] text-zinc-50 md:text-[34px]">
+                  <p className={MICRO_LABEL} style={{ color: SLATE_400 }}>
+                    {t.chat.title}
+                  </p>
+                  <h1
+                    className="mt-3 text-[34px] leading-[1.12] md:text-[44px]"
+                    style={{ fontFamily: SERIF, fontWeight: 400, letterSpacing: '-0.02em', color: '#FFFFFF' }}
+                  >
                     {t.chat.subtitle}
                   </h1>
-                  <p className="mt-3 max-w-[60ch] whitespace-pre-wrap text-[15px] leading-relaxed text-zinc-400">
+                  <p className="mt-4 max-w-[60ch] whitespace-pre-wrap text-sm leading-relaxed" style={{ color: SLATE_300 }}>
                     {t.chat.welcome}
                   </p>
-                  <div className="mt-6 grid gap-2 sm:grid-cols-3">
+                  <div className="mt-7 grid gap-2.5 sm:grid-cols-3">
                     {t.chat.promptChips.map((chip, i) => {
                       const Icon = CHIP_ICONS[i] ?? Lightning;
                       return (
@@ -293,10 +322,13 @@ export default function ChatPage() {
                           onClick={() => handleSend(chip)}
                           disabled={loading}
                           whileTap={reduce ? undefined : { scale: 0.97 }}
-                          className="group flex items-start gap-3 rounded-2xl bg-white/[0.03] p-3.5 text-left ring-1 ring-inset ring-white/[0.08] transition-colors hover:bg-white/[0.06] hover:ring-[#CCFF00]/40 disabled:opacity-50"
+                          className="group flex items-start gap-3 rounded-3xl border border-white/10 bg-white/[0.05] p-4 text-left transition-colors hover:bg-white/[0.09] disabled:opacity-50"
+                          style={{ boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.12)' }}
                         >
-                          <Icon size={18} className="mt-0.5 shrink-0 text-zinc-400 transition-colors group-hover:text-[#CCFF00]" />
-                          <span className="text-sm leading-snug text-zinc-200">{chip}</span>
+                          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/[0.08] text-white/80 transition-colors group-hover:text-white">
+                            <Icon size={16} />
+                          </span>
+                          <span className="pt-1 text-sm leading-snug text-white">{chip}</span>
                         </motion.button>
                       );
                     })}
@@ -330,16 +362,17 @@ export default function ChatPage() {
                       className={`flex gap-3 ${isAssistant ? 'justify-start' : 'justify-end'}`}
                     >
                       {isAssistant && (
-                        <span className="mt-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-white/[0.06] text-[#CCFF00] ring-1 ring-inset ring-white/10">
-                          <Lightning size={14} weight="fill" />
+                        <span className="mt-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-white/15 bg-white/[0.08] text-[#CCFF00]">
+                          <Lightning size={13} weight="fill" />
                         </span>
                       )}
                       <div
                         className={
                           isAssistant
-                            ? 'min-w-0 max-w-[92%] flex-1 text-zinc-200'
-                            : 'max-w-[80%] rounded-2xl rounded-br-md bg-zinc-100 px-4 py-2.5 text-zinc-900'
+                            ? 'min-w-0 max-w-[92%] flex-1 text-white/90'
+                            : 'max-w-[80%] rounded-3xl rounded-br-lg border border-white/15 bg-white/[0.12] px-4 py-2.5 text-white'
                         }
+                        style={isAssistant ? undefined : { boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.16)' }}
                       >
                         {displayText && (
                           <div className="whitespace-pre-wrap break-words text-[15px] leading-relaxed">{displayText}</div>
@@ -361,7 +394,9 @@ export default function ChatPage() {
                           />
                         )}
                         {afterText && (
-                          <div className="mt-3 whitespace-pre-wrap text-[15px] leading-relaxed text-zinc-400">{afterText}</div>
+                          <div className="mt-3 whitespace-pre-wrap text-[15px] leading-relaxed" style={{ color: SLATE_300 }}>
+                            {afterText}
+                          </div>
                         )}
                       </div>
                     </motion.div>
@@ -376,15 +411,15 @@ export default function ChatPage() {
                     exit={{ opacity: 0 }}
                     className="flex gap-3"
                   >
-                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-white/[0.06] text-[#CCFF00] ring-1 ring-inset ring-white/10">
-                      <Lightning size={14} weight="fill" />
+                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-white/15 bg-white/[0.08] text-[#CCFF00]">
+                      <Lightning size={13} weight="fill" />
                     </span>
                     <div className="flex items-center gap-1.5 pt-1" aria-label={t.common.loading}>
                       {[0, 1, 2].map((i) => (
                         <span
                           key={i}
-                          className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#CCFF00]"
-                          style={{ animationDelay: `${i * 0.15}s` }}
+                          className="h-1.5 w-1.5 animate-pulse rounded-full bg-white"
+                          style={{ animationDelay: `${i * 0.15}s`, boxShadow: '0 0 8px rgba(255,255,255,0.8)' }}
                         />
                       ))}
                     </div>
@@ -396,10 +431,10 @@ export default function ChatPage() {
           </div>
 
           {/* Command bar */}
-          <div className="border-t border-white/[0.06] bg-[#0D0F13]/80 p-3 backdrop-blur-2xl md:p-4">
+          <div className="border-t border-white/[0.08] p-3 md:p-4">
             <div className="mx-auto max-w-2xl">
               <LayoutGroup id="coach-mode">
-                <div className="mb-2 flex gap-1" role="radiogroup" aria-label="Coaching focus">
+                <div className="mb-2.5 flex flex-wrap gap-1.5" role="radiogroup" aria-label="Coaching focus">
                   {modes.map((m) => {
                     const active = mode === m.key;
                     return (
@@ -409,32 +444,39 @@ export default function ChatPage() {
                         role="radio"
                         aria-checked={active}
                         onClick={() => setMode(active ? null : m.key)}
-                        className={`relative rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
-                          active ? 'text-zinc-950' : 'text-zinc-400 hover:text-zinc-200'
+                        className={`relative inline-flex h-8 items-center rounded-full border px-4 text-xs font-medium transition-colors ${
+                          active ? 'border-white/30 text-white' : 'border-white/10 bg-white/[0.06] text-white/75 hover:bg-white/[0.12] hover:text-white'
                         }`}
                       >
                         {active && (
                           <motion.span
                             layoutId="mode-pill"
-                            className="absolute inset-0 rounded-full bg-[#CCFF00]"
+                            className="absolute inset-0 rounded-full bg-white/20"
+                            style={{ boxShadow: `inset 0 1px 1px rgba(255,255,255,0.25), 0 0 14px -4px ${ED.teal}` }}
                             transition={reduce ? { duration: 0 } : { type: 'spring', bounce: 0, duration: 0.35 }}
                           />
                         )}
-                        <span className="relative">{m.label}</span>
+                        <span className="relative inline-flex items-center gap-1.5">
+                          {active && <span className="h-1.5 w-1.5 rounded-full" style={{ background: ED.teal, boxShadow: `0 0 6px ${ED.teal}` }} />}
+                          {m.label}
+                        </span>
                       </button>
                     );
                   })}
                 </div>
               </LayoutGroup>
 
-              <div className="flex items-end gap-1 rounded-2xl bg-white/[0.04] p-1.5 ring-1 ring-inset ring-white/10 transition-shadow focus-within:ring-[#CCFF00]/50 focus-within:shadow-[0_0_0_4px_rgba(204,255,0,0.08)]">
+              <div
+                className="flex items-end gap-1 rounded-[26px] border border-white/[0.12] bg-white/[0.06] p-1.5 transition-colors focus-within:border-white/25"
+                style={{ boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.12)' }}
+              >
                 <button
                   type="button"
                   onClick={insertMetrics}
                   disabled={!today}
                   title={t.hub.attach}
                   aria-label={t.hub.attach}
-                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-zinc-400 transition-colors hover:bg-white/[0.06] hover:text-zinc-100 disabled:opacity-30"
+                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-white/70 transition-colors hover:bg-white/[0.08] hover:text-white disabled:opacity-30"
                 >
                   <Paperclip size={18} />
                 </button>
@@ -453,7 +495,7 @@ export default function ChatPage() {
                   }}
                   placeholder={listening ? t.hub.listening : t.chat.placeholder}
                   disabled={loading}
-                  className="max-h-[200px] min-w-0 flex-1 resize-none overflow-y-auto bg-transparent px-1 py-[7px] text-[15px] leading-[22px] text-zinc-50 placeholder-zinc-500 focus:outline-none disabled:opacity-50"
+                  className="max-h-[200px] min-w-0 flex-1 resize-none overflow-y-auto bg-transparent px-1 py-[9px] text-[15px] leading-[22px] text-white placeholder-slate-400 focus:outline-none disabled:opacity-50"
                 />
                 {voiceSupported && (
                   <button
@@ -462,8 +504,8 @@ export default function ChatPage() {
                     title={t.hub.voice}
                     aria-label={t.hub.voice}
                     aria-pressed={listening}
-                    className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl transition-colors ${
-                      listening ? 'bg-[#FF4D5E]/15 text-[#FF4D5E]' : 'text-zinc-400 hover:bg-white/[0.06] hover:text-zinc-100'
+                    className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-colors ${
+                      listening ? 'bg-[#FB7185]/15 text-[#FB7185]' : 'text-white/70 hover:bg-white/[0.08] hover:text-white'
                     }`}
                   >
                     <Microphone size={18} weight={listening ? 'fill' : 'regular'} />
@@ -475,7 +517,8 @@ export default function ChatPage() {
                   disabled={loading || !input.trim()}
                   aria-label={t.chat.send}
                   whileTap={reduce ? undefined : { scale: 0.9 }}
-                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#CCFF00] text-zinc-950 transition-opacity disabled:opacity-30"
+                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-[#0C0D12] transition-opacity disabled:opacity-30"
+                  style={{ boxShadow: '0 6px 18px -6px rgba(255,255,255,0.6)' }}
                 >
                   <ArrowUp size={18} weight="bold" />
                 </motion.button>
