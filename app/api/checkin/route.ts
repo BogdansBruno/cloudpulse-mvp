@@ -224,7 +224,7 @@ export async function POST(req: Request) {
   }
 }
 
-// GET /api/checkin?days=30 — Readiness history for the trend chart.
+// GET /api/checkin?days=30 — Readiness history for the trend chart (add &raw=1 for the raw inputs).
 // Recomputed fresh from raw data every time (the engine is cheap and pure),
 // so there is never a stored score that can drift out of sync with the
 // underlying sessions/checkins.
@@ -312,6 +312,13 @@ export async function GET(req: Request) {
         fatigue: dayCheckin?.fatigue ?? null,
         soreness: dayCheckin?.soreness ?? null,
       });
+    }
+
+    // ?raw=1 — the athlete's own sessions, check-ins and calendar dates, so the check-in screen
+    // can run the SAME pure engine in the browser for the live preview before submit. Optional:
+    // without the flag the response is exactly what it was.
+    if (url.searchParams.get('raw') === '1') {
+      return NextResponse.json({ history, raw: { sessions, checkins, context } });
     }
 
     return NextResponse.json({ history });

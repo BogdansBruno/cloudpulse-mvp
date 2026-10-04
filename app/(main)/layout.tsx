@@ -1,19 +1,19 @@
 import type { ReactNode } from 'react';
-import Nav from '@/components/Nav';
+import AppShell from '@/components/np/AppShell';
 import AccessGate from '@/components/AccessGate';
 import DemoBanner from '@/components/DemoBanner';
 import OfflineSync from '@/components/OfflineSync';
 
+// v3 shell: sidebar (desktop) + glass tab bar (mobile), active item from the URL.
+// Pages that are not redrawn yet keep the old `.adp-ed` skin tweaks; AppShell adds that class only for them.
 export default function MainLayout({ children }: { children: ReactNode }) {
   return (
     <AccessGate>
-      {/* .adp-ed switches on the ADP "Dark Editorial" skin (app/globals.css). */}
-      <div className="adp-ed contents">
-        <Nav />
+      <AppShell>
         <DemoBanner />
         <OfflineSync />
         {children}
-      </div>
+      </AppShell>
     </AccessGate>
   );
 }

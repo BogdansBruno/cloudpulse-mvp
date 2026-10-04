@@ -7,7 +7,6 @@ import { toDataURL } from 'qrcode';
 import { supabase } from '@/lib/supabase';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
 import type { Lang } from '@/lib/i18n/translations';
-import { HUB } from '@/components/PerformancePanel';
 
 // ---------------------------------------------------------------------------
 // Shield Safety Pass — shown on /checkin when today's check-in carries a
@@ -53,7 +52,7 @@ export function formatPassId(id: string) {
 // Page-level spacing lives here so /checkin gets no empty gap when there is no pass.
 function Frame({ children }: { children: ReactNode }) {
   return (
-    <div className="bg-[#07080A] px-4 pt-6 md:pt-8">
+    <div className="px-4 pt-6 md:pt-8">
       <div className="mx-auto max-w-lg">{children}</div>
     </div>
   );
@@ -111,8 +110,8 @@ export default function SafetyShield({ refreshKey = 0 }: { refreshKey?: number }
   if (error) {
     return (
       <Frame>
-        <div className="flex gap-3 rounded-2xl bg-white/[0.03] p-4 text-sm text-zinc-400 ring-1 ring-inset ring-white/[0.08]">
-          <WarningOctagon size={18} className="mt-0.5 shrink-0" />
+        <div className="np-card flex gap-3 p-4 text-sm text-np-text-2">
+          <WarningOctagon size={18} className="mt-0.5 shrink-0" aria-hidden />
           <span>{t.shield.loadError}</span>
         </div>
       </Frame>
@@ -122,7 +121,8 @@ export default function SafetyShield({ refreshKey = 0 }: { refreshKey?: number }
   if (!pass || (pass.status !== 'block' && pass.status !== 'caution')) return null;
 
   const isBlock = pass.status === 'block';
-  const color = isBlock ? HUB.red : HUB.amber;
+  // v3 colour job: zone colours are text, icon and a 2px line — never a filled panel.
+  const color = isBlock ? '#FF3D00' : '#FFD600';
 
   const directive = (code: PassCode) => {
     switch (code) {
@@ -149,43 +149,40 @@ export default function SafetyShield({ refreshKey = 0 }: { refreshKey?: number }
       initial={reduce ? false : { opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ type: 'spring', bounce: 0, duration: 0.5 }}
-      className="overflow-hidden rounded-3xl"
-      style={{ backgroundColor: `${color}14`, boxShadow: `inset 0 0 0 1px ${color}55` }}
+      className="np-card overflow-hidden"
+      style={{ borderColor: `${color}66`, boxShadow: `0 0 28px -12px ${color}` }}
       aria-label={t.shield.title}
     >
-      {/* Status band */}
-      <div className="flex items-center gap-3 px-5 py-4" style={{ backgroundColor: color }}>
-        <ShieldWarning size={30} weight="fill" className="shrink-0 text-zinc-950" />
+      <div className="flex items-center gap-3 border-b border-np-line px-5 py-4" style={{ borderTop: `2px solid ${color}` }}>
+        <ShieldWarning size={30} weight="fill" className="shrink-0" style={{ color }} aria-hidden />
         <div className="min-w-0">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-zinc-950/70">{t.shield.title}</p>
-          <p className="text-xl font-semibold leading-tight tracking-[-0.01em] text-zinc-950">
-            {isBlock ? t.shield.blockedHeading : t.shield.cautionHeading}
-          </p>
+          <p className="np-overline">{t.shield.title}</p>
+          <p className="text-xl font-bold leading-tight tracking-tight text-np-text">{isBlock ? t.shield.blockedHeading : t.shield.cautionHeading}</p>
         </div>
       </div>
 
       <div className="space-y-4 p-5">
         <ul className="space-y-2.5">
           {pass.codes.map((code) => (
-            <li key={code} className="flex gap-2.5 text-[15px] leading-relaxed text-zinc-100">
-              <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full" style={{ backgroundColor: color }} />
+            <li key={code} className="flex gap-2.5 text-[15px] leading-relaxed text-np-text">
+              <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full" style={{ backgroundColor: color }} aria-hidden />
               <span>{directive(code)}</span>
             </li>
           ))}
         </ul>
 
-        <div className="flex flex-col items-center gap-3 rounded-2xl bg-white/[0.04] p-4 ring-1 ring-inset ring-white/[0.08] sm:flex-row sm:items-center">
+        <div className="flex flex-col items-center gap-3 rounded-np-card border border-np-line bg-np-surface-2 p-4 sm:flex-row sm:items-center">
           {qr ? (
             // eslint-disable-next-line @next/next/no-img-element -- data URL, nothing to optimise
             <img src={qr} alt="Safety Pass QR" width={176} height={176} className="h-44 w-44 shrink-0 rounded-xl" />
           ) : (
-            <p className="text-sm text-zinc-400">{t.shield.qrUnavailable}</p>
+            <p className="text-sm text-np-text-2">{t.shield.qrUnavailable}</p>
           )}
           <div className="text-center sm:text-left">
-            <p className="text-sm leading-relaxed text-zinc-300">{t.shield.showToTeacher}</p>
-            <p className="mt-2 text-xs text-zinc-500">{t.shield.validUntil(formatPassDate(pass.date, lang))}</p>
+            <p className="text-sm leading-relaxed text-np-text-2">{t.shield.showToTeacher}</p>
+            <p className="mt-2 text-xs text-np-text-3">{t.shield.validUntil(formatPassDate(pass.date, lang))}</p>
             {pass.passId && (
-              <p className="mt-1 font-mono text-xs tabular-nums text-zinc-500">
+              <p className="np-num mt-1 font-mono text-xs text-np-text-3">
                 {t.shield.passId}: {formatPassId(pass.passId)}
               </p>
             )}

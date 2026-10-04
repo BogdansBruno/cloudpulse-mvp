@@ -1,33 +1,29 @@
 'use client';
 
-// /chat — the athlete's home: readiness sidebar + the AI coach.
-// ADP "Dark Editorial Biohacking" look: #0C0D12 with a soft sand glow,
-// editorial glass panels, serif headline, capsule controls. The logic
-// (engine numbers, chat API, questions, plans, voice) is unchanged.
+// /chat — the athlete's AI coach, v3 "Night Performance".
+// A readiness sidebar (desktop) + a full-height glass chat: pulsing AI orb with a live status,
+// gradient-bordered coach bubbles with Markdown, quick prompt chips, a glass input bar with the
+// ONE lime action (send). The logic (engine numbers, chat API, questions, plans, voice) is unchanged;
+// every number on screen comes from the engine history, the chat never invents one.
 
 import { useState, useRef, useEffect } from 'react';
-import { AnimatePresence, LayoutGroup, motion, useReducedMotion } from 'motion/react';
-import {
-  ArrowUp,
-  Microphone,
-  Paperclip,
-  Lightning,
-  CalendarBlank,
-  Moon,
-  ForkKnife,
-  Barbell,
-} from '@phosphor-icons/react';
+import Link from 'next/link';
+import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
+import { ArrowUp, Microphone, Paperclip, CalendarBlank, Moon, ForkKnife, ChartLineUp, Sparkle } from '@phosphor-icons/react';
 import { supabase } from '@/lib/supabase';
 import { parseScheduleFromAI, getTextBeforeSchedule, getTextAfterSchedule } from '@/lib/schedule-parser';
 import { parseQuestionsFromAI, getTextBeforeQuestions } from '@/lib/questions-parser';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
 import type { ReadinessHistoryPoint } from '@/lib/types/readiness';
+import { loadIndex, usualDailyLoad } from '@/lib/load-index';
 import QuickReplyQuestions from '@/components/QuickReplyQuestions';
 import WorkoutPlan from '@/components/WorkoutPlan';
-import { EditorialPerformancePanel, EditorialPerformanceStrip, ED, edLoadColor, edNoRestColor, edZone } from '@/components/EditorialPerformancePanel';
-import HomeWorkoutCard from '@/components/HomeWorkoutCard';
-import AmbientMesh, { MESH_BASE } from '@/adp/src/components/ui/AmbientMesh';
-import { MICRO_LABEL, SERIF, SLATE_300, SLATE_400 } from '@/adp/src/components/ui/typography';
+import PlanCard from '@/components/np/PlanCard';
+import ScoreDial from '@/components/np/ScoreDial';
+import Md from '@/components/np/Md';
+import { ZONE } from '@/components/np/ui';
+import { NP } from '@/components/np/copy';
+import { APP } from '@/components/np/appCopy';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -57,29 +53,44 @@ function getSpeechCtor(): SpeechCtor | null {
 }
 
 const SPEECH_LANG = { ru: 'ru-RU', lv: 'lv-LV', en: 'en-US' } as const;
-const CHIP_ICONS = [CalendarBlank, Moon, ForkKnife];
+const CHIP_ICONS = [CalendarBlank, Moon, ForkKnife, ChartLineUp];
 const SPRING = { type: 'spring', bounce: 0, duration: 0.4 } as const;
 
-// Editorial glass panel (same values as LiquidGlassCard tone="editorial").
-const PANEL = {
-  background: 'rgba(22,23,33,0.75)',
-  border: '1px solid rgba(255,255,255,0.12)',
-  backdropFilter: 'blur(40px) saturate(150%)',
-  WebkitBackdropFilter: 'blur(40px) saturate(150%)',
-  boxShadow: 'inset 0 1px 1px 0 rgba(255,255,255,0.18), 0 12px 32px -4px rgba(0,0,0,0.5)',
-} as const;
-const PILL = `inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.06] px-3 py-1.5 ${MICRO_LABEL}`;
+// ACWR bands of the engine (0.8 / 1.3 / 1.5) as pill tones; the number itself is always shown.
+function acwrPill(acwr: number): string {
+  if (acwr < 0.8) return 'np-pill-strain';
+  if (acwr <= 1.3) return 'np-pill-good';
+  if (acwr <= 1.5) return 'np-pill-warn';
+  return 'np-pill-danger';
+}
+
+function AiOrb({ state, size = 36 }: { state: 'idle' | 'thinking' | 'listening'; size?: number }) {
+  return (
+    <span
+      aria-hidden
+      className={`np-ai-orb np-logo-pulse relative inline-block shrink-0 ${state === 'thinking' ? 'scale-110' : ''}`}
+      style={{
+        width: size,
+        height: size,
+        transition: 'transform 300ms',
+        animationDuration: state === 'idle' ? '2.8s' : '1.1s',
+        ['--np-glow' as string]: state === 'listening' ? 'rgb(0 229 255 / 0.6)' : 'rgb(124 77 255 / 0.55)',
+      }}
+    />
+  );
+}
 
 export default function ChatPage() {
   const { t, lang } = useLanguage();
   const reduce = useReducedMotion();
+  const np = NP[lang];
+  const app = APP[lang].chat;
   const [messages, setMessages] = useState<Message[]>([{ role: 'assistant', content: t.chat.welcome }]);
   const [seeded, setSeeded] = useState(false);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [mode, setMode] = useState<CoachMode | null>(null);
   const [history, setHistory] = useState<ReadinessHistoryPoint[] | null>(null);
-  const [historyLoading, setHistoryLoading] = useState(true);
   const [voiceSupported, setVoiceSupported] = useState(false);
   const [listening, setListening] = useState(false);
   const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
@@ -115,8 +126,6 @@ export default function ChatPage() {
         if (!cancelled) setHistory(data.history ?? []);
       } catch {
         if (!cancelled) setHistory([]);
-      } finally {
-        if (!cancelled) setHistoryLoading(false);
       }
     })();
     return () => {
@@ -136,10 +145,13 @@ export default function ChatPage() {
     const el = inputRef.current;
     if (!el) return;
     el.style.height = 'auto';
-    el.style.height = `${Math.min(el.scrollHeight, 200)}px`;
+    // empty box: one line (a long placeholder must not make it taller)
+    if (input) el.style.height = `${Math.min(el.scrollHeight, 160)}px`;
   }, [input]);
 
   const today = history && history.length > 0 ? history[history.length - 1] : null;
+  const hasScore = Boolean(today && today.hasCheckin);
+  const todayIndex = today ? loadIndex(today.dailyLoad ?? null, usualDailyLoad(today.chronicLoad)) : null;
 
   // overrideText lets the question cards and prompt chips send a message the
   // same way a typed one would, without touching the input box.
@@ -219,267 +231,254 @@ export default function ChatPage() {
     { key: 'strength', label: t.hub.modeStrength },
     { key: 'cardio', label: t.hub.modeCardio },
   ];
+  const chips = [...t.chat.promptChips, app.chipYesterday];
 
   const showWelcome = !seeded && messages.length === 1;
-  // Amber light in the background when today is not a green day.
-  const storm = Boolean(today && today.hasCheckin && today.zone !== 'green');
+  const orb: 'idle' | 'thinking' | 'listening' = loading ? 'thinking' : listening ? 'listening' : 'idle';
+  const status = loading ? app.statusThinking : listening ? app.statusListening : today && hasScore ? app.statusSees(today.score, today.acwr !== null ? today.acwr.toFixed(2) : null) : app.statusIdle;
+
+  const dial = (size: number) => (
+    <ScoreDial
+      score={hasScore && today ? today.score : null}
+      zone={hasScore && today ? today.zone : null}
+      size={size}
+      label={hasScore && today ? `${np.readiness}: ${today.score} / 100, ${np.zone[today.zone]}` : np.noScore}
+    />
+  );
 
   return (
-    <div
-      className="relative h-[calc(100dvh-7rem)] overflow-hidden text-white sm:h-[calc(100dvh-4.25rem)] md:h-[calc(100dvh-4.5rem)]"
-      style={{ background: MESH_BASE.dune }}
-    >
-      <AmbientMesh palette="dune" storm={storm} />
-
-      <div className="relative mx-auto grid h-full max-w-7xl gap-4 px-3 pb-3 pt-3 md:px-6 lg:grid-cols-[340px_minmax(0,1fr)]" style={{ zIndex: 1 }}>
-        {/* Readiness sidebar */}
-        <aside className="hidden min-h-0 space-y-3 overflow-y-auto pb-2 lg:block" style={{ scrollbarWidth: 'none' }}>
-          <EditorialPerformancePanel history={history} loading={historyLoading} />
-          <HomeWorkoutCard />
-        </aside>
-
-        {/* Coach column */}
-        <section className="flex min-h-0 flex-col overflow-hidden rounded-[28px]" style={PANEL}>
-          {/* Header: what the coach is grounded in right now */}
-          <header className="flex flex-wrap items-center gap-2 border-b border-white/[0.08] px-4 py-3 md:px-5">
-            <div className="mr-auto flex items-center gap-3">
-              <span
-                className="flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-white/10 text-[#CCFF00]"
-                style={{ boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.2)' }}
-              >
-                <Lightning size={16} weight="fill" />
-              </span>
-              <div className="leading-tight">
-                <p className="text-sm font-semibold tracking-[-0.01em] text-white">{t.chat.title}</p>
-                <p className={`mt-0.5 ${MICRO_LABEL}`} style={{ color: SLATE_400 }}>
-                  {t.hub.coachSees}
-                </p>
-              </div>
-            </div>
-            {today && today.hasCheckin && (
-              <span className={`hidden sm:inline-flex ${PILL}`} style={{ color: SLATE_300 }}>
-                {t.hub.readiness}
-                <span className="tabular-nums" style={{ color: edZone(today.zone).color }}>
-                  {today.score}
-                </span>
-              </span>
-            )}
-            {today && today.acwr !== null && (
-              <span className={`hidden sm:inline-flex ${PILL}`} style={{ color: SLATE_300 }}>
-                ACWR
-                <span className="tabular-nums" style={{ color: edLoadColor(today.acwr) }}>
-                  {today.acwr.toFixed(2)}
-                </span>
-              </span>
-            )}
-            {today && (
-              <span className={`hidden sm:inline-flex ${PILL}`} style={{ color: SLATE_300 }}>
-                <Barbell size={12} weight="fill" style={{ color: edNoRestColor(today.trainingStreak) }} />
-                <span className="tabular-nums" style={{ color: edNoRestColor(today.trainingStreak) }}>
-                  {today.trainingStreak}
-                </span>
-                {t.hub.streak}
-              </span>
-            )}
-          </header>
-
-          <div className="space-y-2 px-3 pt-3 lg:hidden">
-            <div className="sm:hidden">
-              <EditorialPerformanceStrip history={history} />
-            </div>
-            <HomeWorkoutCard compact />
-          </div>
-
-          {/* Messages */}
-          <div className="min-h-0 flex-1 overflow-y-auto px-3 py-5 md:px-6">
-            <div className="mx-auto max-w-2xl space-y-5">
-              {showWelcome && (
-                <motion.div
-                  initial={reduce ? false : { opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={SPRING}
-                  className="pt-4 md:pt-10"
-                >
-                  <p className={MICRO_LABEL} style={{ color: SLATE_400 }}>
-                    {t.chat.title}
+    <div className="mx-auto grid h-[calc(100dvh-3.5rem-env(safe-area-inset-top)-72px-env(safe-area-inset-bottom))] max-w-7xl gap-4 p-3 md:h-dvh md:p-5 lg:grid-cols-[320px_minmax(0,1fr)]">
+      {/* readiness sidebar (desktop) */}
+      <aside className="hidden min-h-0 space-y-3 overflow-y-auto lg:block" style={{ scrollbarWidth: 'none' }}>
+        <section className="np-card p-5" aria-labelledby="chat-today">
+          <h2 id="chat-today" className="np-overline" style={{ fontFamily: 'inherit' }}>
+            {app.sidebarTitle}
+          </h2>
+          <div className="mt-4 flex items-center gap-4">
+            {dial(96)}
+            <div className="min-w-0 space-y-2">
+              {hasScore && today ? (
+                <>
+                  <p className={`np-pill ${ZONE[today.zone].pill}`}>
+                    <span className={`h-1.5 w-1.5 rounded-full ${ZONE[today.zone].dot}`} aria-hidden />
+                    {np.zone[today.zone]}
                   </p>
-                  <h1
-                    className="mt-3 text-[34px] leading-[1.12] md:text-[44px]"
-                    style={{ fontFamily: SERIF, fontWeight: 400, letterSpacing: '-0.02em', color: '#FFFFFF' }}
-                  >
-                    {t.chat.subtitle}
-                  </h1>
-                  <p className="mt-4 max-w-[60ch] whitespace-pre-wrap text-sm leading-relaxed" style={{ color: SLATE_300 }}>
-                    {t.chat.welcome}
-                  </p>
-                  <div className="mt-7 grid gap-2.5 sm:grid-cols-3">
-                    {t.chat.promptChips.map((chip, i) => {
-                      const Icon = CHIP_ICONS[i] ?? Lightning;
-                      return (
-                        <motion.button
-                          key={chip}
-                          type="button"
-                          onClick={() => handleSend(chip)}
-                          disabled={loading}
-                          whileTap={reduce ? undefined : { scale: 0.97 }}
-                          className="group flex items-start gap-3 rounded-3xl border border-white/10 bg-white/[0.05] p-4 text-left transition-colors hover:bg-white/[0.09] disabled:opacity-50"
-                          style={{ boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.12)' }}
-                        >
-                          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/[0.08] text-white/80 transition-colors group-hover:text-white">
-                            <Icon size={16} />
-                          </span>
-                          <span className="pt-1 text-sm leading-snug text-white">{chip}</span>
-                        </motion.button>
-                      );
-                    })}
-                  </div>
-                </motion.div>
-              )}
-
-              {!showWelcome &&
-                messages.map((msg, idx) => {
-                  const isAssistant = msg.role === 'assistant';
-                  const parsedQuestions = isAssistant
-                    ? parseQuestionsFromAI(msg.content)
-                    : { questions: [], hasQuestions: false };
-                  const schedule = isAssistant && !parsedQuestions.hasQuestions ? parseScheduleFromAI(msg.content) : null;
-                  const displayText = isAssistant
-                    ? parsedQuestions.hasQuestions
-                      ? getTextBeforeQuestions(msg.content)
-                      : getTextBeforeSchedule(msg.content)
-                    : msg.content;
-                  const afterText = schedule?.hasSchedule ? getTextAfterSchedule(msg.content) : '';
-                  // Only the latest assistant message renders live question
-                  // cards; older ones in history stay as plain text.
-                  const isLiveQuestions = parsedQuestions.hasQuestions && idx === messages.length - 1 && !loading;
-
-                  return (
-                    <motion.div
-                      key={idx}
-                      initial={reduce ? false : { opacity: 0, y: 8 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={SPRING}
-                      className={`flex gap-3 ${isAssistant ? 'justify-start' : 'justify-end'}`}
-                    >
-                      {isAssistant && (
-                        <span className="mt-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-white/15 bg-white/[0.08] text-[#CCFF00]">
-                          <Lightning size={13} weight="fill" />
-                        </span>
-                      )}
-                      <div
-                        className={
-                          isAssistant
-                            ? 'min-w-0 max-w-[92%] flex-1 text-white/90'
-                            : 'max-w-[80%] rounded-3xl rounded-br-lg border border-white/15 bg-white/[0.12] px-4 py-2.5 text-white'
-                        }
-                        style={isAssistant ? undefined : { boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.16)' }}
-                      >
-                        {displayText && (
-                          <div className="whitespace-pre-wrap break-words text-[15px] leading-relaxed">{displayText}</div>
-                        )}
-                        {isLiveQuestions && (
-                          <QuickReplyQuestions
-                            questions={parsedQuestions.questions}
-                            lang={lang}
-                            onComplete={(summary) => handleSend(summary)}
-                          />
-                        )}
-                        {schedule?.hasSchedule && (
-                          <WorkoutPlan
-                            events={schedule.events}
-                            lang={lang}
-                            title={t.hub.planTitle}
-                            minLabel={t.hub.min}
-                            exportLabel={t.chat.addToCalendar}
-                          />
-                        )}
-                        {afterText && (
-                          <div className="mt-3 whitespace-pre-wrap text-[15px] leading-relaxed" style={{ color: SLATE_300 }}>
-                            {afterText}
-                          </div>
-                        )}
-                      </div>
-                    </motion.div>
-                  );
-                })}
-
-              <AnimatePresence>
-                {loading && (
-                  <motion.div
-                    initial={reduce ? false : { opacity: 0, y: 6 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0 }}
-                    className="flex gap-3"
-                  >
-                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-white/15 bg-white/[0.08] text-[#CCFF00]">
-                      <Lightning size={13} weight="fill" />
+                  {today.acwr !== null && (
+                    <p>
+                      <span className={`np-pill ${acwrPill(today.acwr)}`}>ACWR {today.acwr.toFixed(2)}</span>
+                    </p>
+                  )}
+                  <p>
+                    <span className={`np-pill ${today.trainingStreak > 6 ? 'np-pill-warn' : ''}`}>
+                      {today.trainingStreak} {t.hub.streak.toLowerCase()}
                     </span>
-                    <div className="flex items-center gap-1.5 pt-1" aria-label={t.common.loading}>
-                      {[0, 1, 2].map((i) => (
-                        <span
-                          key={i}
-                          className="h-1.5 w-1.5 animate-pulse rounded-full bg-white"
-                          style={{ animationDelay: `${i * 0.15}s`, boxShadow: '0 0 8px rgba(255,255,255,0.8)' }}
-                        />
-                      ))}
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-              <div ref={messagesEndRef} />
+                  </p>
+                </>
+              ) : (
+                <p className="text-sm leading-snug text-np-text-2">{app.sidebarEmpty}</p>
+              )}
             </div>
           </div>
+          {todayIndex !== null && (
+            <p className="mt-4 text-xs text-np-text-2">
+              <span className="np-pill np-pill-strain mr-2">{np.load.title}</span>
+              {todayIndex} / 100
+            </p>
+          )}
+          {!hasScore && (
+            <Link href="/checkin" className="np-btn-glass mt-4 flex h-11 w-full items-center justify-center rounded-np-ctrl text-sm font-medium">
+              {t.hub.doCheckin}
+            </Link>
+          )}
+        </section>
+        <PlanCard />
+      </aside>
 
-          {/* Command bar */}
-          <div className="border-t border-white/[0.08] p-3 md:p-4">
-            <div className="mx-auto max-w-2xl">
-              <LayoutGroup id="coach-mode">
-                <div className="mb-2.5 flex flex-wrap gap-1.5" role="radiogroup" aria-label="Coaching focus">
-                  {modes.map((m) => {
-                    const active = mode === m.key;
+      {/* coach column */}
+      <section className="np-card np-glass flex min-h-0 flex-col overflow-hidden" aria-label={t.chat.title}>
+        <header className="flex flex-wrap items-center gap-3 border-b border-np-line px-4 py-3 md:px-5">
+          <AiOrb state={orb} />
+          <div className="min-w-0 leading-tight">
+            <p className="truncate text-sm font-semibold text-np-text">{t.chat.title}</p>
+            <p className="mt-0.5 truncate text-xs text-np-text-2" aria-live="polite">
+              {status}
+            </p>
+          </div>
+          <span className="np-pill np-pill-ai ml-auto hidden sm:inline-flex">
+            <Sparkle size={12} weight="fill" aria-hidden />
+            {app.online}
+          </span>
+        </header>
+
+        {/* compact today strip (phone and tablet, where the sidebar is hidden) */}
+        <div className={`space-y-2 px-3 pt-3 lg:hidden ${showWelcome ? '' : 'hidden'}`}>
+          {hasScore && today && (
+            <div className="np-card flex items-center gap-3 px-3 py-2">
+              {dial(40)}
+              <span className={`np-pill ${ZONE[today.zone].pill}`}>{np.zone[today.zone]}</span>
+              {today.acwr !== null && <span className={`np-pill ${acwrPill(today.acwr)}`}>ACWR {today.acwr.toFixed(2)}</span>}
+            </div>
+          )}
+          <PlanCard compact />
+        </div>
+
+        {/* messages */}
+        <div className="min-h-0 flex-1 overflow-y-auto px-3 py-5 md:px-6">
+          <div className="mx-auto max-w-2xl space-y-5">
+            {showWelcome && (
+              <motion.div initial={reduce ? false : { opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={SPRING} className="pt-2 md:pt-8">
+                <p className="np-overline">{t.chat.heroTag}</p>
+                <h1 className="mt-3 text-3xl font-extrabold leading-tight tracking-tight text-np-text md:text-4xl" style={{ fontFamily: 'inherit' }}>
+                  {t.chat.subtitle}
+                </h1>
+                <div className="np-ai-bubble mt-5 max-w-[60ch] rounded-2xl rounded-tl-md px-4 py-3 text-sm leading-relaxed text-np-text-2">
+                  <p className="whitespace-pre-wrap">{t.chat.welcome}</p>
+                </div>
+                <div className="mt-6 grid gap-2.5 sm:grid-cols-2">
+                  {chips.map((chip, i) => {
+                    const Ico = CHIP_ICONS[i] ?? Sparkle;
                     return (
                       <button
-                        key={m.key}
+                        key={chip}
                         type="button"
-                        role="radio"
-                        aria-checked={active}
-                        onClick={() => setMode(active ? null : m.key)}
-                        className={`relative inline-flex h-8 items-center rounded-full border px-4 text-xs font-medium transition-colors ${
-                          active ? 'border-white/30 text-white' : 'border-white/10 bg-white/[0.06] text-white/75 hover:bg-white/[0.12] hover:text-white'
-                        }`}
+                        onClick={() => handleSend(chip)}
+                        disabled={loading}
+                        className="np-btn-glass group flex items-start gap-3 rounded-np-card p-4 text-left disabled:opacity-50"
                       >
-                        {active && (
-                          <motion.span
-                            layoutId="mode-pill"
-                            className="absolute inset-0 rounded-full bg-white/20"
-                            style={{ boxShadow: `inset 0 1px 1px rgba(255,255,255,0.25), 0 0 14px -4px ${ED.teal}` }}
-                            transition={reduce ? { duration: 0 } : { type: 'spring', bounce: 0, duration: 0.35 }}
-                          />
-                        )}
-                        <span className="relative inline-flex items-center gap-1.5">
-                          {active && <span className="h-1.5 w-1.5 rounded-full" style={{ background: ED.teal, boxShadow: `0 0 6px ${ED.teal}` }} />}
-                          {m.label}
+                        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/5 text-np-text-2 group-hover:text-np-text">
+                          <Ico size={16} aria-hidden />
                         </span>
+                        <span className="min-w-0 pt-1 text-sm leading-snug text-np-text">{chip}</span>
                       </button>
                     );
                   })}
                 </div>
-              </LayoutGroup>
+              </motion.div>
+            )}
 
-              <div
-                className="flex items-end gap-1 rounded-[26px] border border-white/[0.12] bg-white/[0.06] p-1.5 transition-colors focus-within:border-white/25"
-                style={{ boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.12)' }}
+            {!showWelcome &&
+              messages.map((msg, idx) => {
+                const isAssistant = msg.role === 'assistant';
+                const parsedQuestions = isAssistant ? parseQuestionsFromAI(msg.content) : { questions: [], hasQuestions: false };
+                const schedule = isAssistant && !parsedQuestions.hasQuestions ? parseScheduleFromAI(msg.content) : null;
+                const displayText = isAssistant
+                  ? parsedQuestions.hasQuestions
+                    ? getTextBeforeQuestions(msg.content)
+                    : getTextBeforeSchedule(msg.content)
+                  : msg.content;
+                const afterText = schedule?.hasSchedule ? getTextAfterSchedule(msg.content) : '';
+                // Only the latest assistant message renders live question
+                // cards; older ones in history stay as plain text.
+                const isLiveQuestions = parsedQuestions.hasQuestions && idx === messages.length - 1 && !loading;
+
+                return (
+                  <motion.div
+                    key={idx}
+                    initial={reduce ? false : { opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={SPRING}
+                    className={`flex gap-3 ${isAssistant ? 'justify-start' : 'justify-end'}`}
+                  >
+                    {isAssistant && <AiOrb state="idle" size={28} />}
+                    <div
+                      className={
+                        isAssistant
+                          ? 'np-ai-bubble min-w-0 max-w-[92%] rounded-2xl rounded-tl-md px-4 py-3'
+                          : 'max-w-[80%] rounded-2xl rounded-br-md border border-np-line-strong bg-np-surface-3 px-4 py-2.5 text-np-text'
+                      }
+                    >
+                      {displayText &&
+                        (isAssistant ? (
+                          <Md text={displayText} copyLabel={app.codeCopy} />
+                        ) : (
+                          <div className="whitespace-pre-wrap break-words text-[15px] leading-relaxed">{displayText}</div>
+                        ))}
+                      {isLiveQuestions && <QuickReplyQuestions questions={parsedQuestions.questions} lang={lang} onComplete={(summary) => handleSend(summary)} />}
+                      {schedule?.hasSchedule && (
+                        <WorkoutPlan events={schedule.events} lang={lang} title={t.hub.planTitle} minLabel={t.hub.min} exportLabel={t.chat.addToCalendar} />
+                      )}
+                      {afterText && (
+                        <div className="mt-3">
+                          <Md text={afterText} copyLabel={app.codeCopy} />
+                        </div>
+                      )}
+                    </div>
+                  </motion.div>
+                );
+              })}
+
+            <AnimatePresence>
+              {loading && (
+                <motion.div initial={reduce ? false : { opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="flex items-center gap-3">
+                  <AiOrb state="thinking" size={28} />
+                  <div className="np-ai-bubble flex items-center gap-1.5 rounded-2xl rounded-tl-md px-4 py-3" role="status" aria-label={t.common.loading}>
+                    {[0, 1, 2].map((i) => (
+                      <span key={i} className="np-typing-dot h-1.5 w-1.5 rounded-full bg-np-text" />
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+            <div ref={messagesEndRef} />
+          </div>
+        </div>
+
+        {/* command bar */}
+        <div className="border-t border-np-line bg-np-bg/40 p-3 md:p-4">
+          <div className="mx-auto max-w-2xl space-y-2.5">
+            {!showWelcome && (
+              <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-0.5 [scrollbar-width:none]" aria-label={t.chat.title}>
+                {chips.map((chip) => (
+                  <button
+                    key={chip}
+                    type="button"
+                    onClick={() => handleSend(chip)}
+                    disabled={loading}
+                    className="np-btn-glass shrink-0 whitespace-nowrap rounded-full px-3.5 py-1.5 text-xs font-medium disabled:opacity-50"
+                  >
+                    {chip}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            <div className="flex flex-wrap gap-1.5" role="radiogroup" aria-label={app.focusLabel}>
+              {modes.map((m) => {
+                const active = mode === m.key;
+                return (
+                  <button
+                    key={m.key}
+                    type="button"
+                    role="radio"
+                    aria-checked={active}
+                    onClick={() => setMode(active ? null : m.key)}
+                    className={`np-pill h-8 border px-3.5 text-xs transition-colors ${
+                      active ? 'np-pill-ai border-np-violet/60' : 'border-np-line text-np-text-2 hover:text-np-text'
+                    }`}
+                  >
+                    {m.label}
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="flex items-end gap-1 rounded-[26px] border border-np-line-strong bg-np-surface/80 p-1.5 backdrop-blur-md transition-colors focus-within:border-np-text-3">
+              <button
+                type="button"
+                onClick={insertMetrics}
+                disabled={!today}
+                title={t.hub.attach}
+                aria-label={t.hub.attach}
+                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-np-text-2 transition-colors hover:bg-white/5 hover:text-np-text disabled:opacity-30"
               >
-                <button
-                  type="button"
-                  onClick={insertMetrics}
-                  disabled={!today}
-                  title={t.hub.attach}
-                  aria-label={t.hub.attach}
-                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-white/70 transition-colors hover:bg-white/[0.08] hover:text-white disabled:opacity-30"
-                >
-                  <Paperclip size={18} />
-                </button>
+                <Paperclip size={18} aria-hidden />
+              </button>
+              <div className="relative min-w-0 flex-1">
+                {!input && (
+                  <span aria-hidden className="pointer-events-none absolute inset-x-1 top-[11px] truncate text-[15px] leading-[22px] text-np-text-3">
+                    {listening ? t.hub.listening : t.chat.placeholder}
+                  </span>
+                )}
                 <textarea
                   ref={inputRef}
                   rows={1}
@@ -493,40 +492,38 @@ export default function ChatPage() {
                       handleSend();
                     }
                   }}
-                  placeholder={listening ? t.hub.listening : t.chat.placeholder}
+                  aria-label={t.chat.placeholder}
                   disabled={loading}
-                  className="max-h-[200px] min-w-0 flex-1 resize-none overflow-y-auto bg-transparent px-1 py-[9px] text-[15px] leading-[22px] text-white placeholder-slate-400 focus:outline-none disabled:opacity-50"
+                  className="block max-h-[160px] w-full resize-none overflow-y-auto bg-transparent px-1 py-[11px] text-[15px] leading-[22px] text-np-text disabled:opacity-50"
                 />
-                {voiceSupported && (
-                  <button
-                    type="button"
-                    onClick={toggleVoice}
-                    title={t.hub.voice}
-                    aria-label={t.hub.voice}
-                    aria-pressed={listening}
-                    className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-colors ${
-                      listening ? 'bg-[#FB7185]/15 text-[#FB7185]' : 'text-white/70 hover:bg-white/[0.08] hover:text-white'
-                    }`}
-                  >
-                    <Microphone size={18} weight={listening ? 'fill' : 'regular'} />
-                  </button>
-                )}
-                <motion.button
-                  type="button"
-                  onClick={() => handleSend()}
-                  disabled={loading || !input.trim()}
-                  aria-label={t.chat.send}
-                  whileTap={reduce ? undefined : { scale: 0.9 }}
-                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-[#0C0D12] transition-opacity disabled:opacity-30"
-                  style={{ boxShadow: '0 6px 18px -6px rgba(255,255,255,0.6)' }}
-                >
-                  <ArrowUp size={18} weight="bold" />
-                </motion.button>
               </div>
+              {voiceSupported && (
+                <button
+                  type="button"
+                  onClick={toggleVoice}
+                  title={t.hub.voice}
+                  aria-label={t.hub.voice}
+                  aria-pressed={listening}
+                  className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full transition-colors ${
+                    listening ? 'bg-np-sleep/15 text-np-sleep' : 'text-np-text-2 hover:bg-white/5 hover:text-np-text'
+                  }`}
+                >
+                  <Microphone size={18} weight={listening ? 'fill' : 'regular'} aria-hidden />
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => handleSend()}
+                disabled={loading || !input.trim()}
+                aria-label={t.chat.send}
+                className="np-btn-primary flex h-11 w-11 shrink-0 items-center justify-center rounded-full disabled:opacity-40"
+              >
+                <ArrowUp size={18} weight="bold" aria-hidden />
+              </button>
             </div>
           </div>
-        </section>
-      </div>
+        </div>
+      </section>
     </div>
   );
 }

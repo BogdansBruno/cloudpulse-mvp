@@ -7,7 +7,7 @@
 // Keeping them apart means the engine can be reused (e.g. in a coach
 // dashboard aggregation job) without dragging HTTP-shape assumptions along.
 
-import type { ReadinessZone, Penalty, PenaltyCode, SafetyViolation, InconsistencyFlag } from '@/lib/readiness-engine';
+import type { ReadinessZone, Penalty, PenaltyCode, SafetyViolation, InconsistencyFlag, SessionEntry, DailyCheckin, UserContext } from '@/lib/readiness-engine';
 
 // ---- POST /api/checkin ----------------------------------------------------
 
@@ -77,6 +77,8 @@ export type ReadinessHistoryPoint = {
 
 export type ReadinessHistoryResponse = {
   history: ReadinessHistoryPoint[];
+  /** Only with `&raw=1`: the inputs of the engine, for the live preview on the check-in screen. */
+  raw?: { sessions: SessionEntry[]; checkins: DailyCheckin[]; context: UserContext };
 };
 
 // ---- POST /api/profile (onboarding) ---------------------------------------
