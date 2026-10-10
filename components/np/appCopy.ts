@@ -11,7 +11,7 @@ export type AppCopy = {
     language: string;
     workout: string;
     pro: string;
-    role: { athlete: string; coach: string; parent: string };
+    role: { athlete: string; coach: string; parent: string; school: string };
     online: string;
     offline: string;
     settings: string;
@@ -196,7 +196,7 @@ export type WorkoutCopy = {
 
 export const APP: Record<Lang, AppCopy> = {
   ru: {
-    shell: { main: 'Основное содержимое', mobileNav: 'Основная навигация', language: 'Язык', workout: 'Live', pro: 'Pro', role: { athlete: 'Атлет', coach: 'Тренер', parent: 'Родитель' }, online: 'Онлайн', offline: 'Офлайн — сохраним позже', settings: 'Настройки' },
+    shell: { main: 'Основное содержимое', mobileNav: 'Основная навигация', language: 'Язык', workout: 'Live', pro: 'Pro', role: { athlete: 'Атлет', coach: 'Тренер', parent: 'Родитель', school: 'Школа' }, online: 'Онлайн', offline: 'Офлайн — сохраним позже', settings: 'Настройки' },
     settings: { title: 'Настройки', account: 'Аккаунт', languageTitle: 'Язык', languageHint: 'Интерфейс и ответы тренера-ИИ на выбранном языке.', status: 'Статус', adminOpen: 'Панель администратора', signOutHint: 'Данные останутся в аккаунте. Войти можно в любой момент.', privacy: 'Мы показываем только первую букву почты — без имени и фото.' },
     checkin: {
       stepOf: (i, n) => `Шаг ${i} из ${n}`,
@@ -357,7 +357,7 @@ export const APP: Record<Lang, AppCopy> = {
     },
   },
   lv: {
-    shell: { main: 'Galvenais saturs', mobileNav: 'Galvenā navigācija', language: 'Valoda', workout: 'Live', pro: 'Pro', role: { athlete: 'Sportists', coach: 'Treneris', parent: 'Vecāks' }, online: 'Tiešsaistē', offline: 'Bezsaistē — saglabāsim vēlāk', settings: 'Iestatījumi' },
+    shell: { main: 'Galvenais saturs', mobileNav: 'Galvenā navigācija', language: 'Valoda', workout: 'Live', pro: 'Pro', role: { athlete: 'Sportists', coach: 'Treneris', parent: 'Vecāks', school: 'Skola' }, online: 'Tiešsaistē', offline: 'Bezsaistē — saglabāsim vēlāk', settings: 'Iestatījumi' },
     settings: { title: 'Iestatījumi', account: 'Konts', languageTitle: 'Valoda', languageHint: 'Saskarne un AI trenera atbildes izvēlētajā valodā.', status: 'Statuss', adminOpen: 'Administratora panelis', signOutHint: 'Dati paliks kontā. Pieteikties var jebkurā brīdī.', privacy: 'Mēs rādām tikai e-pasta pirmo burtu — bez vārda un foto.' },
     checkin: {
       stepOf: (i, n) => `${i}. solis no ${n}`,
@@ -517,7 +517,7 @@ export const APP: Record<Lang, AppCopy> = {
     },
   },
   en: {
-    shell: { main: 'Main content', mobileNav: 'Main navigation', language: 'Language', workout: 'Live', pro: 'Pro', role: { athlete: 'Athlete', coach: 'Coach', parent: 'Parent' }, online: 'Online', offline: 'Offline — saved for later', settings: 'Settings' },
+    shell: { main: 'Main content', mobileNav: 'Main navigation', language: 'Language', workout: 'Live', pro: 'Pro', role: { athlete: 'Athlete', coach: 'Coach', parent: 'Parent', school: 'School' }, online: 'Online', offline: 'Offline — saved for later', settings: 'Settings' },
     settings: { title: 'Settings', account: 'Account', languageTitle: 'Language', languageHint: 'The interface and the AI coach answer in the chosen language.', status: 'Status', adminOpen: 'Admin panel', signOutHint: 'Your data stays in your account. You can sign in again any time.', privacy: 'We only show the first letter of your e-mail — no name, no photo.' },
     checkin: {
       stepOf: (i, n) => `Step ${i} of ${n}`,

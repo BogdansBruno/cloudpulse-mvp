@@ -56,6 +56,7 @@ export default function LoginPage() {
       const { data: profile } = await supabase.from('profiles').select('role').eq('id', userId).maybeSingle();
       if (profile?.role === 'parent') return '/parent';
       if (profile?.role === 'coach') return '/coach';
+      if (profile?.role === 'school_admin') return '/school';
     } catch {
       // fall through to the athlete default
     }

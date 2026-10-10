@@ -46,6 +46,7 @@ export function useAccount(): { role: NavRole; isAdmin: boolean; initial: string
           if (cancelled) return;
           if (profile?.role === 'coach') setRole('coach');
           else if (profile?.role === 'parent') setRole('parent');
+          else if (profile?.role === 'school_admin') setRole('school');
         });
     });
     return () => {

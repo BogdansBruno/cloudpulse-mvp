@@ -803,3 +803,29 @@
     }
   }
 }
+
+/* ---------------------------------------------------------------------------
+   Tactile press + fluid scroll. Lives in the base layer, so any component or utility
+   (`active:scale-95`, `transition-colors` …) still wins over it.
+   --------------------------------------------------------------------------- */
+@layer base {
+  :where(.np-app) :where(button, a[href], [role='button'], [role='tab'], [role='radio'], [role='switch'], summary) {
+    transition: scale 180ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  :where(.np-app) :where(button, a[href], [role='button'], [role='tab'], [role='radio'], [role='switch'], summary):active:not(:disabled) {
+    scale: 0.98;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    html:has(.np-app) {
+      scroll-behavior: smooth;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    :where(.np-app) :where(button, a[href], [role='button'], [role='tab'], [role='radio'], [role='switch'], summary) {
+      transition: none;
+    }
+    :where(.np-app) :where(button, a[href], [role='button'], [role='tab'], [role='radio'], [role='switch'], summary):active:not(:disabled) {
+      scale: 1;
+    }
+  }
+}

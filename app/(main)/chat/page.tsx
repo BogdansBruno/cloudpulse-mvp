@@ -244,7 +244,7 @@ export default function ChatPage() {
   );
 
   return (
-    <div className="mx-auto grid h-[calc(100dvh-3.5rem-env(safe-area-inset-top)-96px-env(safe-area-inset-bottom))] max-w-7xl gap-4 p-3 md:h-dvh md:p-5 lg:grid-cols-[320px_minmax(0,1fr)]">
+    <div className="mx-auto grid h-[calc(100dvh-env(safe-area-inset-top)-188px-env(safe-area-inset-bottom))] min-h-[420px] max-w-7xl gap-4 p-3 md:h-dvh md:p-5 lg:grid-cols-[320px_minmax(0,1fr)]">
       {/* readiness sidebar (desktop) */}
       <aside className="hidden min-h-0 space-y-3 overflow-y-auto lg:block" style={{ scrollbarWidth: 'none' }}>
         <section className="lt-card-readiness p-5" aria-labelledby="chat-today">
@@ -293,7 +293,7 @@ export default function ChatPage() {
 
       {/* coach column */}
       <section className="np-card flex min-h-0 flex-col overflow-hidden" aria-label={t.chat.title}>
-        <header className="flex shrink-0 flex-wrap items-center gap-3 border-b border-np-line px-4 py-3 md:px-5">
+        <header className="flex shrink-0 items-center gap-3 border-b border-np-line px-4 py-3 md:px-5">
           <AiOrb state={orb} />
           <div className="min-w-0 leading-tight">
             <p className="truncate text-sm font-semibold text-np-text">{t.chat.title}</p>
@@ -308,12 +308,12 @@ export default function ChatPage() {
         </header>
 
         {/* messages */}
-        <div className="min-h-0 flex-1 overflow-y-auto px-3 py-5 [mask-image:linear-gradient(to_bottom,transparent,#000_16px,#000_calc(100%-16px),transparent)] md:px-6">
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 py-5 [mask-image:linear-gradient(to_bottom,transparent,#000_16px,#000_calc(100%-16px),transparent)] md:px-6">
           <div className="mx-auto max-w-2xl space-y-5">
             {showWelcome && (
               <motion.div initial={reduce ? false : { opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={SPRING} className="pt-2 md:pt-8">
                 <p className="np-overline">{t.chat.heroTag}</p>
-                <h1 className="mt-3 text-3xl np-editorial font-semibold leading-tight text-np-text md:text-4xl">
+                <h1 className="mt-3 text-2xl np-editorial font-semibold leading-tight text-np-text sm:text-3xl md:text-4xl">
                   {t.chat.subtitle}
                 </h1>
                 <div className="np-ai-bubble mt-5 max-w-[60ch] rounded-2xl rounded-tl-md px-4 py-3 text-sm leading-relaxed text-np-text-2">
@@ -323,7 +323,7 @@ export default function ChatPage() {
                     so it scrolls with it and can never sit on top of the heading */}
                 <div className="mt-5 space-y-2 lg:hidden">
                   {hasScore && today && (
-                    <div className="np-card flex flex-wrap items-center gap-3 px-3 py-2">
+                    <div className="np-card flex flex-nowrap items-center gap-2 overflow-x-auto px-3 py-2 [scrollbar-width:none] [&>*]:shrink-0 [&_.np-pill]:whitespace-nowrap">
                       {dial(40)}
                       <span className={`np-pill ${ZONE[today.zone].pill}`}>{np.zone[today.zone]}</span>
                       {today.acwr !== null && <span className={`np-pill ${acwrPill(today.acwr)}`}>ACWR {today.acwr.toFixed(2)}</span>}
@@ -439,24 +439,6 @@ export default function ChatPage() {
               </div>
             )}
 
-            <div className="flex flex-wrap gap-1.5" role="radiogroup" aria-label={app.focusLabel}>
-              {modes.map((m) => {
-                const active = mode === m.key;
-                return (
-                  <button
-                    key={m.key}
-                    type="button"
-                    role="radio"
-                    aria-checked={active}
-                    onClick={() => setMode(active ? null : m.key)}
-                    className={`np-chip h-8 px-3.5 text-xs font-semibold ${active ? '!border-np-violet/50 !bg-np-violet/12 !text-np-violet' : 'text-np-text-2'}`}
-                  >
-                    {m.label}
-                  </button>
-                );
-              })}
-            </div>
-
             {/* composer: one dark rounded shell — the message on top, the actions in a bar below */}
             <div className="np-scope-dark rounded-[24px] border border-white/[0.08] bg-[#151922]/90 p-3 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.1)] backdrop-blur-xl transition-colors focus-within:border-white/[0.15]">
               <div className="relative">
@@ -494,7 +476,26 @@ export default function ChatPage() {
                 >
                   <Icon name="clip" size={18} />
                 </button>
-                <div className="flex items-center gap-1">
+
+                    <div className="flex min-w-0 flex-1 items-center gap-1.5 overflow-x-auto px-1 [scrollbar-width:none] [&>*]:shrink-0 [&>*]:whitespace-nowrap" role="radiogroup" aria-label={app.focusLabel}>
+                      {modes.map((m) => {
+                        const active = mode === m.key;
+                        return (
+                          <button
+                            key={m.key}
+                            type="button"
+                            role="radio"
+                            aria-checked={active}
+                            onClick={() => setMode(active ? null : m.key)}
+                            className={`np-chip h-8 px-3 text-xs font-semibold ${active ? '!border-np-violet/50 !bg-np-violet/12 !text-np-violet' : 'text-np-text-2'}`}
+                          >
+                            {m.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                <div className="flex shrink-0 items-center gap-1">
                   {voiceSupported && (
                     <button
                       type="button"

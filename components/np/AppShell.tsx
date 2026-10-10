@@ -28,6 +28,7 @@ import { npFont, npSerif } from './font';
 import { useAccount, useOnline } from './useAccount';
 import { useMode } from './useMode';
 import { useNotices } from './notices';
+import { SCHOOL } from '@/lib/school-copy';
 import { NAV_HREF, activeNavId, isImmersiveRoute, isV3Route, menuIds, tabIds, type NavId } from './nav';
 
 /** App name shown in the shell. */
@@ -46,6 +47,7 @@ const ICON: Record<NavId, IconName> = {
   pro: 'gauge',
   coach: 'users',
   parent: 'users',
+  school: 'shield',
   admin: 'shield',
   settings: 'gear',
 };
@@ -191,6 +193,8 @@ export default function AppShell({ children }: { children: ReactNode }): ReactEl
         return t.parent.navLabel;
       case 'admin':
         return t.admin.navLabel;
+      case 'school':
+        return SCHOOL[lang].nav;
       case 'workout':
         return copy.workout;
       case 'pro':
@@ -207,7 +211,7 @@ export default function AppShell({ children }: { children: ReactNode }): ReactEl
     return <main id="main" className={`np-app ${fonts} min-h-dvh`}>{children}</main>;
   }
 
-  const home = role === 'parent' ? NAV_HREF.parent : NAV_HREF.today;
+  const home = role === 'parent' ? NAV_HREF.parent : role === 'school' ? NAV_HREF.school : NAV_HREF.today;
   const tabLabel = (id: NavId): string => (id === 'chat' ? hc.nav.tab.coach : id === 'calendar' ? hc.nav.tab.calendar : label(id));
   const tabs: TabItem[] = tabIds(role).map((id) => ({
     key: id,
@@ -216,7 +220,7 @@ export default function AppShell({ children }: { children: ReactNode }): ReactEl
     href: NAV_HREF[id],
     active: id === active,
   }));
-  const canCheckin = role !== 'parent';
+  const canCheckin = role !== 'parent' && role !== 'school';
   // Header title: "Lotus" on Today (and on pages outside the nav), otherwise the screen name.
   const title = active && active !== 'today' ? label(active) : null;
 

@@ -2,9 +2,9 @@
 // The sidebar (desktop) and the bottom tab bar (mobile) both read it, and the
 // active item is derived from the URL, so it can never disagree with the page.
 
-export type NavId = 'today' | 'vitals' | 'chat' | 'checkin' | 'training' | 'workout' | 'health' | 'progress' | 'calendar' | 'pro' | 'coach' | 'parent' | 'admin' | 'settings';
+export type NavId = 'today' | 'vitals' | 'chat' | 'checkin' | 'training' | 'workout' | 'health' | 'progress' | 'calendar' | 'pro' | 'coach' | 'parent' | 'school' | 'admin' | 'settings';
 
-export type NavRole = 'athlete' | 'coach' | 'parent';
+export type NavRole = 'athlete' | 'coach' | 'parent' | 'school';
 
 export const NAV_HREF: Record<NavId, string> = {
   today: '/today',
@@ -19,6 +19,7 @@ export const NAV_HREF: Record<NavId, string> = {
   pro: '/pro',
   coach: '/coach',
   parent: '/parent',
+  school: '/school',
   admin: '/admin',
   settings: '/settings',
 };
@@ -32,7 +33,9 @@ export function sidebarIds(role: NavRole, isAdmin: boolean): NavId[] {
   const base: NavId[] =
     role === 'parent'
       ? ['parent']
-      : ['today', 'vitals', 'health', 'chat', 'calendar', 'training', 'workout', 'progress', 'pro', ...(role === 'coach' ? (['coach'] as NavId[]) : [])];
+      : role === 'school'
+        ? ['school']
+        : ['today', 'vitals', 'health', 'chat', 'calendar', 'training', 'workout', 'progress', 'pro', ...(role === 'coach' ? (['coach'] as NavId[]) : [])];
   const shown = WORKOUT_READY ? base : base.filter((id) => id !== 'workout');
   return isAdmin ? [...shown, 'admin'] : shown;
 }
@@ -41,7 +44,7 @@ export function sidebarIds(role: NavRole, isAdmin: boolean): NavId[] {
  *  "+" (new check-in). Everything else — My Health, progress, training plan, live workout, Pro,
  *  settings — lives in the ☰ menu. A coach swaps Vitals for the team view. */
 export function tabIds(role: NavRole): NavId[] {
-  if (role === 'parent') return [];
+  if (role === 'parent' || role === 'school') return [];
   if (role === 'coach') return ['today', 'coach', 'chat', 'calendar'];
   return ['today', 'vitals', 'chat', 'calendar'];
 }
@@ -61,7 +64,7 @@ export function activeNavId(pathname: string | null): NavId | null {
 }
 
 /** Pages that are fully drawn in the v3 look. Other pages keep their content but sit inside the v3 shell. */
-export const V3_ROUTES: readonly string[] = ['/today', '/vitals', '/chat', '/checkin', '/my-health', '/progress', '/training', '/calendar', '/workout', '/pro', '/settings'];
+export const V3_ROUTES: readonly string[] = ['/today', '/vitals', '/chat', '/checkin', '/my-health', '/progress', '/training', '/calendar', '/workout', '/pro', '/settings', '/school'];
 
 export function isV3Route(pathname: string | null): boolean {
   return Boolean(pathname && V3_ROUTES.some((r) => pathname === r || pathname.startsWith(`${r}/`)));

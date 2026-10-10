@@ -1,10 +1,11 @@
 'use client';
 
 import { LotusMark } from '@/components/np/Lotus';
+import { SCHOOL } from '@/lib/school-copy';
 
 import { useEffect, useState } from 'react';
 import { motion, useReducedMotion } from 'motion/react';
-import { PersonSimpleRun, Users, House, ArrowRight, Flask, WarningOctagon, LockSimple } from '@phosphor-icons/react';
+import { GraduationCap, PersonSimpleRun, Users, House, ArrowRight, Flask, WarningOctagon, LockSimple } from '@phosphor-icons/react';
 import type { Icon } from '@phosphor-icons/react';
 import { supabase } from '@/lib/supabase';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
@@ -63,6 +64,7 @@ function DemoPicker() {
     { role: 'athlete', icon: PersonSimpleRun, title: d.athleteTitle, desc: d.athleteDesc, color: '#FF3B30' },
     { role: 'coach', icon: Users, title: d.coachTitle, desc: d.coachDesc, color: '#FF9500' },
     { role: 'parent', icon: House, title: d.parentTitle, desc: d.parentDesc, color: '#00F0FF' },
+    { role: 'school', icon: GraduationCap, title: SCHOOL[lang].demo.title, desc: SCHOOL[lang].demo.desc, color: '#B8F23C' },
   ];
 
   return (
@@ -117,7 +119,7 @@ function DemoPicker() {
             </p>
           )}
 
-          <div className="mt-6 grid gap-3 md:grid-cols-3">
+          <div className="mt-6 grid gap-3 sm:grid-cols-2">
             {roles.map(({ role, icon: IconCmp, title, desc, color }, i) => (
               <motion.button
                 key={role}

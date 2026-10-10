@@ -7,6 +7,7 @@
 // arrow keys / Home / End on a keyboard (radio-group semantics), the number is always printed — colour
 // is never the only carrier of meaning.
 
+import { selectionChanged } from '@/lib/haptics';
 import { type KeyboardEvent, type ReactElement } from 'react';
 import { useReducedMotion } from './ui';
 
@@ -42,7 +43,7 @@ export function SegmentedScale({
     const next = Math.min(max, Math.max(1, v));
     if (next === value) return;
     try {
-      navigator.vibrate?.(6);
+      selectionChanged();
     } catch {
       // vibration blocked: fine
     }

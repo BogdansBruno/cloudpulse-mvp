@@ -11,6 +11,7 @@
 // Unchanged on purpose: the payload, POST /api/checkin, the offline queue (lib/offline-queue.ts),
 // the pain rule, the result checks (safety violations, penalties, inconsistency flags).
 
+import { selectionChanged } from '@/lib/haptics';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
@@ -133,7 +134,7 @@ function GlowScale({
     const next = Math.min(max, Math.max(1, v));
     if (next === value) return;
     try {
-      navigator.vibrate?.(6);
+      selectionChanged();
     } catch {
       // vibration blocked: fine
     }
@@ -304,6 +305,9 @@ export default function CheckinForm({ onSubmitted }: { onSubmitted?: () => void 
 
   const [step, setStep] = useState(0);
   const [reached, setReached] = useState(0);
+  // direction of the last step change (1 = forward) and whether the current pan began on a control
+  const dirRef = useRef<1 | -1>(1);
+  const panOnControl = useRef(false);
   const [values, setValues] = useState<Record<ScaleField, number>>({
     sleepQuality: 4,
     stress: 4,
@@ -372,6 +376,7 @@ export default function CheckinForm({ onSubmitted }: { onSubmitted?: () => void 
 
   function goTo(n: number) {
     const next = Math.max(0, Math.min(LAST, n));
+    if (next !== step) dirRef.current = next > step ? 1 : -1;
     setStep(next);
     setReached((r) => Math.max(r, next));
   }
@@ -695,13 +700,14 @@ export default function CheckinForm({ onSubmitted }: { onSubmitted?: () => void 
         else void submit();
       }}
     >
-      {/* progress: five segments, completed ones can be tapped to go back */}
-      <div>
-        <div className="flex items-center justify-between">
-          <p className="np-overline">{app.stepOf(step + 1, STEPS.length)}</p>
-          <p className="text-xs text-np-text-3">{app.steps[stepKey]}</p>
-        </div>
-        <div className="mt-2 flex gap-1.5" role="group" aria-label={app.stepOf(step + 1, STEPS.length)}>
+      {/* progress: centred "1 / 5 · Sleep" over five segments; completed ones can be tapped to go back */}
+      <div className="shrink-0">
+        <p className="text-center text-xs font-semibold tracking-wide text-np-text-2">
+          <span className="np-num text-np-text">{step + 1}</span> / {STEPS.length}
+          <span className="mx-1.5 text-np-text-3" aria-hidden>·</span>
+          <span className="text-np-text-3">{app.steps[stepKey]}</span>
+        </p>
+        <div className="mt-2.5 flex gap-1.5" role="group" aria-label={app.stepOf(step + 1, STEPS.length)}>
           {STEPS.map((s, i) => (
             <button
               key={s}
@@ -710,8 +716,12 @@ export default function CheckinForm({ onSubmitted }: { onSubmitted?: () => void 
               disabled={i > reached}
               aria-label={app.steps[s]}
               aria-current={i === step ? 'step' : undefined}
-              className={`h-2 flex-1 rounded-full transition-colors ${i === step ? 'bg-np-text' : i < step || i <= reached ? 'bg-[#B8F23C]/70' : 'bg-[#9AA7B8]/10'}`}
-            />
+              className="relative h-6 flex-1 disabled:cursor-default"
+            >
+              <span
+                className={`absolute inset-x-0 top-1/2 h-2 -translate-y-1/2 rounded-full transition-colors duration-300 ${i === step ? 'bg-np-text' : i < step || i <= reached ? 'bg-[#B8F23C]/70' : 'bg-[#9AA7B8]/10'}`}
+              />
+            </button>
           ))}
         </div>
       </div>
@@ -719,7 +729,7 @@ export default function CheckinForm({ onSubmitted }: { onSubmitted?: () => void 
       {/* live preview of the readiness score */}
       <section
         aria-live="polite"
-        className="lt-card-readiness [background-image:linear-gradient(135deg,#0D1B2A_0%,#0A0D14_100%)] backdrop-blur-xl sticky top-[calc(env(safe-area-inset-top)+3.75rem)] z-20 flex min-h-[82px] items-center gap-3 p-3 md:top-3"
+        className="lt-card-readiness [background-image:linear-gradient(135deg,#0D1B2A_0%,#0A0D14_100%)] backdrop-blur-xl sticky top-[calc(env(safe-area-inset-top)+0.5rem)] z-20 flex min-h-[82px] shrink-0 items-center gap-3 p-3 md:top-3"
       >
         <ScoreDial score={preview ? preview.score : null} zone={preview ? preview.zone : null} size={56} label={previewLabel} />
         <div className="min-w-0 flex-1">
@@ -741,14 +751,31 @@ export default function CheckinForm({ onSubmitted }: { onSubmitted?: () => void 
         </div>
       </section>
 
-      <AnimatePresence mode="wait" initial={false}>
+      <AnimatePresence mode="wait" initial={false} custom={dirRef.current}>
         <motion.section
           key={stepKey}
-          initial={reduce ? { opacity: 0 } : { opacity: 0, x: 16 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={reduce ? { opacity: 0 } : { opacity: 0, x: -16 }}
-          transition={reduce ? { duration: 0.1 } : { duration: 0.2 }}
-          className={`p-5 ${STEP_SKIN[stepKey]}`}
+          custom={dirRef.current}
+          variants={{
+            enter: (d: number) => (reduce ? { opacity: 0 } : { opacity: 0, x: 28 * d }),
+            center: { opacity: 1, x: 0, transition: reduce ? { duration: 0.1 } : { type: 'spring', stiffness: 300, damping: 30 } },
+            exit: (d: number) => (reduce ? { opacity: 0 } : { opacity: 0, x: -28 * d, transition: { duration: 0.12, ease: 'easeIn' } }),
+          }}
+          initial="enter"
+          animate="center"
+          exit="exit"
+          // horizontal swipe = next / previous step; vertical scroll stays native; sliders, buttons and the body map keep their own gestures
+          style={{ touchAction: 'pan-y' }}
+          onPointerDownCapture={(e) => {
+            panOnControl.current = Boolean((e.target as HTMLElement).closest('input,textarea,button,label,svg,[role="radio"],[role="slider"],[data-no-swipe]'));
+          }}
+          onPanEnd={(_, info) => {
+            if (panOnControl.current || reduce) return;
+            const { x, y } = info.offset;
+            if (Math.abs(x) < 56 || Math.abs(x) < Math.abs(y) * 1.5) return;
+            if (x < 0 && step < LAST) goTo(step + 1);
+            else if (x > 0 && step > 0) goTo(step - 1);
+          }}
+          className={`shrink-0 p-5 ${STEP_SKIN[stepKey]}`}
         >
           <h1 className="text-2xl np-editorial font-semibold leading-tight text-np-text">
             {stepTitles[stepKey]}
@@ -877,8 +904,9 @@ export default function CheckinForm({ onSubmitted }: { onSubmitted?: () => void 
         </Notice>
       )}
 
-      {/* sticky: Back / Next always stay above the floating dock, even on a short or half-scrolled card */}
-      <div className="sticky bottom-[calc(max(1rem,env(safe-area-inset-bottom))+5.5rem)] z-30 flex gap-3 pt-1">
+      <Disclaimer lang={lang} className="!mt-8" />
+      {/* Back / Next live in their own sticky bar: solid glass behind them (and behind the floating dock), so they never float raw over the card text */}
+      <div className="sticky bottom-[calc(max(1rem,env(safe-area-inset-bottom))+5rem)] z-30 -mx-3 flex shrink-0 gap-3 border-t border-white/[0.06] bg-[#0B0D11]/90 px-3 pb-3 pt-3 backdrop-blur-md after:pointer-events-none after:absolute after:inset-x-0 after:top-full after:h-[calc(max(1rem,env(safe-area-inset-bottom))+5rem)] after:bg-[#0B0D11]/90 after:backdrop-blur-md">
         {step > 0 && (
           <button
             type="button"
@@ -896,7 +924,6 @@ export default function CheckinForm({ onSubmitted }: { onSubmitted?: () => void 
           {step === LAST ? (submitting ? t.common.loading : t.checkin.submit) : app.next}
         </button>
       </div>
-      <Disclaimer lang={lang} className="!mt-8" />
       <AnimatePresence>{calculating && <CalcOverlay key="calc" title={pk.calc.title} sub={pk.calc.sub} />}</AnimatePresence>
     </form>
   );

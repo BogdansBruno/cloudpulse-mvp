@@ -21,6 +21,7 @@ import { generateInsight, insightMessage } from '@/lib/generate-insight';
 import type { ReadinessHistoryPoint } from '@/lib/types/readiness';
 import { loadIndex, usualDailyLoad } from '@/lib/load-index';
 import ParentAccessCard from '@/components/ParentAccessCard';
+import SchoolAccessCard from '@/components/SchoolAccessCard';
 import TeamMembershipCard from '@/components/TeamMembershipCard';
 import CheckinStreakCard from '@/components/CheckinStreakCard';
 import CoachReplyCard from '@/components/CoachReplyCard';
@@ -413,6 +414,7 @@ export default function ProgressPage() {
           <InstallAppCard />
           <TeamMembershipCard />
           <ParentAccessCard />
+          <SchoolAccessCard />
           <ScoutShareCard />
         </div>
       </section>

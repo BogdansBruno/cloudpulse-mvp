@@ -9,6 +9,7 @@ import { supabase, signOut } from '@/lib/supabase';
 import { isAdminEmail } from '@/lib/access-control';
 import { Lightning, ShieldCheck, Users } from '@phosphor-icons/react';
 import ThemeSwitcher from '@/components/ThemeSwitcher';
+import { SCHOOL } from '@/lib/school-copy';
 
 export default function Nav() {
   const pathname = usePathname();
@@ -32,12 +33,15 @@ export default function Nav() {
 
   const isCoach = role === 'coach';
   const isParent = role === 'parent';
+  const isSchool = role === 'school_admin';
 
   // A parent only has the parent view: the athlete pages would show them
   // an empty profile of their own, not their child's data.
   const links = [
     ...(isParent
       ? [{ href: '/parent', label: t.parent.navLabel }]
+      : isSchool
+      ? [{ href: '/school', label: SCHOOL[lang].nav }]
       : [
           { href: '/chat', label: t.nav.chat },
           { href: '/checkin', label: t.nav.checkin },

@@ -5,15 +5,16 @@
 // Their data is re-created every day and on "Reset demo"; real testers never
 // see them and can't be reached from them.
 
-export type DemoRole = 'athlete' | 'coach' | 'parent';
+export type DemoRole = 'athlete' | 'coach' | 'parent' | 'school';
 
-export const DEMO_ROLES: DemoRole[] = ['athlete', 'coach', 'parent'];
+export const DEMO_ROLES: DemoRole[] = ['athlete', 'coach', 'parent', 'school'];
 
 export const DEMO_ACCOUNTS: Record<DemoRole, { email: string; home: string }> = {
   // "Hidden injury": knee pain + match tomorrow — the Safety Guard story.
   athlete: { email: 'demo.injury@cloudpulse.test', home: '/checkin' },
   coach: { email: 'demo.coach@cloudpulse.test', home: '/coach' },
   parent: { email: 'demo.parent@cloudpulse.test', home: '/parent' },
+  school: { email: 'demo.school@cloudpulse.test', home: '/school' },
 };
 
 export function isDemoRole(value: unknown): value is DemoRole {
