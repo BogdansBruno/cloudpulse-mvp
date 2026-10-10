@@ -117,7 +117,7 @@ export default function AdminPage() {
             <div className="flex items-center gap-3">
               <div
                 className="h-10 w-10 rounded-xl flex items-center justify-center shrink-0"
-                style={{ backgroundColor: lockdown ? `${HUB.red}1F` : 'rgba(255,255,255,0.06)', color: lockdown ? HUB.red : '#a1a1aa' }}
+                style={{ backgroundColor: lockdown ? `${HUB.red}1F` : 'rgba(255,255,255,0.06)', color: lockdown ? HUB.red : '#C3C5C7' }}
               >
                 <Power size={18} weight="bold" />
               </div>
@@ -152,7 +152,7 @@ export default function AdminPage() {
               value={newEmail}
               onChange={(e) => setNewEmail(e.target.value)}
               placeholder={t.admin.banPlaceholderEmail}
-              className="flex-1 rounded-xl bg-zinc-950/60 border border-white/10 px-3 py-2 text-sm text-white placeholder-zinc-600 focus:outline-none focus:ring-2 focus:ring-[#CCFF00]/40"
+              className="flex-1 rounded-xl bg-zinc-950/60 border border-white/10 px-3 py-2 text-sm text-white placeholder-zinc-600 focus:outline-none focus:ring-2 focus:ring-[#D9A400]/40"
               required
             />
             <input
@@ -160,7 +160,7 @@ export default function AdminPage() {
               value={newReason}
               onChange={(e) => setNewReason(e.target.value)}
               placeholder={t.admin.banPlaceholderReason}
-              className="sm:w-48 rounded-xl bg-zinc-950/60 border border-white/10 px-3 py-2 text-sm text-white placeholder-zinc-600 focus:outline-none focus:ring-2 focus:ring-[#CCFF00]/40"
+              className="sm:w-48 rounded-xl bg-zinc-950/60 border border-white/10 px-3 py-2 text-sm text-white placeholder-zinc-600 focus:outline-none focus:ring-2 focus:ring-[#D9A400]/40"
             />
             <button
               type="submit"
@@ -173,7 +173,7 @@ export default function AdminPage() {
             </button>
           </form>
 
-          {error && <p className="text-xs text-[#FF4D5E] mb-3">{error}</p>}
+          {error && <p className="text-xs text-[#FF3B30] mb-3">{error}</p>}
 
           <AnimatePresence initial={false}>
             {banned.length === 0 ? (
@@ -195,7 +195,7 @@ export default function AdminPage() {
                     <button
                       onClick={() => handleUnban(row.email)}
                       disabled={busy}
-                      className="shrink-0 h-8 w-8 rounded-lg flex items-center justify-center text-zinc-500 hover:text-[#FF4D5E] hover:bg-[#FF4D5E]/10 transition-colors disabled:opacity-50"
+                      className="shrink-0 h-8 w-8 rounded-lg flex items-center justify-center text-zinc-500 hover:text-[#FF3B30] hover:bg-[#FF3B30]/10 transition-colors disabled:opacity-50"
                       aria-label={t.admin.unbanButton}
                     >
                       <Trash size={15} />

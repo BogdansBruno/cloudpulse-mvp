@@ -169,4 +169,4 @@ export const LOCALE: Record<Lang, string> = { ru: 'ru-RU', lv: 'lv-LV', en: 'en-
 
 /** Zone → text colour class. Green uses the accent (the score is the accent's one job). */
 export const ZONE_TEXT: Record<Zone, string> = { green: 'text-ds-accent', yellow: 'text-ds-warn', red: 'text-ds-danger' };
-export const ZONE_STROKE: Record<Zone, string> = { green: '#CCFF00', yellow: '#D9A441', red: '#E5636F' };
+export const ZONE_STROKE: Record<Zone, string> = { green: '#30D158', yellow: '#FFCC00', red: '#FF9500' };

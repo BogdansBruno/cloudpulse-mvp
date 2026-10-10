@@ -13,7 +13,7 @@ import { createHmac, timingSafeEqual } from 'node:crypto';
 // body zone, no wellness answers. `id` is a one-way hash so the same pass can
 // be referenced ("pass 4F2A-91C0") without revealing who it belongs to.
 //
-// Known limit: the pass proves "CloudPulse issued this restriction today",
+// Known limit: the pass proves "Lotus issued this restriction today",
 // not "this person is the athlete". Identity is checked the usual way — it is
 // the athlete's own logged-in phone.
 // ---------------------------------------------------------------------------

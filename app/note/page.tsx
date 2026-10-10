@@ -7,7 +7,7 @@
 import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Lightning, SealCheck, SealWarning, Bus } from '@phosphor-icons/react';
-import { useLanguage } from '@/lib/i18n/LanguageContext';
+import { LANG_SWITCH, useLanguage } from '@/lib/i18n/LanguageContext';
 import { LANGS, type Lang } from '@/lib/i18n/translations';
 import { EXTRA } from '@/lib/i18n/extra';
 import { HUB } from '@/components/PerformancePanel';
@@ -43,22 +43,24 @@ function NoteCheck() {
       <div className="w-full max-w-md">
         <header className="mb-6 flex items-center justify-between">
           <span className="inline-flex items-center gap-2 text-[15px] font-semibold text-white">
-            <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#CCFF00] text-zinc-950">
+            <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-white text-zinc-950">
               <Lightning size={15} weight="fill" />
             </span>
-            CloudPulse
+            Lotus
           </span>
-          <div className="flex gap-0.5 rounded-full border border-white/5 bg-black/20 p-1 text-xs">
-            {LANGS.map((l) => (
-              <button
-                key={l.code}
-                onClick={() => setLang(l.code)}
-                className={`rounded-full px-2.5 py-1 font-semibold ${lang === l.code ? 'bg-[#CCFF00] text-zinc-950' : 'text-zinc-400'}`}
-              >
-                {l.label}
-              </button>
-            ))}
-          </div>
+          {LANG_SWITCH && (
+            <div className="flex gap-0.5 rounded-full border border-white/5 bg-black/20 p-1 text-xs">
+              {LANGS.map((l) => (
+                <button
+                  key={l.code}
+                  onClick={() => setLang(l.code)}
+                  className={`rounded-full px-2.5 py-1 font-semibold ${lang === l.code ? 'bg-white text-zinc-950' : 'text-zinc-400'}`}
+                >
+                  {l.label}
+                </button>
+              ))}
+            </div>
+          )}
         </header>
 
         <h1 className="mb-4 text-2xl font-semibold tracking-[-0.02em] text-zinc-50">{t.title}</h1>

@@ -36,6 +36,31 @@ import {
 import { SORENESS_LABELS, type AdpLang } from './labels';
 import { SEVERITY_COLOR, athleteHalf, halvesOf, isReferred, setSeverity, severityAt, type Half, type SorenessMap } from './sorenessMap';
 
+/** Front | Back switch shared by the soreness map and the pain map (Lotus segmented pill). */
+export function ViewTabs({ view, onChange, front, back }: { view: SilhouetteView; onChange: (v: SilhouetteView) => void; front: string; back: string }): ReactElement {
+  return (
+    <div role="tablist" className="mx-auto grid w-full max-w-[260px] grid-cols-2 rounded-full border border-white/10 bg-white/[0.05] p-1">
+      {(['front', 'back'] as const).map((v) => {
+        const on = view === v;
+        return (
+          <button
+            key={v}
+            type="button"
+            role="tab"
+            aria-selected={on}
+            onClick={() => onChange(v)}
+            className={`h-10 rounded-full text-sm font-medium transition-[background-color,color,box-shadow] duration-200 ${
+              on ? 'bg-[#32ADE6] text-[#0E1117] shadow-[0_0_24px_rgba(50,173,230,0.3)]' : 'text-white/75 hover:text-white'
+            }`}
+          >
+            {v === 'front' ? front : back}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 export type SorenessSilhouetteProps = {
   value: SorenessMap;
   onChange: (next: SorenessMap) => void;
@@ -43,6 +68,8 @@ export type SorenessSilhouetteProps = {
   className?: string;
   /** false = no card background/padding, for use inside another card (the check-in). */
   framed?: boolean;
+  /** true = one big figure with a Front | Back switch (phones); false = both figures side by side. */
+  tabs?: boolean;
 };
 
 // ---------------------------------------------------------------------------
@@ -151,12 +178,14 @@ export default function SorenessSilhouette({
   lang = 'ru',
   className = '',
   framed = true,
+  tabs = false,
 }: SorenessSilhouetteProps): ReactElement {
   const t = SORENESS_LABELS[lang];
   const titleId = useId();
   const [active, setActive] = useState<Active | null>(null);
   const [bothSides, setBothSides] = useState(false);
   const [tooMany, setTooMany] = useState(false);
+  const [shown, setShown] = useState<SilhouetteView>('front');
 
   const levelWord = (s: SorenessSeverity | null) => (s === null ? null : `${s}/5 · ${t.severity[s]}`);
   const sideWord = (h: Half | 'both') => (h === 'center' ? '' : t.sides[h]);
@@ -211,8 +240,8 @@ export default function SorenessSilhouette({
         onKeyDown={(e: KeyboardEvent) => onKey(e, z.zone, half)}
         className="cursor-pointer outline-none transition-[fill,stroke,opacity] duration-150 hover:opacity-90 focus-visible:[stroke:#FFFFFF] focus-visible:[stroke-width:2]"
         style={{
-          fill: color ? `${color}8C` : 'rgba(255,255,255,0.07)',
-          stroke: isActive ? '#FFFFFF' : color ?? 'rgba(255,255,255,0.22)',
+          fill: color ? `${color}8C` : 'rgba(50,173,230,0.09)',
+          stroke: isActive ? '#FFFFFF' : color ?? 'rgba(50,173,230,0.45)',
           strokeWidth: isActive ? 2 : 1,
         }}
       >
@@ -228,27 +257,29 @@ export default function SorenessSilhouette({
     );
   };
 
-  const figure = (view: SilhouetteView, zones: readonly ZoneShape[]) => {
+  const figure = (view: SilhouetteView, zones: readonly ZoneShape[], big = false) => {
     // Athlete's left/right marks at the viewer's edges.
     const leftEdge = view === 'front' ? t.rightMark : t.leftMark;
     const rightEdge = view === 'front' ? t.leftMark : t.rightMark;
     return (
       <figure className="flex flex-col items-center">
-        <svg viewBox={`0 0 ${W} ${H}`} className="h-auto w-full max-w-[190px]" aria-label={view === 'front' ? t.front : t.back}>
+        <svg viewBox={`0 0 ${W} ${H}`} className={`h-auto w-full ${big ? 'max-w-[250px]' : 'max-w-[190px]'}`} aria-label={view === 'front' ? t.front : t.back}>
           <BodyOutline />
           {zones.map((z) =>
             halvesOf(z.zone)[0] === 'center' ? renderHalf(view, z, false) : [renderHalf(view, z, false), renderHalf(view, z, true)]
           )}
-          <text x={10} y={392} className="fill-zinc-500 text-[13px] font-semibold">
+          <text x={10} y={392} className="fill-white/75 text-[13px] font-semibold">
             {leftEdge}
           </text>
-          <text x={W - 10} y={392} textAnchor="end" className="fill-zinc-500 text-[13px] font-semibold">
+          <text x={W - 10} y={392} textAnchor="end" className="fill-white/75 text-[13px] font-semibold">
             {rightEdge}
           </text>
         </svg>
-        <figcaption className="mt-1 text-xs font-medium uppercase tracking-[0.08em] text-zinc-500">
-          {view === 'front' ? t.front : t.back}
-        </figcaption>
+        {!big && (
+          <figcaption className="mt-1 text-xs font-medium uppercase tracking-[0.08em] text-white/75">
+            {view === 'front' ? t.front : t.back}
+          </figcaption>
+        )}
       </figure>
     );
   };
@@ -262,25 +293,32 @@ export default function SorenessSilhouette({
       aria-labelledby={titleId}
     >
       <header className="flex flex-wrap items-baseline justify-between gap-2">
-        <h2 id={titleId} className="text-base font-semibold tracking-[-0.01em] text-zinc-50">
+        <h2 id={titleId} className="text-base font-semibold tracking-[-0.01em] text-white">
           {t.title}
         </h2>
-        <p className="text-xs tabular-nums text-zinc-400">{t.selected(value.length, SORENESS_RULES.maxZones)}</p>
+        <p className="text-xs tabular-nums text-white/75">{t.selected(value.length, SORENESS_RULES.maxZones)}</p>
       </header>
-      <p className="mt-1 text-sm text-zinc-400">{t.subtitle}</p>
+      <p className="mt-1 text-sm text-white/75">{t.subtitle}</p>
 
-      <div className="mt-4 grid grid-cols-2 gap-2 sm:gap-6">
-        {figure('front', FRONT)}
-        {figure('back', BACK)}
-      </div>
+      {tabs ? (
+        <div className="mt-4 space-y-3">
+          <ViewTabs view={shown} onChange={setShown} front={t.front} back={t.back} />
+          {figure(shown, shown === 'front' ? FRONT : BACK, true)}
+        </div>
+      ) : (
+        <div className="mt-4 grid grid-cols-2 gap-2 sm:gap-6">
+          {figure('front', FRONT)}
+          {figure('back', BACK)}
+        </div>
+      )}
 
       {active && (
         <div className="mt-4 rounded-2xl bg-black/30 p-4 ring-1 ring-inset ring-white/[0.08]" role="group" aria-label={t.pickLevel}>
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <p className="text-sm font-semibold text-zinc-50">
+            <p className="text-sm font-semibold text-white">
               {t.zones[active.zone]}
               {active.half !== 'center' && (
-                <span className="font-normal text-zinc-400"> · {bothSides ? t.sides.both : t.sides[active.half]}</span>
+                <span className="font-normal text-white/75"> · {bothSides ? t.sides.both : t.sides[active.half]}</span>
               )}
             </p>
             {active.half !== 'center' && (
@@ -289,7 +327,7 @@ export default function SorenessSilhouette({
                 onClick={() => setBothSides((b) => !b)}
                 aria-pressed={bothSides}
                 className={`rounded-full px-3 py-1 text-xs font-semibold ring-1 ring-inset transition-colors ${
-                  bothSides ? 'bg-[#CCFF00] text-zinc-950 ring-[#CCFF00]' : 'text-zinc-300 ring-white/15 hover:bg-white/5'
+                  bothSides ? 'bg-white text-zinc-950 ring-[#FF9500]' : 'text-white/80 ring-white/15 hover:bg-white/5'
                 }`}
               >
                 {t.bothSides}
@@ -297,7 +335,7 @@ export default function SorenessSilhouette({
             )}
           </div>
 
-          <p className="mt-3 text-xs text-zinc-400">{t.pickLevel}</p>
+          <p className="mt-3 text-xs text-white/75">{t.pickLevel}</p>
           <div className="mt-2 grid grid-cols-5 gap-1.5">
             {SORENESS_SEVERITIES.map((s) => {
               const on = activeSeverity === s;
@@ -315,33 +353,33 @@ export default function SorenessSilhouette({
                   <span className="flex h-7 w-7 items-center justify-center rounded-full text-sm font-bold text-zinc-950" style={{ backgroundColor: SEVERITY_COLOR[s] }}>
                     {s}
                   </span>
-                  <span className="text-[10.5px] leading-tight text-zinc-300 [hyphens:auto]">{t.severity[s]}</span>
+                  <span className="text-[10.5px] leading-tight text-white/80 [hyphens:auto]">{t.severity[s]}</span>
                 </button>
               );
             })}
           </div>
 
           {showRefer && (
-            <p className="mt-3 rounded-xl bg-[#FFB020]/[0.08] p-3 text-xs leading-relaxed text-zinc-200 ring-1 ring-inset ring-[#FFB020]/30">
+            <p className="mt-3 rounded-xl bg-[#FFCC00]/[0.08] p-3 text-xs leading-relaxed text-white/90 ring-1 ring-inset ring-[#FFCC00]/30">
               {t.referHint}
             </p>
           )}
           {tooMany && (
-            <p className="mt-3 rounded-xl bg-[#FF4D5E]/[0.08] p-3 text-xs leading-relaxed text-zinc-200 ring-1 ring-inset ring-[#FF4D5E]/30" role="alert">
+            <p className="mt-3 rounded-xl bg-[#FF3B30]/[0.08] p-3 text-xs leading-relaxed text-white/90 ring-1 ring-inset ring-[#FF3B30]/30" role="alert">
               {t.tooMany(SORENESS_RULES.maxZones)}
             </p>
           )}
 
           <div className="mt-3 flex justify-end gap-2">
             {activeSeverity !== null && (
-              <button type="button" onClick={() => choose(null)} className="rounded-xl px-3 py-2 text-sm text-zinc-300 hover:bg-white/5">
+              <button type="button" onClick={() => choose(null)} className="rounded-xl px-3 py-2 text-sm text-white/80 hover:bg-white/5">
                 {t.remove}
               </button>
             )}
             <button
               type="button"
               onClick={() => setActive(null)}
-              className="rounded-xl bg-white/10 px-3 py-2 text-sm font-semibold text-zinc-50 hover:bg-white/15"
+              className="rounded-xl bg-white/10 px-3 py-2 text-sm font-semibold text-white hover:bg-white/15"
             >
               {t.done}
             </button>
@@ -350,13 +388,13 @@ export default function SorenessSilhouette({
       )}
 
       <ul className="mt-4 flex flex-wrap gap-2" aria-live="polite">
-        {value.length === 0 && <li className="text-sm text-zinc-500">{t.empty}</li>}
+        {value.length === 0 && <li className="text-sm text-white/75">{t.empty}</li>}
         {value.map((z) => {
           const half: Half = z.side === 'both' ? 'left' : z.side;
           const referred = isReferred(z.zoneId, z.severity);
           return (
             <li key={`${z.zoneId}:${z.side}`}>
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-white/[0.05] py-1 pl-2 pr-1 text-xs text-zinc-200 ring-1 ring-inset ring-white/10">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-white/[0.05] py-1 pl-2 pr-1 text-xs text-white/90 ring-1 ring-inset ring-white/10">
                 <button
                   type="button"
                   onClick={() => {
@@ -380,7 +418,7 @@ export default function SorenessSilhouette({
                     if (r.ok) onChange(r.map);
                     setActive(null);
                   }}
-                  className="flex h-5 w-5 items-center justify-center rounded-full text-zinc-400 hover:bg-white/10 hover:text-zinc-100"
+                  className="flex h-5 w-5 items-center justify-center rounded-full text-white/75 hover:bg-white/10 hover:text-white"
                 >
                   ×
                 </button>
@@ -390,7 +428,7 @@ export default function SorenessSilhouette({
         })}
       </ul>
 
-      <p className="mt-4 text-xs leading-relaxed text-zinc-500">{t.notPain}</p>
+      <p className="mt-4 text-xs leading-relaxed text-white/75">{t.notPain}</p>
     </section>
   );
 }

@@ -79,7 +79,7 @@ export default function CalendarExportModal({
   }, [open]);
 
   function downloadAll() {
-    downloadICS(generateICS(events, lang), `cloudpulse-plan-${new Date().toISOString().split('T')[0]}.ics`);
+    downloadICS(generateICS(events, lang), `lotus-plan-${new Date().toISOString().split('T')[0]}.ics`);
     setStep('done');
   }
 
@@ -208,7 +208,7 @@ export default function CalendarExportModal({
                                   {when} · {ev.duration} {t.hub.min}
                                 </span>
                               </span>
-                              <span className="inline-flex shrink-0 items-center gap-1 text-xs font-medium text-[#CCFF00]">
+                              <span className="inline-flex shrink-0 items-center gap-1 text-xs font-medium text-[#32ADE6]">
                                 {x.open}
                                 <ArrowSquareOut size={13} />
                               </span>
@@ -238,7 +238,7 @@ export default function CalendarExportModal({
                       initial={reduce ? false : { scale: 0.6, opacity: 0 }}
                       animate={{ scale: 1, opacity: 1 }}
                       transition={{ type: 'spring', bounce: 0.35, duration: 0.5 }}
-                      className="mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#CCFF00]/[0.12] text-[#CCFF00]"
+                      className="mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#32ADE6]/[0.12] text-[#32ADE6]"
                     >
                       <CheckCircle size={28} weight="fill" />
                     </motion.span>
@@ -250,7 +250,7 @@ export default function CalendarExportModal({
                     <button
                       type="button"
                       onClick={onClose}
-                      className="mt-5 w-full rounded-xl bg-[#CCFF00] py-2.5 text-sm font-semibold text-zinc-950"
+                      className="mt-5 w-full rounded-xl bg-white py-2.5 text-sm font-semibold text-zinc-950"
                     >
                       {x.close}
                     </button>

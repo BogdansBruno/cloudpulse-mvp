@@ -14,9 +14,9 @@ import { useLanguage } from '@/lib/i18n/LanguageContext';
 // Status colours always ship with an icon + text label, never colour alone.
 // ---------------------------------------------------------------------------
 export const HUB = {
-  lime: '#CCFF00', // brand accent + "good"
-  amber: '#FFB020', // "watch"
-  red: '#FF4D5E', // "stop"
+  lime: '#30D158', // "good" (Lotus mint)
+  amber: '#FFCC00', // "watch"
+  red: '#FF3B30', // "stop"
   track: 'rgba(255,255,255,0.07)',
 } as const;
 
@@ -43,7 +43,7 @@ export function loadStatus(acwr: number): LoadStatus {
 // flame, which belongs to the check-in streak (lib/checkin-streak.ts).
 export const NO_REST_LIMIT = 6;
 export function noRestColor(days: number): string {
-  return days > NO_REST_LIMIT ? HUB.amber : '#A1A1AA';
+  return days > NO_REST_LIMIT ? HUB.amber : '#C3C5C7';
 }
 
 function loadColor(s: LoadStatus) {
@@ -311,7 +311,7 @@ export function PerformancePanel({ history, loading }: { history: ReadinessHisto
             <p className="mt-1 text-xs leading-relaxed text-zinc-400">{t.hub.noCheckinBody}</p>
             <Link
               href="/checkin"
-              className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-[#CCFF00] px-4 py-2 text-sm font-medium text-zinc-950 transition-transform active:scale-95"
+              className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-white px-4 py-2 text-sm font-medium text-zinc-950 transition-transform active:scale-95"
             >
               {t.hub.doCheckin}
               <ArrowRight size={14} weight="bold" />
@@ -369,7 +369,7 @@ export function PerformanceStrip({ history }: { history: ReadinessHistoryPoint[]
         className="flex items-center justify-between rounded-2xl bg-white/[0.03] px-4 py-3 text-sm ring-1 ring-inset ring-white/[0.06]"
       >
         <span className="text-zinc-300">{t.hub.noCheckinTitle}</span>
-        <span className="inline-flex items-center gap-1 font-medium text-[#CCFF00]">
+        <span className="inline-flex items-center gap-1 font-medium text-[#32ADE6]">
           {t.hub.doCheckin}
           <ArrowRight size={14} weight="bold" />
         </span>

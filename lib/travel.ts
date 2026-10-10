@@ -1,7 +1,7 @@
 // lib/travel.ts
 //
 // "After the away trip": the coach marks an away match with the hours spent
-// travelling (there and back). CloudPulse does not track location (GDPR) —
+// travelling (there and back). Lotus does not track location (GDPR) —
 // the coach knows the trip, so the coach enters it.
 //
 // From TRAVEL_MIN_HOURS on (about 150 km each way by bus) the 48 hours after

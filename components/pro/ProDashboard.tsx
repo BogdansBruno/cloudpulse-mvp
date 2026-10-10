@@ -168,11 +168,11 @@ export default function ProDashboard(): ReactElement {
           <div className="mb-3 flex h-10 items-center gap-3 px-1.5">
             <span className="relative flex h-8 w-8 shrink-0 items-center justify-center rounded-np-ctrl bg-np-surface-2" aria-hidden>
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                <path d="M2.5 12c1.6-2.1 3.1-3.9 4.8-3.9s3.2 1.9 3.8 3.9 2.1 3.9 3.8 3.9 3.2-1.8 4.8-3.9" stroke="#00E5FF" strokeWidth="1.75" strokeLinecap="round" />
+                <path d="M2.5 12c1.6-2.1 3.1-3.9 4.8-3.9s3.2 1.9 3.8 3.9 2.1 3.9 3.8 3.9 3.2-1.8 4.8-3.9" stroke="#32ADE6" strokeWidth="1.75" strokeLinecap="round" />
               </svg>
               <span className="np-logo-pulse absolute h-2 w-2 bg-np-accent ring-2 ring-np-surface-2" />
             </span>
-            <span className="hidden text-sm font-semibold tracking-tight xl:inline">CloudPulse</span>
+            <span className="hidden text-sm font-semibold tracking-tight xl:inline">Lotus</span>
           </div>
           <nav className="flex flex-col gap-1" aria-label={t.title}>
             <SideLink href="/pro" label={t.nav.dashboard} icon="grid" active={path === '/pro'} />
@@ -206,7 +206,7 @@ export default function ProDashboard(): ReactElement {
                       <span className={`text-xs font-semibold ${on ? 'text-np-text' : 'text-np-text-2'}`} aria-hidden>
                         {d.getDate()}
                       </span>
-                      <span className={`h-1 w-1 rounded-full ${p.hasCheckin ? ZONE[p.zone].dot : 'bg-white/15'}`} aria-hidden />
+                      <span className={`h-1 w-1 rounded-full ${p.hasCheckin ? ZONE[p.zone].dot : 'bg-np-veil/15'}`} aria-hidden />
                     </button>
                   );
                 })}
@@ -269,7 +269,7 @@ export default function ProDashboard(): ReactElement {
               <p className="text-base font-semibold">{t.noData}</p>
               <p className="mt-1 text-sm text-np-text-2">{t.noDataBody}</p>
               {/* the ONE accent action of this state */}
-              <Link href="/checkin" className="np-btn-primary mt-4 inline-flex h-10 items-center rounded-np-ctrl px-4 text-sm font-semibold">
+              <Link href="/checkin" className="np-btn-primary mt-4 inline-flex h-10 items-center rounded-full px-4 text-sm font-semibold">
                 {t.toCheckin}
               </Link>
             </Card>
@@ -285,7 +285,7 @@ export default function ProDashboard(): ReactElement {
                     <LoadIndexGauge lang={lang} index={dayIndex} target={day?.hasCheckin ? targetLoadRange(day.score) : null} dailyLoad={day?.dailyLoad ?? null} usualDay={usualDay} />
                   </div>
                 ) : (
-                  <div className="h-[224px] animate-pulse rounded-np-ctrl bg-white/[0.03]" />
+                  <div className="h-[224px] animate-pulse rounded-np-ctrl bg-np-veil/[0.03]" />
                 )}
               </Card>
 
@@ -298,7 +298,7 @@ export default function ProDashboard(): ReactElement {
                       max={100}
                       ticks={[0, 25, 50, 75, 100]}
                       refLines={[50, 75]}
-                      color="#5C9BFF"
+                      color="#FFCC00"
                       selected={sel}
                       onSelect={setSel}
                       format={(v) => String(Math.round(v))}
@@ -307,7 +307,7 @@ export default function ProDashboard(): ReactElement {
                       height={260}
                     />
                   ) : (
-                    <div className="h-[260px] animate-pulse rounded-np-ctrl bg-white/[0.03]" />
+                    <div className="h-[260px] animate-pulse rounded-np-ctrl bg-np-veil/[0.03]" />
                   )}
                 </ChartCard>
 
@@ -319,7 +319,7 @@ export default function ProDashboard(): ReactElement {
                       max={100}
                       ticks={[0, 25, 50, 75, 100]}
                       refLines={[40, 75]}
-                      color="#2979FF"
+                      color="#FFCC00"
                       selected={sel}
                       onSelect={setSel}
                       format={(v) => String(Math.round(v))}
@@ -328,7 +328,7 @@ export default function ProDashboard(): ReactElement {
                       height={260}
                     />
                   ) : (
-                    <div className="h-[260px] animate-pulse rounded-np-ctrl bg-white/[0.03]" />
+                    <div className="h-[260px] animate-pulse rounded-np-ctrl bg-np-veil/[0.03]" />
                   )}
                 </ChartCard>
               </div>
@@ -357,7 +357,7 @@ export default function ProDashboard(): ReactElement {
                 {day ? (
                   <dl className="mt-1">
                     {rows.map((r) => (
-                      <div key={r.k} className="flex items-baseline justify-between gap-4 border-b border-white/5 py-2.5 last:border-b-0">
+                      <div key={r.k} className="flex items-baseline justify-between gap-4 border-b border-np-veil/5 py-2.5 last:border-b-0">
                         <dt className="text-sm text-np-text-2">{r.k}</dt>
                         <dd className={`np-num text-[15px] ${r.cls ?? 'text-np-text'}`}>{r.v}</dd>
                       </div>
@@ -366,7 +366,7 @@ export default function ProDashboard(): ReactElement {
                 ) : (
                   <div className="mt-3 space-y-2">
                     {Array.from({ length: 8 }, (_, i) => (
-                      <div key={i} className="h-8 animate-pulse rounded bg-white/[0.03]" />
+                      <div key={i} className="h-8 animate-pulse rounded bg-np-veil/[0.03]" />
                     ))}
                   </div>
                 )}

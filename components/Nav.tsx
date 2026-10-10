@@ -60,7 +60,7 @@ export default function Nav() {
         <div className="px-4 md:px-6 h-14 flex items-center justify-between gap-4">
           <div className="flex items-center gap-6">
             <Link href={isParent ? '/parent' : '/chat'} className="flex items-center gap-2 shrink-0">
-              <div className="h-7 w-7 rounded-lg bg-[#CCFF00] text-zinc-950 flex items-center justify-center">
+              <div className="h-7 w-7 rounded-lg bg-white text-zinc-950 flex items-center justify-center">
                 <Lightning size={15} weight="fill" />
               </div>
               <span className="text-white font-semibold tracking-tight text-[15px]">{t.nav.brand}</span>
@@ -95,7 +95,7 @@ export default function Nav() {
                   onClick={() => setLang(l.code)}
                   className={`px-2.5 py-1 rounded-full font-semibold transition-all duration-300 ${
                     lang === l.code
-                      ? 'bg-[#CCFF00] text-zinc-950'
+                      ? 'bg-white text-zinc-950'
                       : 'text-zinc-400 hover:text-zinc-200'
                   }`}
                 >

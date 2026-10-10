@@ -92,7 +92,7 @@ export default function TeamTripsCard({ today }: { today: string }) {
   }
 
   const field =
-    'w-full rounded-xl bg-white/[0.05] px-3 py-2 text-sm text-zinc-50 placeholder-zinc-500 ring-1 ring-inset ring-white/10 focus:outline-none focus:ring-[#CCFF00]/50 [color-scheme:dark]';
+    'w-full rounded-xl bg-white/[0.05] px-3 py-2 text-sm text-zinc-50 placeholder-zinc-500 ring-1 ring-inset ring-white/10 focus:outline-none focus:ring-[#32ADE6]/50 [color-scheme:dark]';
 
   return (
     <section className="rounded-3xl bg-white/[0.03] p-5 ring-1 ring-inset ring-white/[0.08] backdrop-blur-2xl">
@@ -103,7 +103,7 @@ export default function TeamTripsCard({ today }: { today: string }) {
       <p className="mt-0.5 text-xs text-zinc-400">{t.coachSubtitle}</p>
 
       {active && (
-        <div className="mt-4 flex gap-3 rounded-2xl bg-[#FFB020]/[0.08] p-3 ring-1 ring-inset ring-[#FFB020]/30">
+        <div className="mt-4 flex gap-3 rounded-2xl bg-[#FFCC00]/[0.08] p-3 ring-1 ring-inset ring-[#FFCC00]/30">
           <Moon size={18} weight="fill" className="mt-0.5 shrink-0" style={{ color: HUB.amber }} />
           <div>
             <p className="text-sm font-semibold text-zinc-100">
@@ -150,7 +150,7 @@ export default function TeamTripsCard({ today }: { today: string }) {
       </div>
 
       {errors.length > 0 && (
-        <ul className="mt-3 space-y-1 rounded-xl bg-[#FF4D5E]/[0.08] p-3 text-sm text-zinc-200 ring-1 ring-inset ring-[#FF4D5E]/30">
+        <ul className="mt-3 space-y-1 rounded-xl bg-[#FF3B30]/[0.08] p-3 text-sm text-zinc-200 ring-1 ring-inset ring-[#FF3B30]/30">
           {errors.map((e) => (
             <li key={e}>{t.errors[e]}</li>
           ))}
@@ -172,7 +172,7 @@ export default function TeamTripsCard({ today }: { today: string }) {
           <li key={trip.id} className="flex items-center gap-3 rounded-2xl bg-white/[0.02] px-3 py-2.5 ring-1 ring-inset ring-white/[0.06]">
             <span className="min-w-0 flex-1">
               <span className="block break-words text-sm text-zinc-100">{t.tripLine(trip.title, day(trip.matchDate), trip.travelHours)}</span>
-              <span className="block text-xs" style={{ color: isLongTrip(trip) ? HUB.amber : '#71717A' }}>
+              <span className="block text-xs" style={{ color: isLongTrip(trip) ? HUB.amber : '#C3C5C7' }}>
                 {isLongTrip(trip) ? t.recoveryUntil(day(recoveryUntil(trip))) : t.shortTrip}
               </span>
             </span>

@@ -104,12 +104,12 @@ export default function ParentAccessCard() {
           <p className="text-sm font-medium text-zinc-200">{title}</p>
           <p className="mt-1 text-sm leading-relaxed text-zinc-400">{body}</p>
           <p className="mt-2 text-xs text-zinc-500">
-            <span style={{ color: on ? '#CCFF00' : undefined }}>{on ? c.on : c.off}</span>
+            <span style={{ color: on ? '#30D158' : undefined }}>{on ? c.on : c.off}</span>
             {changedAt && <> · {c.changed(formatChanged(changedAt))}</>}
           </p>
           {errorKey === key && (
             <p className="mt-2 inline-flex items-center gap-1.5 text-xs text-zinc-200">
-              <WarningOctagon size={14} weight="fill" className="text-[#FF4D5E]" />
+              <WarningOctagon size={14} weight="fill" className="text-[#FF3B30]" />
               {c.errSave}
             </p>
           )}
@@ -122,7 +122,7 @@ export default function ParentAccessCard() {
           disabled={saving === key}
           onClick={() => toggle(link, flag)}
           className={`relative mt-0.5 h-7 w-12 shrink-0 rounded-full transition-colors duration-200 disabled:opacity-60 ${
-            on ? 'bg-[#CCFF00]' : 'bg-white/[0.12]'
+            on ? 'bg-[#30D158]' : 'bg-white/[0.12]'
           }`}
         >
           <span

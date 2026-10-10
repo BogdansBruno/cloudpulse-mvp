@@ -50,7 +50,7 @@ export default function PlanCard({ compact = false, className = '' }: { compact?
         </h2>
         <span className="np-pill np-pill-ai">AI Guard</span>
       </div>
-      {state.kind === 'loading' && <div className="mt-3 h-12 animate-pulse rounded-np-ctrl bg-white/5" />}
+      {state.kind === 'loading' && <div className="mt-3 h-12 animate-pulse rounded-np-ctrl bg-np-veil/5" />}
       {summary && <p className="mt-2 text-xs leading-relaxed text-np-text-2">{summary}</p>}
       {drills.length > 0 && (
         <ul className="mt-3 space-y-1.5">
@@ -63,9 +63,8 @@ export default function PlanCard({ compact = false, className = '' }: { compact?
         </ul>
       )}
       {state.kind !== 'loading' && state.kind !== 'error' && (
-        <Link href={href} className="np-btn-glass mt-4 flex h-11 w-full items-center justify-center gap-1.5 rounded-np-ctrl text-sm font-medium">
+        <Link href={href} className="np-btn-glass mt-4 flex h-11 w-full items-center justify-center gap-1.5 rounded-full text-sm font-medium">
           {state.kind === 'no_checkin' ? t.toCheckin : t.widgetOpen}
-          <ArrowRight size={14} weight="bold" aria-hidden />
         </Link>
       )}
     </section>

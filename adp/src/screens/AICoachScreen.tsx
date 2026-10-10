@@ -44,10 +44,11 @@ export type AICoachScreenProps = {
 
 // ADP "Dark Editorial Biohacking": teal = optimal, yellow = caution, coral = strain.
 // All ≥ 4.5:1 on the editorial glass (rgba(22,23,33,0.75) over #0C0D12).
-const GOOD = '#2DD4BF';
-const WARN = '#FACC15';
-const BAD = '#FB923C';
-const INFO = '#67E8F9';
+// Lotus palette: mint = optimal, amber = caution, terracotta = strain, sky = info.
+const GOOD = '#30D158';
+const WARN = '#FFCC00';
+const BAD = '#FF9500';
+const INFO = '#32ADE6';
 // Body = slate-300, micro labels = slate-400 (both ≥ 7:1 on the glass).
 const MUTED = SLATE_300;
 const FAINT = SLATE_400;
@@ -102,7 +103,7 @@ export default function AICoachScreen({ state, lang, onRetry, checkinHref = '/ch
 
   const header = (
     <header className="pb-1">
-      <h1 id={titleId} className="text-[30px] font-semibold leading-[1.1] tracking-[-0.03em] text-white md:text-4xl" style={{ textShadow: '0 2px 20px rgba(0,0,0,0.35)' }}>
+      <h1 id={titleId} className="np-editorial text-[32px] font-light leading-[1.1] md:text-4xl">
         {t.title}
       </h1>
     </header>
@@ -264,7 +265,7 @@ function PlanScreen({ view: v, lang, header, titleId, className }: { view: PlanV
         <LiquidGlassCard tone="editorial" radius={28} className="p-4" style={tinted(WARN)}>
           <p className="text-sm font-semibold text-white">{t.referredTitle}</p>
           <p className="mt-1 text-sm text-white">{v.soreness.referredZones.map((z) => zones.zones[z]).join(', ')}</p>
-          <p className="mt-2 text-xs leading-relaxed" style={{ color: '#FEF08A' }}>
+          <p className="mt-2 text-xs leading-relaxed" style={{ color: '#FFCC00' }}>
             {v.referral}
           </p>
         </LiquidGlassCard>

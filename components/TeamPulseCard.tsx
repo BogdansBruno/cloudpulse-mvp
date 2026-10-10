@@ -59,7 +59,7 @@ export default function TeamPulseCard({
   const level = pulseLevel(d);
   const trend = pulseTrend(days, today);
   const suggestions = pulseSuggestions(level, examWindowToday);
-  const color = level === 'too_few' ? '#A1A1AA' : LEVEL_COLOR[level];
+  const color = level === 'too_few' ? '#C3C5C7' : LEVEL_COLOR[level];
   const show = (c: PulseCount) => (c === null ? '—' : c === 'fewer' ? t.fewer : t.ofChecked(String(c), d.checkedIn));
 
   const stats: { label: string; value: PulseCount }[] = [
@@ -145,13 +145,13 @@ export default function TeamPulseCard({
       {suggestions.length > 0 && (
         <div className="mt-4 rounded-2xl bg-white/[0.03] p-3 ring-1 ring-inset ring-white/[0.06]">
           <p className="inline-flex items-center gap-1.5 text-xs font-semibold text-zinc-200">
-            <Lightbulb size={14} weight="fill" className="text-[#CCFF00]" />
+            <Lightbulb size={14} weight="fill" className="text-[#32ADE6]" />
             {t.suggestionsTitle}
           </p>
           <ul className="mt-2 space-y-1.5">
             {suggestions.map((s) => (
               <li key={s} className="flex gap-2 text-sm leading-relaxed text-zinc-300">
-                <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[#CCFF00]" />
+                <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-white" />
                 {t.suggestions[s]}
               </li>
             ))}

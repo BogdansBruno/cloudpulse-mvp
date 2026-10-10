@@ -21,7 +21,7 @@ import {
 } from '@/lib/scout-cv';
 
 const LOCALE: Record<Lang, string> = { ru: 'ru-RU', lv: 'lv-LV', en: 'en-GB' };
-const STATUS_COLOR: Record<ShareStatus, string> = { pending: HUB.amber, active: HUB.lime, expired: '#71717A', revoked: '#71717A' };
+const STATUS_COLOR: Record<ShareStatus, string> = { pending: HUB.amber, active: '#30D158', expired: '#C3C5C7', revoked: '#C3C5C7' };
 const KNOWN_ERRORS = ['NO_PARENT_LINK', 'TOO_MANY_LINKS', 'BAD_NAME', 'BAD_RECIPIENT'] as const;
 
 export default function ScoutShareCard({ className = '' }: { className?: string }) {
@@ -98,12 +98,12 @@ export default function ScoutShareCard({ className = '' }: { className?: string 
   }
 
   const field =
-    'w-full rounded-xl bg-white/[0.05] px-3.5 py-2.5 text-sm text-zinc-50 placeholder-zinc-500 ring-1 ring-inset ring-white/10 focus:outline-none focus:ring-[#CCFF00]/50';
+    'w-full rounded-xl bg-white/[0.05] px-3.5 py-2.5 text-sm text-zinc-50 placeholder-zinc-500 ring-1 ring-inset ring-white/10 focus:outline-none focus:ring-white/40';
 
   return (
     <section className={`rounded-3xl bg-white/[0.03] p-5 ring-1 ring-inset ring-white/[0.08] backdrop-blur-2xl ${className}`}>
       <h2 className="inline-flex items-center gap-2 text-base font-semibold tracking-[-0.01em] text-zinc-50">
-        <IdentificationCard size={18} weight="fill" className="text-[#CCFF00]" />
+        <IdentificationCard size={18} weight="fill" className="text-zinc-300" />
         {t.title}
       </h2>
       <p className="mt-1 text-sm leading-relaxed text-zinc-400">{t.subtitle}</p>
@@ -135,7 +135,7 @@ export default function ScoutShareCard({ className = '' }: { className?: string 
               onClick={() => setDays(n)}
               aria-pressed={days === n}
               className={`rounded-full px-3.5 py-1.5 text-sm ring-1 ring-inset transition-colors ${
-                days === n ? 'bg-[#CCFF00] font-semibold text-zinc-950 ring-[#CCFF00]' : 'text-zinc-300 ring-white/10 hover:bg-white/5'
+                days === n ? 'bg-white/[0.14] font-semibold text-zinc-50 ring-white/40' : 'text-zinc-300 ring-white/10 hover:bg-white/5'
               }`}
             >
               {t.days(n)}
@@ -147,15 +147,15 @@ export default function ScoutShareCard({ className = '' }: { className?: string 
       <fieldset className="mt-4 space-y-2">
         <legend className="mb-1 text-xs text-zinc-400">{t.includesTitle}</legend>
         <label className="flex items-start gap-2.5 text-sm text-zinc-300">
-          <input type="checkbox" checked disabled className="mt-0.5 accent-[#CCFF00]" />
+          <input type="checkbox" checked disabled className="mt-0.5 accent-[#32ADE6]" />
           {t.includeDiscipline}
         </label>
         <label className="flex items-start gap-2.5 text-sm text-zinc-200">
-          <input type="checkbox" checked={showReadiness} onChange={(e) => setShowReadiness(e.target.checked)} className="mt-0.5 accent-[#CCFF00]" />
+          <input type="checkbox" checked={showReadiness} onChange={(e) => setShowReadiness(e.target.checked)} className="mt-0.5 accent-[#32ADE6]" />
           {t.includeReadiness}
         </label>
         <label className="flex items-start gap-2.5 text-sm text-zinc-200">
-          <input type="checkbox" checked={showHealth} onChange={(e) => setShowHealth(e.target.checked)} className="mt-0.5 accent-[#CCFF00]" />
+          <input type="checkbox" checked={showHealth} onChange={(e) => setShowHealth(e.target.checked)} className="mt-0.5 accent-[#32ADE6]" />
           <span>
             {t.includeHealth}
             <span className="block text-xs text-zinc-500">{t.healthHint}</span>
@@ -164,22 +164,22 @@ export default function ScoutShareCard({ className = '' }: { className?: string 
       </fieldset>
       <p className="mt-3 text-xs leading-relaxed text-zinc-500">{t.noGrades}</p>
 
-      {error && <p className="mt-3 rounded-xl bg-[#FF4D5E]/[0.08] p-3 text-sm text-zinc-200 ring-1 ring-inset ring-[#FF4D5E]/30">{error}</p>}
+      {error && <p className="mt-3 rounded-xl bg-[#FF3B30]/[0.08] p-3 text-sm text-zinc-200 ring-1 ring-inset ring-[#FF3B30]/30">{error}</p>}
 
       <button
         type="button"
         onClick={create}
         disabled={busy || !name.trim() || !recipient.trim()}
-        className="mt-4 inline-flex h-11 items-center rounded-2xl bg-[#CCFF00] px-5 text-sm font-semibold text-zinc-950 disabled:opacity-50"
+        className="np-btn-glass mt-4 inline-flex h-11 items-center rounded-full px-5 text-sm font-semibold disabled:opacity-50"
       >
         {busy ? t.creating : t.create}
       </button>
 
       {fresh && (
-        <div className="mt-4 rounded-2xl bg-[#CCFF00]/[0.07] p-3 ring-1 ring-inset ring-[#CCFF00]/30">
+        <div className="mt-4 rounded-2xl bg-white/[0.04] p-3 ring-1 ring-inset ring-white/15">
           <p className="text-xs leading-relaxed text-zinc-200">{t.copyOnce}</p>
           <div className="mt-2 flex items-center gap-2">
-            <code className="min-w-0 flex-1 truncate rounded-lg bg-black/40 px-2.5 py-1.5 text-xs text-[#CCFF00]">{fresh}</code>
+            <code className="min-w-0 flex-1 truncate rounded-lg bg-black/40 px-2.5 py-1.5 text-xs text-zinc-50">{fresh}</code>
             <button
               type="button"
               onClick={() => copy(fresh)}

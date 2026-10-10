@@ -34,7 +34,7 @@ export default function ExamStormCard({ athletes, today }: { athletes: readonly 
   return (
     <section className="rounded-3xl bg-white/[0.03] p-5 ring-1 ring-inset ring-white/[0.08] backdrop-blur-2xl">
       <h2 className="inline-flex items-center gap-2 text-base font-semibold tracking-[-0.01em] text-zinc-50">
-        <CloudLightning size={18} weight="fill" style={{ color: storm.storms.length > 0 ? HUB.amber : '#A1A1AA' }} />
+        <CloudLightning size={18} weight="fill" style={{ color: storm.storms.length > 0 ? HUB.amber : '#C3C5C7' }} />
         {s.title}
       </h2>
       <p className="mt-0.5 text-xs text-zinc-400">{s.subtitle}</p>
@@ -66,11 +66,11 @@ export default function ExamStormCard({ athletes, today }: { athletes: readonly 
                     {height > 0 && (
                       <div
                         className="w-full rounded-full"
-                        style={{ height: `${Math.max(height, 0.15) * 100}%`, backgroundColor: d.storm ? HUB.amber : '#71717A' }}
+                        style={{ height: `${Math.max(height, 0.15) * 100}%`, backgroundColor: d.storm ? HUB.amber : '#C3C5C7' }}
                       />
                     )}
                   </div>
-                  <span className="mt-1 font-mono text-[11px] tabular-nums" style={{ color: d.storm ? HUB.amber : '#A1A1AA' }}>
+                  <span className="mt-1 font-mono text-[11px] tabular-nums" style={{ color: d.storm ? HUB.amber : '#C3C5C7' }}>
                     {d.inWindow > 0 ? label(d.inWindow) : '·'}
                   </span>
                   {d.matches > 0 ? (

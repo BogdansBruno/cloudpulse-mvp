@@ -47,10 +47,10 @@ export default function ParentScoutApprovals({ fallbackName }: { fallbackName: s
         return (
           <section
             key={s.id}
-            className={`rounded-3xl bg-white/[0.03] p-5 ring-1 ring-inset backdrop-blur-2xl ${st === 'active' ? 'ring-white/[0.08]' : 'ring-[#FFB020]/30'}`}
+            className={`rounded-3xl bg-white/[0.03] p-5 ring-1 ring-inset backdrop-blur-2xl ${st === 'active' ? 'ring-white/[0.08]' : 'ring-[#FFCC00]/30'}`}
           >
             <h3 className="inline-flex items-center gap-2 text-sm font-semibold text-zinc-100">
-              <IdentificationCard size={16} weight="fill" className="text-[#CCFF00]" />
+              <IdentificationCard size={16} weight="fill" className="text-[#32ADE6]" />
               {st === 'active' ? t.title : t.parentTitle}
             </h3>
             <p className="mt-2 text-sm leading-relaxed text-zinc-200">{t.parentBody(child, s.recipient)}</p>
@@ -69,7 +69,7 @@ export default function ParentScoutApprovals({ fallbackName }: { fallbackName: s
 
             {st === 'active' ? (
               <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
-                <p className="text-sm text-[#CCFF00]">{t.parentActive(s.viewCount)}</p>
+                <p className="text-sm text-[#32ADE6]">{t.parentActive(s.viewCount)}</p>
                 <button
                   type="button"
                   disabled={busy === s.id}
@@ -85,7 +85,7 @@ export default function ParentScoutApprovals({ fallbackName }: { fallbackName: s
                   type="button"
                   disabled={busy === s.id}
                   onClick={() => act('approve_scout_share', s.id)}
-                  className="inline-flex h-10 items-center rounded-xl bg-[#CCFF00] px-4 text-sm font-semibold text-zinc-950 disabled:opacity-50"
+                  className="inline-flex h-10 items-center rounded-xl bg-white px-4 text-sm font-semibold text-zinc-950 disabled:opacity-50"
                 >
                   {t.approve}
                 </button>

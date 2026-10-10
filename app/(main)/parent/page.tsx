@@ -102,7 +102,7 @@ export default function ParentPage() {
 
   return (
     <div className="relative min-h-[calc(100dvh-4.5rem)] shrink-0 overflow-x-clip bg-[#07080A] px-4 py-8 md:py-12">
-      <div className="pointer-events-none absolute -left-40 -top-40 h-[480px] w-[480px] rounded-full bg-[#CCFF00]/[0.05] blur-[140px]" />
+      <div className="pointer-events-none absolute -left-40 -top-40 h-[480px] w-[480px] rounded-full bg-[#D9A400]/[0.05] blur-[140px]" />
 
       <div className="relative mx-auto max-w-lg">
         <header className="mb-6">
@@ -113,8 +113,8 @@ export default function ParentPage() {
         </header>
 
         {error && (
-          <div className="mb-6 flex gap-3 rounded-2xl bg-[#FF4D5E]/[0.08] p-4 text-sm text-zinc-200 ring-1 ring-inset ring-[#FF4D5E]/30">
-            <WarningOctagon size={18} weight="fill" className="mt-0.5 shrink-0 text-[#FF4D5E]" />
+          <div className="mb-6 flex gap-3 rounded-2xl bg-[#FF3B30]/[0.08] p-4 text-sm text-zinc-200 ring-1 ring-inset ring-[#FF3B30]/30">
+            <WarningOctagon size={18} weight="fill" className="mt-0.5 shrink-0 text-[#FF3B30]" />
             <span>{p.errLoad}</span>
           </div>
         )}
@@ -211,7 +211,7 @@ export default function ParentPage() {
                         ) : (
                           <>
                             <p className="flex items-center gap-2 text-xs text-zinc-400">
-                              <ChatCircleText size={14} weight="fill" className="text-[#CCFF00]" />
+                              <ChatCircleText size={14} weight="fill" className="text-[#FFCC00]" />
                               {p.coachAnswered(time(row.coach.at))}
                             </p>
                             <p className="mt-1 text-sm font-medium text-zinc-100">{p.coachReply[row.coach.reaction]}</p>
@@ -326,13 +326,13 @@ export default function ParentPage() {
                   {tips.length > 0 && (
                     <section className={card}>
                       <h3 className="flex items-center gap-2 text-sm font-semibold text-zinc-200">
-                        <Lightbulb size={16} weight="fill" className="text-[#CCFF00]" />
+                        <Lightbulb size={16} weight="fill" className="text-[#FFCC00]" />
                         {p.tipsTitle}
                       </h3>
                       <ul className="mt-3 space-y-2">
                         {tips.map((code) => (
                           <li key={code} className="flex gap-2.5 text-sm leading-relaxed text-zinc-300">
-                            <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[#CCFF00]" />
+                            <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-white" />
                             {p.tips[code]}
                           </li>
                         ))}
@@ -344,7 +344,7 @@ export default function ParentPage() {
             })}
 
             <section className={`${card} flex gap-3`}>
-              <ShieldCheck size={20} weight="fill" className="mt-0.5 shrink-0 text-[#CCFF00]" />
+              <ShieldCheck size={20} weight="fill" className="mt-0.5 shrink-0 text-[#FFCC00]" />
               <div>
                 <h2 className="text-sm font-semibold text-zinc-200">{p.privacyTitle}</h2>
                 <p className="mt-1 text-sm leading-relaxed text-zinc-400">{p.privacyBody}</p>

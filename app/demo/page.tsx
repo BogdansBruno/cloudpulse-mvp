@@ -58,22 +58,22 @@ function DemoPicker() {
   }
 
   const roles: { role: DemoRole; icon: Icon; title: string; desc: string; color: string }[] = [
-    { role: 'athlete', icon: PersonSimpleRun, title: d.athleteTitle, desc: d.athleteDesc, color: '#FF4D5E' },
-    { role: 'coach', icon: Users, title: d.coachTitle, desc: d.coachDesc, color: '#CCFF00' },
+    { role: 'athlete', icon: PersonSimpleRun, title: d.athleteTitle, desc: d.athleteDesc, color: '#FF3B30' },
+    { role: 'coach', icon: Users, title: d.coachTitle, desc: d.coachDesc, color: '#FF9500' },
     { role: 'parent', icon: House, title: d.parentTitle, desc: d.parentDesc, color: '#00F0FF' },
   ];
 
   return (
     <main className="relative flex min-h-dvh flex-col items-center overflow-x-clip bg-[#07080A] px-4 py-8">
-      <div className="pointer-events-none absolute -top-40 left-1/2 h-[520px] w-[520px] -translate-x-1/2 rounded-full bg-[#CCFF00]/[0.06] blur-[140px]" />
+      <div className="pointer-events-none absolute -top-40 left-1/2 h-[520px] w-[520px] -translate-x-1/2 rounded-full bg-[#FF9500]/[0.06] blur-[140px]" />
 
       <div className="relative w-full max-w-2xl">
         <header className="mb-10 flex items-center justify-between">
           <span className="inline-flex items-center gap-2 text-[15px] font-semibold text-white">
-            <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#CCFF00] text-zinc-950">
+            <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-white text-zinc-950">
               <Lightning size={15} weight="fill" />
             </span>
-            CloudPulse
+            Lotus
           </span>
           <div className="flex gap-0.5 rounded-full border border-white/5 bg-black/20 p-1 text-xs">
             {LANGS.map((l) => (
@@ -81,7 +81,7 @@ function DemoPicker() {
                 key={l.code}
                 onClick={() => setLang(l.code)}
                 className={`rounded-full px-2.5 py-1 font-semibold ${
-                  lang === l.code ? 'bg-[#CCFF00] text-zinc-950' : 'text-zinc-400'
+                  lang === l.code ? 'bg-white text-zinc-950' : 'text-zinc-400'
                 }`}
               >
                 {l.label}
@@ -99,7 +99,7 @@ function DemoPicker() {
           <p className="mt-3 max-w-[52ch] text-[15px] leading-relaxed text-zinc-400">{d.subtitle}</p>
 
           <p className="mt-5 flex gap-2.5 rounded-2xl bg-white/[0.03] p-4 text-sm leading-relaxed text-zinc-300 ring-1 ring-inset ring-white/[0.08]">
-            <Flask size={18} weight="fill" className="mt-0.5 shrink-0 text-[#CCFF00]" />
+            <Flask size={18} weight="fill" className="mt-0.5 shrink-0 text-[#FF9500]" />
             {d.note}
           </p>
 
@@ -111,8 +111,8 @@ function DemoPicker() {
           )}
 
           {error && (
-            <p className="mt-6 flex gap-3 rounded-2xl bg-[#FF4D5E]/[0.08] p-4 text-sm text-zinc-200 ring-1 ring-inset ring-[#FF4D5E]/30">
-              <WarningOctagon size={18} weight="fill" className="mt-0.5 shrink-0 text-[#FF4D5E]" />
+            <p className="mt-6 flex gap-3 rounded-2xl bg-[#FF3B30]/[0.08] p-4 text-sm text-zinc-200 ring-1 ring-inset ring-[#FF3B30]/30">
+              <WarningOctagon size={18} weight="fill" className="mt-0.5 shrink-0 text-[#FF3B30]" />
               {d.error}
             </p>
           )}
@@ -138,7 +138,7 @@ function DemoPicker() {
                 </span>
                 <span className="mt-4 text-lg font-semibold text-zinc-50">{title}</span>
                 <span className="mt-1.5 flex-1 text-sm leading-relaxed text-zinc-400">{desc}</span>
-                <span className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-[#CCFF00]">
+                <span className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-[#FF9500]">
                   {busy === role ? d.entering : d.enter}
                   {busy !== role && <ArrowRight size={15} weight="bold" />}
                 </span>

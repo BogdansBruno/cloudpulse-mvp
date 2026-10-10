@@ -130,7 +130,7 @@ export default function ThemeSwitcher() {
                     )}
                     <span
                       className={`relative flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-colors ${
-                        active ? 'bg-[#CCFF00] text-zinc-950' : 'bg-white/[0.05] text-zinc-300'
+                        active ? 'bg-white text-zinc-950' : 'bg-white/[0.05] text-zinc-300'
                       }`}
                     >
                       <ModeIcon size={16} weight={active ? 'fill' : 'regular'} />
@@ -139,7 +139,7 @@ export default function ThemeSwitcher() {
                       <span className="block text-sm font-medium text-zinc-50">{label}</span>
                       <span className="block truncate text-xs text-zinc-500">{hint}</span>
                     </span>
-                    {active && <Check size={14} weight="bold" className="relative text-[#CCFF00]" />}
+                    {active && <Check size={14} weight="bold" className="relative text-[#32ADE6]" />}
                   </button>
                 );
               })}
@@ -174,7 +174,7 @@ export default function ThemeSwitcher() {
                     </div>
                     <p className="flex items-center gap-1.5 pt-0.5 text-[11px] text-zinc-500">
                       <span
-                        className={`h-1.5 w-1.5 rounded-full ${resolved === 'dark' ? 'bg-zinc-400' : 'bg-[#CCFF00]'}`}
+                        className={`h-1.5 w-1.5 rounded-full ${resolved === 'dark' ? 'bg-zinc-400' : 'bg-white'}`}
                       />
                       {resolved === 'dark' ? th.nowDark : th.nowLight}
                     </p>

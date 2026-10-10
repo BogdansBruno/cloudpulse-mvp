@@ -76,7 +76,7 @@ export const MATCH_RULES = {
   afterCodes: ['POST_MATCH'],
   afterKinds: ['mobility', 'breathing_recovery', 'aerobic_base'] as readonly BlockKind[],
   afterMaxRpe: 3,
-  /** Back from a long away trip (CloudPulse team_trips, 48 h): the same easy work as after a match. */
+  /** Back from a long away trip (Lotus team_trips, 48 h): the same easy work as after a match. */
   travelCodes: ['POST_TRAVEL'],
 } as const;
 

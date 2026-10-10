@@ -10,7 +10,7 @@
 //     colours by month, and — only if the athlete ticked it — how many pain
 //     reports there were in 12 months. Never answers, pain locations, notes.
 //   - no school grades: there is no school-confirmed source yet, and the
-//     passport shows only data CloudPulse can stand behind.
+//     passport shows only data Lotus can stand behind.
 // Pure functions; unit-tested in scout-cv.test.ts.
 
 export const SCOUT_MAX_DAYS = 30;

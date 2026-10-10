@@ -1,20 +1,20 @@
 import type { MetadataRoute } from 'next';
 
 // Web app manifest (served by Next.js at /manifest.webmanifest). Lets
-// athletes install CloudPulse on the home screen like an app; opening it
+// athletes install Lotus on the home screen like an app; opening it
 // goes straight to the daily check-in, the one screen that also works offline.
 export default function manifest(): MetadataRoute.Manifest {
   return {
     id: '/',
-    name: 'CloudPulse',
-    short_name: 'CloudPulse',
+    name: 'Lotus — Athlete Recovery & Readiness',
+    short_name: 'Lotus',
     description: 'Daily readiness check-in and injury-prevention coach for young athletes',
     start_url: '/checkin',
     scope: '/',
     display: 'standalone',
     orientation: 'portrait',
-    background_color: '#07080A',
-    theme_color: '#07080A',
+    background_color: '#0B0D11',
+    theme_color: '#0B0D11',
     lang: 'lv',
     categories: ['health', 'fitness', 'sports'],
     icons: [

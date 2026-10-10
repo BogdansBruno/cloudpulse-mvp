@@ -7,7 +7,7 @@
 //
 // The directions are inspired by the visual language of well-known sports and
 // health apps (named only as references). No logos, marks or copied screens:
-// everything here is drawn from scratch for CloudPulse.
+// everything here is drawn from scratch for Lotus.
 
 import type { CSSProperties } from 'react';
 

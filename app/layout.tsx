@@ -26,20 +26,27 @@ const adpSerif = Cormorant_Garamond({
 });
 
 export const metadata: Metadata = {
-  title: "CloudPulse",
+  title: "Lotus",
   description: "AI-powered readiness & burnout-prevention coach for young athletes",
-  applicationName: "CloudPulse",
+  applicationName: "Lotus",
   // The web app manifest comes from app/manifest.ts; iOS reads these instead.
-  appleWebApp: { capable: true, title: "CloudPulse", statusBarStyle: "black-translucent" },
+  appleWebApp: { capable: true, title: "Lotus", statusBarStyle: "black-translucent" },
   icons: {
     icon: [{ url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" }],
     apple: [{ url: "/icons/apple-touch-icon.png", sizes: "180x180" }],
   },
   formatDetection: { telephone: false },
+  // Android Chrome / older iOS read this one for "standalone" launch
+  other: { "mobile-web-app-capable": "yes" },
 };
 
+// viewportFit "cover" lets the app paint under the notch / Dynamic Island; the screens pad themselves with env(safe-area-inset-*).
 export const viewport: Viewport = {
-  themeColor: "#07080A",
+  themeColor: "#0B0D11",
+  colorScheme: "dark",
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
@@ -55,7 +62,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
       </head>
-      <body className="min-h-full flex flex-col bg-[#07080A]">
+      <body className="min-h-full flex flex-col bg-[#0B0D11]">
         <Providers>{children}</Providers>
         <ServiceWorkerRegister />
       </body>

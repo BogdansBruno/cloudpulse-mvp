@@ -28,14 +28,14 @@ export default function ScoreDial({
   return (
     <div className="relative shrink-0" style={{ width: size, height: size }} role="img" aria-label={label}>
       <svg viewBox="0 0 100 100" className="h-full w-full -rotate-90" fill="none" aria-hidden>
-        <circle cx="50" cy="50" r={R} stroke="rgb(255 255 255 / 0.08)" strokeWidth="9" />
+        <circle cx="50" cy="50" r={R} className="np-svg-track" stroke="rgb(255 255 255 / 0.1)" strokeWidth="4" />
         {Z && (
           <circle
             cx="50"
             cy="50"
             r={R}
             stroke={Z.hex}
-            strokeWidth="9"
+            strokeWidth="4"
             strokeLinecap="round"
             strokeDasharray={C.toFixed(1)}
             strokeDashoffset={(C * (1 - fill)).toFixed(1)}

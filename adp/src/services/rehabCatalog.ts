@@ -25,7 +25,7 @@
 //             activation, breathing.
 //
 // Minutes, doses and RPE are drafts for the S&C coach to sign off (like
-// TRIAGE_RULES). RPE is the CR-10 scale the CloudPulse check-in already uses.
+// TRIAGE_RULES). RPE is the CR-10 scale the Lotus check-in already uses.
 
 import type { AdpLang } from '../components/labels';
 import {

@@ -6,7 +6,7 @@ import { useParams } from 'next/navigation';
 import { motion, useReducedMotion } from 'motion/react';
 import { Lightning, UsersThree, CheckCircle, WarningOctagon, ArrowRight, Eye, SignOut } from '@phosphor-icons/react';
 import { supabase, signOut } from '@/lib/supabase';
-import { useLanguage } from '@/lib/i18n/LanguageContext';
+import { LANG_SWITCH, useLanguage } from '@/lib/i18n/LanguageContext';
 import { LANGS } from '@/lib/i18n/translations';
 import AccessGate from '@/components/AccessGate';
 import {
@@ -155,33 +155,35 @@ function JoinFlow() {
   const next = encodeURIComponent(joinPath(code));
   const card = 'rounded-3xl bg-white/[0.03] p-5 ring-1 ring-inset ring-white/[0.08] backdrop-blur-2xl';
   const primaryBtn =
-    'inline-flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-[#CCFF00] text-[15px] font-semibold text-zinc-950 shadow-[0_0_30px_-6px_rgba(204,255,0,0.45)] transition-opacity disabled:opacity-50';
+    'inline-flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-white text-[15px] font-semibold text-zinc-950 shadow-[0_0_30px_-6px_rgba(255,149,0,0.45)] transition-opacity disabled:opacity-50';
 
   return (
     <main className="relative flex min-h-dvh flex-col items-center overflow-x-clip bg-[#07080A] px-4 py-8">
-      <div className="pointer-events-none absolute -top-40 left-1/2 h-[480px] w-[480px] -translate-x-1/2 rounded-full bg-[#CCFF00]/[0.06] blur-[140px]" />
+      <div className="pointer-events-none absolute -top-40 left-1/2 h-[480px] w-[480px] -translate-x-1/2 rounded-full bg-[#FF9500]/[0.06] blur-[140px]" />
 
       <div className="relative w-full max-w-md">
         <header className="mb-8 flex items-center justify-between">
           <span className="inline-flex items-center gap-2 text-[15px] font-semibold text-white">
-            <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#CCFF00] text-zinc-950">
+            <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-white text-zinc-950">
               <Lightning size={15} weight="fill" />
             </span>
-            CloudPulse
+            Lotus
           </span>
-          <div className="flex gap-0.5 rounded-full border border-white/5 bg-black/20 p-1 text-xs">
-            {LANGS.map((l) => (
-              <button
-                key={l.code}
-                onClick={() => setLang(l.code)}
-                className={`rounded-full px-2.5 py-1 font-semibold ${
-                  lang === l.code ? 'bg-[#CCFF00] text-zinc-950' : 'text-zinc-400'
-                }`}
-              >
-                {l.label}
-              </button>
-            ))}
-          </div>
+          {LANG_SWITCH && (
+            <div className="flex gap-0.5 rounded-full border border-white/5 bg-black/20 p-1 text-xs">
+              {LANGS.map((l) => (
+                <button
+                  key={l.code}
+                  onClick={() => setLang(l.code)}
+                  className={`rounded-full px-2.5 py-1 font-semibold ${
+                    lang === l.code ? 'bg-white text-zinc-950' : 'text-zinc-400'
+                  }`}
+                >
+                  {l.label}
+                </button>
+              ))}
+            </div>
+          )}
         </header>
 
         <motion.div
@@ -190,7 +192,7 @@ function JoinFlow() {
           transition={{ type: 'spring', bounce: 0, duration: 0.45 }}
         >
           <div className="mb-6 flex items-center gap-3">
-            <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#CCFF00]/10 text-[#CCFF00]">
+            <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#FF9500]/10 text-[#FF9500]">
               <UsersThree size={22} weight="fill" />
             </span>
             <div>
@@ -222,8 +224,8 @@ function JoinFlow() {
           )}
 
           {stage.kind === 'error' && (
-            <section className="flex gap-3 rounded-3xl bg-[#FF4D5E]/[0.08] p-5 text-[15px] leading-relaxed text-zinc-200 ring-1 ring-inset ring-[#FF4D5E]/30">
-              <WarningOctagon size={20} weight="fill" className="mt-0.5 shrink-0 text-[#FF4D5E]" />
+            <section className="flex gap-3 rounded-3xl bg-[#FF3B30]/[0.08] p-5 text-[15px] leading-relaxed text-zinc-200 ring-1 ring-inset ring-[#FF3B30]/30">
+              <WarningOctagon size={20} weight="fill" className="mt-0.5 shrink-0 text-[#FF3B30]" />
               <span>{errorText[stage.code]}</span>
             </section>
           )}
@@ -231,7 +233,7 @@ function JoinFlow() {
           {stage.kind === 'already' && (
             <section className={card}>
               <p className="flex items-center gap-2 text-[15px] text-zinc-100">
-                <CheckCircle size={20} weight="fill" className="text-[#CCFF00]" />
+                <CheckCircle size={20} weight="fill" className="text-[#FF9500]" />
                 {inv.alreadyMember(stage.teamName)}
               </p>
               <button type="button" onClick={handleContinue} className={`${primaryBtn} mt-5`}>
@@ -244,7 +246,7 @@ function JoinFlow() {
           {stage.kind === 'joined' && (
             <section className={card}>
               <p className="flex items-center gap-2 text-lg font-semibold text-zinc-50">
-                <CheckCircle size={24} weight="fill" className="text-[#CCFF00]" />
+                <CheckCircle size={24} weight="fill" className="text-[#FF9500]" />
                 {inv.joinedTitle(stage.teamName)}
               </p>
               <p className="mt-2 text-sm leading-relaxed text-zinc-400">{inv.joinedBody}</p>
@@ -270,7 +272,7 @@ function JoinFlow() {
                     maxLength={ATHLETE_LABEL_MAX}
                     placeholder={inv.labelPlaceholder}
                     autoComplete="nickname"
-                    className="mt-2 w-full rounded-xl bg-white/[0.05] px-3.5 py-3 text-[15px] text-zinc-50 placeholder-zinc-500 ring-1 ring-inset ring-white/10 focus:outline-none focus:ring-[#CCFF00]/50"
+                    className="mt-2 w-full rounded-xl bg-white/[0.05] px-3.5 py-3 text-[15px] text-zinc-50 placeholder-zinc-500 ring-1 ring-inset ring-white/10 focus:outline-none focus:ring-[#FF9500]/50"
                   />
                   <span className="mt-1.5 block text-xs text-zinc-500">{inv.labelHint}</span>
                 </label>
@@ -284,7 +286,7 @@ function JoinFlow() {
                 <ul className="mt-3 space-y-2">
                   {inv.coachSees.map((item) => (
                     <li key={item} className="flex gap-2.5 text-sm leading-relaxed text-zinc-300">
-                      <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[#CCFF00]" />
+                      <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-white" />
                       {item}
                     </li>
                   ))}
@@ -296,15 +298,15 @@ function JoinFlow() {
                     type="checkbox"
                     checked={agreed}
                     onChange={(e) => setAgreed(e.target.checked)}
-                    className="h-5 w-5 shrink-0 accent-[#CCFF00]"
+                    className="h-5 w-5 shrink-0 accent-[#FF9500]"
                   />
                   {inv.agree}
                 </label>
               </section>
 
               {formError && (
-                <div className="flex gap-3 rounded-2xl bg-[#FF4D5E]/[0.08] p-4 text-sm text-zinc-200 ring-1 ring-inset ring-[#FF4D5E]/30">
-                  <WarningOctagon size={18} weight="fill" className="mt-0.5 shrink-0 text-[#FF4D5E]" />
+                <div className="flex gap-3 rounded-2xl bg-[#FF3B30]/[0.08] p-4 text-sm text-zinc-200 ring-1 ring-inset ring-[#FF3B30]/30">
+                  <WarningOctagon size={18} weight="fill" className="mt-0.5 shrink-0 text-[#FF3B30]" />
                   <span>{errorText[formError]}</span>
                 </div>
               )}

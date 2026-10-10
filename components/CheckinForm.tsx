@@ -14,7 +14,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
-import { Moon, Brain, Lightning, Barbell, WarningOctagon, Info, ArrowRight, ArrowLeft, Bandaids, PersonSimpleRun, CloudCheck, Person } from '@phosphor-icons/react';
+import { Moon, Brain, Lightning, Barbell, WarningOctagon, Info, Bandaids, PersonSimpleRun, CloudCheck, Person } from '@phosphor-icons/react';
 import type { Icon } from '@phosphor-icons/react';
 import { supabase } from '@/lib/supabase';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
@@ -26,8 +26,9 @@ import { translatePenalty, translateViolation, translateInconsistency } from '@/
 import CheckinStreakCard from '@/components/CheckinStreakCard';
 import CoachReplyCard from '@/components/CoachReplyCard';
 import RtpAthleteCard from '@/components/RtpAthleteCard';
-import ReadinessRing from '@/components/np/ReadinessRing';
 import ScoreDial from '@/components/np/ScoreDial';
+import { LoadIndexArc } from '@/components/np/LoadIndexGauge';
+import { ACWR_PILL, BLUE, CYAN, Disclaimer, Greeting, HeroArcs, TelemetryTable, acwrBand, wellnessPct, type TelemetryRow } from '@/components/np/Telemetry';
 import { ZONE } from '@/components/np/ui';
 import { NP, LOCALE } from '@/components/np/copy';
 import { APP } from '@/components/np/appCopy';
@@ -36,6 +37,10 @@ import { COACH_LABELS } from '@/adp/src/components/labels';
 import { CHECKIN_EVENT } from '@/lib/use-today-plan';
 import type { SorenessMap } from '@/adp/src/components/sorenessMap';
 import { todayUtc } from '@/lib/checkin-streak';
+import { SegmentedScale } from '@/components/np/SegmentedScale';
+import PainMap from '@/components/np/PainMap';
+import CalcOverlay from '@/components/np/CalcOverlay';
+import { POLISH } from '@/components/np/polishCopy';
 import {
   enqueueCheckin,
   removeFromQueue,
@@ -54,6 +59,11 @@ type ReadinessResult = {
   zone: 'green' | 'yellow' | 'red';
   acwr: number | null;
   chronicLoad?: number;
+  // returned by POST /api/checkin (CheckinResponseBody); optional so older servers still work
+  monotony?: number | null;
+  hooperScore?: number;
+  hooperBaseline?: number | null;
+  trainingStreak?: number;
   penalties: Penalty[];
   inconsistencyFlags: InconsistencyFlag[];
   isPainBlocked: boolean;
@@ -73,24 +83,19 @@ const SPRING = { type: 'spring', bounce: 0, duration: 0.35 } as const;
 // If the request did get through, the later resend just upserts the same row.
 const SUBMIT_TIMEOUT_MS = 12_000;
 
+// "Lotus is calculating…" holds at least this long so the beat reads as intentional (the real request often
+// takes less); the score is only shown once the server has answered.
+const CALC_MIN_MS = 1800;
+
 const DURATION_PRESETS = [30, 45, 60, 90, 120];
 const STEPS = ['sleep', 'fatigue', 'stress', 'body', 'load'] as const;
 type Step = (typeof STEPS)[number];
 const LAST = STEPS.length - 1;
 
-const GOOD = '#00E676';
-const WARN = '#FFD600';
-const DANGER = '#FF3D00';
-const STRAIN = '#2979FF';
-
-// All four Hooper scales run 1-7 with 7 = best, so the fill colour reads the
-// same way on every card. Colour is always backed by the number and labels.
-function bandColor(value: number, max: number) {
-  const r = value / max;
-  if (r <= 2 / 7) return DANGER;
-  if (r <= 4 / 7) return WARN;
-  return GOOD;
-}
+const WARN = '#FFC53D';
+/** pain / safety: muted crimson */
+const CRIT = '#FF3D5A';
+const STRAIN = BLUE;
 
 async function authHeader(): Promise<Record<string, string>> {
   const { data } = await supabase.auth.getSession();
@@ -99,75 +104,107 @@ async function authHeader(): Promise<Record<string, string>> {
 }
 
 // ---------------------------------------------------------------------------
-// Tappable / draggable segmented scale. Tracks the pointer 1:1 while pressed,
-// and every segment is also a keyboard-focusable radio.
+// Glow slider for the 1–7 / 1–10 scales: a lit track that fills up to the value,
+// one dot per step, a white thumb with a coloured halo. Follows the pointer 1:1
+// while pressed (tap anywhere to jump), arrow keys / Home / End on the keyboard,
+// and a 6 ms tick of vibration per step where the phone supports it (Android).
 // ---------------------------------------------------------------------------
-function SegmentScale({
+function GlowScale({
   value,
   max,
   onChange,
   label,
   colorFor,
+  valueText,
 }: {
   value: number;
   max: number;
   onChange: (v: number) => void;
   label: string;
   colorFor: (v: number, max: number) => string;
+  valueText?: (v: number) => string;
 }) {
   const ref = useRef<HTMLDivElement>(null);
-  const dragging = useRef(false);
+  const [dragging, setDragging] = useState(false);
   const color = colorFor(value, max);
+  const pct = max <= 1 ? 0 : ((value - 1) / (max - 1)) * 100;
 
+  const set = (v: number) => {
+    const next = Math.min(max, Math.max(1, v));
+    if (next === value) return;
+    try {
+      navigator.vibrate?.(6);
+    } catch {
+      // vibration blocked: fine
+    }
+    onChange(next);
+  };
   const valueFromX = (clientX: number) => {
     const el = ref.current;
     if (!el) return value;
     const rect = el.getBoundingClientRect();
-    const ratio = (clientX - rect.left) / rect.width;
-    return Math.min(max, Math.max(1, Math.ceil(ratio * max)));
+    const ratio = (clientX - rect.left) / Math.max(1, rect.width);
+    return Math.round(ratio * (max - 1)) + 1;
   };
 
   return (
     <div
       ref={ref}
-      role="radiogroup"
+      role="slider"
+      tabIndex={0}
       aria-label={label}
-      className="flex touch-pan-y select-none gap-1"
+      aria-valuemin={1}
+      aria-valuemax={max}
+      aria-valuenow={value}
+      aria-valuetext={valueText ? valueText(value) : `${value}/${max}`}
+      className="relative h-12 cursor-pointer touch-pan-y select-none rounded-np-ctrl"
+      onKeyDown={(e) => {
+        if (e.key === 'ArrowRight' || e.key === 'ArrowUp') set(value + 1);
+        else if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') set(value - 1);
+        else if (e.key === 'Home') set(1);
+        else if (e.key === 'End') set(max);
+        else return;
+        e.preventDefault();
+      }}
       onPointerDown={(e) => {
-        dragging.current = true;
+        setDragging(true);
         e.currentTarget.setPointerCapture(e.pointerId);
-        onChange(valueFromX(e.clientX));
+        set(valueFromX(e.clientX));
       }}
       onPointerMove={(e) => {
-        if (dragging.current) onChange(valueFromX(e.clientX));
+        if (dragging) set(valueFromX(e.clientX));
       }}
-      onPointerUp={() => {
-        dragging.current = false;
-      }}
-      onPointerCancel={() => {
-        dragging.current = false;
-      }}
+      onPointerUp={() => setDragging(false)}
+      onPointerCancel={() => setDragging(false)}
     >
-      {Array.from({ length: max }, (_, i) => {
-        const n = i + 1;
-        const filled = n <= value;
-        return (
-          <button
-            key={n}
-            type="button"
-            role="radio"
-            aria-checked={n === value}
-            aria-label={`${n}/${max}`}
-            onClick={() => onChange(n)}
-            className="h-12 min-w-0 flex-1 rounded-np-ctrl transition-[background-color,box-shadow,opacity] duration-150"
-            style={{
-              backgroundColor: filled ? color : 'rgb(255 255 255 / 0.06)',
-              opacity: filled && n !== value ? 0.55 : 1,
-              boxShadow: n === value ? `0 0 18px -4px ${color}` : undefined,
-            }}
-          />
-        );
-      })}
+      {/* track */}
+      <span aria-hidden className="absolute inset-x-3.5 top-1/2 h-2 -translate-y-1/2 rounded-full bg-np-veil/[0.07]">
+        <span
+          className="absolute inset-y-0 left-0 rounded-full transition-[width,background-color] duration-150 ease-out"
+          style={{ width: `${pct}%`, background: `linear-gradient(90deg, ${color}55, ${color})`, boxShadow: `0 0 14px -2px ${color}` }}
+        />
+        {/* step dots */}
+        {Array.from({ length: max }, (_, i) => {
+          const at = max <= 1 ? 0 : (i / (max - 1)) * 100;
+          const lit = i + 1 <= value;
+          return (
+            <span
+              key={i}
+              className="absolute top-1/2 h-1 w-1 -translate-x-1/2 -translate-y-1/2 rounded-full"
+              style={{ left: `${at}%`, backgroundColor: lit ? 'rgb(9 9 11 / 0.5)' : 'rgb(255 255 255 / 0.22)' }}
+            />
+          );
+        })}
+        {/* thumb */}
+        <span
+          className="absolute top-1/2 h-7 w-7 rounded-full bg-white transition-[left,transform] duration-150 ease-out"
+          style={{
+            left: `${pct}%`,
+            transform: `translate(-50%, -50%) scale(${dragging ? 1.12 : 1})`,
+            boxShadow: `0 0 0 4px ${color}40, 0 0 20px ${color}, 0 2px 6px rgb(0 0 0 / 0.45)`,
+          }}
+        />
+      </span>
     </div>
   );
 }
@@ -218,14 +255,14 @@ function Toggle({
       className="flex w-full items-center gap-3 rounded-np-ctrl py-3 text-left"
     >
       <span
-        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white/5 text-np-text-3 transition-colors"
+        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-np-veil/5 text-np-text-3 transition-colors"
         style={{ color: checked ? activeColor : undefined }}
       >
         <IconCmp size={18} weight={checked ? 'fill' : 'regular'} aria-hidden />
       </span>
       <span className="min-w-0 flex-1 text-sm font-medium text-np-text">{label}</span>
       <span
-        className={`flex h-[30px] w-[50px] shrink-0 items-center rounded-full p-[3px] transition-colors ${checked ? 'justify-end' : 'justify-start bg-white/15'}`}
+        className={`flex h-[30px] w-[50px] shrink-0 items-center rounded-full p-[3px] transition-colors ${checked ? 'justify-end' : 'justify-start bg-np-veil/15'}`}
         style={{ backgroundColor: checked ? activeColor : undefined }}
       >
         <motion.span
@@ -238,12 +275,12 @@ function Toggle({
   );
 }
 
+// Warnings never get a filled red box: a 2px accent line on the left + a coloured icon.
 function Notice({ tone, icon: IconCmp, children }: { tone: 'danger' | 'info'; icon: Icon; children: React.ReactNode }) {
   return (
     <div
-      className={`flex gap-3 rounded-np-card border p-4 text-sm leading-relaxed ${
-        tone === 'danger' ? 'border-np-danger/35 bg-np-danger/10 text-np-text' : 'border-np-line bg-np-surface text-np-text-2'
-      }`}
+      className={`np-flag flex gap-3 p-4 text-sm leading-relaxed ${tone === 'danger' ? 'text-np-text' : 'text-np-text-2'}`}
+      style={{ ['--np-accent-line' as string]: tone === 'danger' ? CRIT : 'rgb(255 255 255 / 0.22)' }}
     >
       <IconCmp size={18} weight={tone === 'danger' ? 'fill' : 'regular'} className={`mt-0.5 shrink-0 ${tone === 'danger' ? 'text-np-danger' : 'text-np-text-3'}`} aria-hidden />
       <span className="min-w-0">{children}</span>
@@ -251,7 +288,10 @@ function Notice({ tone, icon: IconCmp, children }: { tone: 'danger' | 'info'; ic
   );
 }
 
-const SHELL = 'mx-auto w-full max-w-lg px-4 py-6 md:py-10';
+const SHELL = 'mx-auto w-full max-w-lg px-3 py-6 md:py-10';
+
+/** Lotus card skin of each check-in step. */
+const STEP_SKIN: Record<Step, string> = { sleep: 'lt-card-sleep', fatigue: 'lt-card-activity', stress: 'lt-card-stress', body: 'lt-card-stress', load: 'lt-card-activity' };
 
 export default function CheckinForm({ onSubmitted }: { onSubmitted?: () => void } = {}) {
   const router = useRouter();
@@ -259,6 +299,7 @@ export default function CheckinForm({ onSubmitted }: { onSubmitted?: () => void 
   const reduce = useReducedMotion();
   const np = NP[lang];
   const app = APP[lang].checkin;
+  const pk = POLISH[lang].checkin;
   const nf = new Intl.NumberFormat(LOCALE[lang]);
 
   const [step, setStep] = useState(0);
@@ -271,6 +312,9 @@ export default function CheckinForm({ onSubmitted }: { onSubmitted?: () => void 
   });
   const [painFlag, setPainFlag] = useState(false);
   const [painZone, setPainZone] = useState('');
+  // where it hurts, tapped on the body map ("knee:left"); the place names are written into painZone
+  const [painKeys, setPainKeys] = useState<string[]>([]);
+  const [calculating, setCalculating] = useState(false);
   const [trainedToday, setTrainedToday] = useState(false);
   const [rpe, setRpe] = useState(5);
   const [durationMinutes, setDurationMinutes] = useState(60);
@@ -387,6 +431,8 @@ export default function CheckinForm({ onSubmitted }: { onSubmitted?: () => void 
 
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), SUBMIT_TIMEOUT_MS);
+    const started = Date.now();
+    setCalculating(true);
     try {
       // Attach the Supabase session when one exists, otherwise the server
       // falls back to its dev-mode bypass.
@@ -409,6 +455,8 @@ export default function CheckinForm({ onSubmitted }: { onSubmitted?: () => void 
       }
 
       const data: CheckinApiResponse = await res.json();
+      const rest = CALC_MIN_MS - (Date.now() - started);
+      if (rest > 0) await new Promise((r) => setTimeout(r, reduce ? Math.min(rest, 600) : rest));
       dropQueuedToday();
       setResult(data);
       window.dispatchEvent(new Event(CHECKIN_EVENT));
@@ -419,6 +467,7 @@ export default function CheckinForm({ onSubmitted }: { onSubmitted?: () => void 
     } finally {
       clearTimeout(timer);
       setSubmitting(false);
+      setCalculating(false);
     }
   }
 
@@ -442,7 +491,7 @@ export default function CheckinForm({ onSubmitted }: { onSubmitted?: () => void 
             <span className="flex h-20 w-20 items-center justify-center rounded-3xl bg-np-strain/15 text-np-strain-light">
               <CloudCheck size={40} weight="fill" aria-hidden />
             </span>
-            <h1 className="mt-5 text-2xl font-bold tracking-tight text-np-text" style={{ fontFamily: 'inherit' }}>
+            <h1 className="mt-5 text-2xl np-editorial font-semibold text-np-text">
               {t.offline.savedTitle}
             </h1>
             <p className="mt-3 text-[15px] leading-relaxed text-np-text-2">{t.offline.savedBody(day)}</p>
@@ -461,17 +510,53 @@ export default function CheckinForm({ onSubmitted }: { onSubmitted?: () => void 
   }
 
   // ---------------------------------------------------------------- result
+  // Order: greeting → three arcs (readiness · load · wellness) → safety flags → today's
+  // load target on the arc → penalty chips → telemetry table → coach cards → actions.
   if (result) {
     const r = result.readiness;
+    const tl = APP[lang].v3.telemetry;
     const target = r.isPainBlocked ? null : targetLoadRange(r.score);
     const delta = baselineDelta(r.score, earlierScores);
-    const sessionIndex = trainedToday ? loadIndex(sessionLoad(rpe, durationMinutes), usualDailyLoad(r.chronicLoad ?? null)) : null;
+    const usual = usualDailyLoad(r.chronicLoad ?? null);
+    const dayIndex = loadIndex(trainedToday ? sessionLoad(rpe, durationMinutes) : 0, usual);
+    const wellness = wellnessPct(r.hooperScore ?? null);
+    const fmt2 = (v: number) => v.toLocaleString(LOCALE[lang], { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const rows: TelemetryRow[] = [];
+    if (r.acwr !== null) {
+      const band = acwrBand(r.acwr);
+      rows.push({ key: 'acwr', label: tl.acwr, hint: tl.acwrHint, value: fmt2(r.acwr), pill: { text: tl.acwrBand[band], cls: ACWR_PILL[band] }, color: BLUE });
+    }
+    if (r.monotony !== undefined && r.monotony !== null) {
+      const high = r.monotony > 2;
+      rows.push({ key: 'mono', label: tl.monotony, hint: tl.monotonyHint, value: fmt2(r.monotony), pill: { text: high ? tl.monotonyHigh : tl.monotonyOk, cls: high ? 'np-pill-warn' : '' } });
+    }
+    if (r.hooperScore !== undefined && r.hooperScore >= 4) {
+      const base = r.hooperBaseline ?? null;
+      const d = base !== null ? Math.round((r.hooperScore - base) * 10) / 10 : null;
+      rows.push({
+        key: 'hooper',
+        label: tl.hooper,
+        hint: tl.hooperHint,
+        value: String(r.hooperScore),
+        unit: '/28',
+        // for Hooper, lower is better: show the arrow of the raw change, the words carry the meaning
+        delta: d !== null ? { value: d, text: tl.vsBase(`${d > 0 ? '+' : d < 0 ? '−' : '±'}${nf.format(Math.abs(d))}`) } : undefined,
+        color: CYAN,
+      });
+    }
+    rows.push({ key: 'sleep', label: tl.sleep, hint: tl.sleepHint, value: String(values.sleepQuality), unit: '/7', color: CYAN });
+    if (r.trainingStreak !== undefined) {
+      rows.push({ key: 'streak', label: tl.streak, hint: tl.streakHint, value: tl.streakDays(r.trainingStreak), pill: r.trainingStreak > 6 ? { text: '>6', cls: 'np-pill-warn' } : undefined });
+    }
+
     return (
-      <div className={SHELL}>
+      <div className={`${SHELL} md:max-w-2xl`}>
         <motion.div initial={reduce ? false : { opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={SPRING} className="space-y-3">
-          <div className="pb-2 pt-2">
-            <ReadinessRing lang={lang} score={r.score} zone={r.zone} delta={delta} size={224} />
-          </div>
+          <Greeting lang={lang} tint={ZONE[r.zone].ambient} />
+
+          <section className="lt-card-readiness relative overflow-hidden px-6 py-8 sm:px-10">
+            <HeroArcs lang={lang} score={r.score} zone={r.zone} loadIndex={dayIndex} wellness={wellness} delta={delta} />
+          </section>
 
           {result.safetyViolations.map((v, i) => (
             <Notice key={`v${i}`} tone="danger" icon={WarningOctagon}>
@@ -486,44 +571,47 @@ export default function CheckinForm({ onSubmitted }: { onSubmitted?: () => void 
           ))}
 
           {/* today's load target (ADP Load Index corridor from the engine's readiness) */}
-          <section className="np-card p-4" aria-labelledby="ck-target">
-            <p id="ck-target" className="np-overline">
+          <section className="lt-card-activity relative overflow-hidden p-5" aria-labelledby="ck-target">
+            <span aria-hidden className="np-ambient -right-10 -top-16 h-40 w-40" style={{ ['--np-ambient' as string]: 'rgb(255 197 61 / 0.22)' }} />
+            <p id="ck-target" className="np-label relative">
               {app.doneTarget}
             </p>
             {target ? (
-              <>
+              <div className="relative">
                 <p className="mt-2 flex flex-wrap items-baseline gap-x-2">
-                  <span className="np-num text-5xl" style={{ color: STRAIN }}>
+                  <span className="np-metric text-5xl" style={{ color: STRAIN }}>
                     {app.doneTargetBody(target.from, target.to)}
                   </span>
                   <span className="text-sm text-np-text-3">{app.doneTargetOf}</span>
                 </p>
-                {sessionIndex !== null && (
-                  <p className="mt-2 text-sm text-np-text-2">
-                    <span className="np-pill np-pill-strain mr-2">{np.load.title}</span>
-                    {nf.format(sessionIndex)} / 100 · {np.load.zones[sessionIndex <= 40 ? 'light' : sessionIndex <= 75 ? 'optimal' : 'overload']}
-                  </p>
-                )}
-                <p className="mt-2 text-xs leading-relaxed text-np-text-3">{app.doneTargetScale}</p>
-              </>
+                <div className="mt-4">
+                  <LoadIndexArc lang={lang} index={dayIndex} target={target} title={np.load.title} />
+                </div>
+                <p className="mt-3 text-xs leading-relaxed text-np-text-3">{app.doneTargetScale}</p>
+              </div>
             ) : (
-              <p className="mt-2 text-sm leading-relaxed text-np-text-2">{app.doneTargetPain}</p>
+              <p className="relative mt-2 text-sm leading-relaxed text-np-text-2">{app.doneTargetPain}</p>
             )}
           </section>
 
           {r.penalties.length > 0 && (
-            <section className="np-card p-4">
-              <p className="np-overline mb-3">{t.checkin.whyScore}</p>
-              <ul className="space-y-2">
+            <section className="lt-card-readiness p-4">
+              <p className="np-label mb-3">{t.checkin.whyScore}</p>
+              <ul className="flex flex-wrap gap-2">
                 {r.penalties.map((p, i) => (
-                  <li key={i} className="flex items-start justify-between gap-4 text-sm">
-                    <span className="min-w-0 text-np-text-2">{translatePenalty(t, p)}</span>
-                    <span className="np-num shrink-0 text-sm text-np-text-3">−{p.points}</span>
+                  <li
+                    key={i}
+                    className="inline-flex max-w-full items-start gap-2 rounded-np-ctrl border border-np-line bg-np-veil/[0.03] px-3 py-1.5 text-[13px] leading-snug text-np-text-2"
+                  >
+                    <span className="np-mono shrink-0 font-semibold text-np-warn">−{p.points}</span>
+                    <span className="min-w-0">{translatePenalty(t, p)}</span>
                   </li>
                 ))}
               </ul>
             </section>
           )}
+
+          <TelemetryTable title={tl.title} rows={rows} />
 
           {result.sorenessSaved === false && (
             <Notice tone="info" icon={Info}>
@@ -531,28 +619,30 @@ export default function CheckinForm({ onSubmitted }: { onSubmitted?: () => void 
             </Notice>
           )}
 
-          <CoachReplyCard className="mt-3" />
-          <RtpAthleteCard className="mt-3" />
-          <CheckinStreakCard showCta={false} className="mt-3" />
+          {/* coach messages, return-to-play, streak: one dark island on the gradient */}
+          <div className="space-y-3 empty:hidden">
+            <CoachReplyCard />
+            <RtpAthleteCard />
+            <CheckinStreakCard showCta={false} />
+          </div>
 
-          <div className="space-y-3 pt-4">
+          <div className="grid gap-3 pt-4 sm:grid-cols-[1fr_auto]">
             <button
               type="button"
               onClick={() => router.push('/chat')}
-              className="np-btn-primary inline-flex h-14 w-full items-center justify-center gap-2 rounded-np-card text-base font-bold"
+              className="np-btn-primary inline-flex h-14 w-full items-center justify-center gap-2 rounded-full text-base font-bold"
             >
               {t.checkin.toPlan}
-              <ArrowRight size={18} weight="bold" aria-hidden />
             </button>
             <button
               type="button"
               onClick={() => router.push('/training')}
-              className="np-btn-glass inline-flex h-12 w-full items-center justify-center gap-2 rounded-np-card text-sm font-semibold"
+              className="np-btn-glass inline-flex h-14 w-full items-center justify-center gap-2 rounded-full px-5 text-sm font-semibold"
             >
               {COACH_LABELS[lang].title}
-              <ArrowRight size={16} weight="bold" aria-hidden />
             </button>
           </div>
+          <Disclaimer lang={lang} className="!mt-6" />
         </motion.div>
       </div>
     );
@@ -581,16 +671,16 @@ export default function CheckinForm({ onSubmitted }: { onSubmitted?: () => void 
     return (
       <div>
         <div className="mb-4 flex items-center gap-3">
-          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/5 text-np-text-2">
+          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-np-veil/5 text-np-text-2">
             <IconCmp size={20} aria-hidden />
           </span>
           <span className="flex-1" />
           <BigValue value={values[field]} max={7} />
         </div>
-        <SegmentScale value={values[field]} max={7} onChange={(v) => setScale(field, v)} label={key === 'body' ? t.checkin.soreness : stepTitles[key]} colorFor={bandColor} />
-        <div className="mt-2 flex justify-between text-xs text-np-text-3">
-          <span>{low}</span>
-          <span>{high}</span>
+        <SegmentedScale value={values[field]} max={7} onChange={(v) => setScale(field, v)} label={key === 'body' ? t.checkin.soreness : stepTitles[key]} />
+        <div className="mt-2.5 flex justify-between gap-3 text-xs font-medium text-white/75">
+          <span>1 · {low}</span>
+          <span className="text-right">{high} · 7</span>
         </div>
       </div>
     );
@@ -620,7 +710,7 @@ export default function CheckinForm({ onSubmitted }: { onSubmitted?: () => void 
               disabled={i > reached}
               aria-label={app.steps[s]}
               aria-current={i === step ? 'step' : undefined}
-              className={`h-2 flex-1 rounded-full transition-colors ${i === step ? 'bg-np-text' : i < step || i <= reached ? 'bg-np-strain' : 'bg-white/10'}`}
+              className={`h-2 flex-1 rounded-full transition-colors ${i === step ? 'bg-np-text' : i < step || i <= reached ? 'bg-[#B8F23C]/70' : 'bg-[#9AA7B8]/10'}`}
             />
           ))}
         </div>
@@ -629,11 +719,11 @@ export default function CheckinForm({ onSubmitted }: { onSubmitted?: () => void 
       {/* live preview of the readiness score */}
       <section
         aria-live="polite"
-        className="np-card np-glass sticky top-[calc(env(safe-area-inset-top)+3.75rem)] z-20 flex items-center gap-3 p-3 md:top-3"
+        className="lt-card-readiness [background-image:linear-gradient(135deg,#0D1B2A_0%,#0A0D14_100%)] backdrop-blur-xl sticky top-[calc(env(safe-area-inset-top)+3.75rem)] z-20 flex min-h-[82px] items-center gap-3 p-3 md:top-3"
       >
         <ScoreDial score={preview ? preview.score : null} zone={preview ? preview.zone : null} size={56} label={previewLabel} />
         <div className="min-w-0 flex-1">
-          <p className="np-overline">{app.liveTitle}</p>
+          <p className="np-label">{app.liveTitle}</p>
           {preview ? (
             <>
               <p className="mt-1 flex flex-wrap items-center gap-2 text-sm text-np-text-2">
@@ -658,9 +748,9 @@ export default function CheckinForm({ onSubmitted }: { onSubmitted?: () => void 
           animate={{ opacity: 1, x: 0 }}
           exit={reduce ? { opacity: 0 } : { opacity: 0, x: -16 }}
           transition={reduce ? { duration: 0.1 } : { duration: 0.2 }}
-          className="np-card p-5"
+          className={`p-5 ${STEP_SKIN[stepKey]}`}
         >
-          <h1 className="text-2xl font-bold leading-tight tracking-tight text-np-text" style={{ fontFamily: 'inherit' }}>
+          <h1 className="text-2xl np-editorial font-semibold leading-tight text-np-text">
             {stepTitles[stepKey]}
           </h1>
           {step === 0 && <p className="mt-1 text-sm leading-relaxed text-np-text-3">{t.checkin.subtitle}</p>}
@@ -672,18 +762,30 @@ export default function CheckinForm({ onSubmitted }: { onSubmitted?: () => void 
                 {scaleCard('body')}
                 <div className="divide-y divide-np-line pt-3">
                   <div>
-                    <Toggle checked={painFlag} onChange={setPainFlag} label={t.checkin.painFlag} icon={Bandaids} activeColor={DANGER} />
+                    <Toggle checked={painFlag} onChange={setPainFlag} label={t.checkin.painFlag} icon={Bandaids} activeColor={CRIT} />
                     <AnimatePresence initial={false}>
                       {painFlag && (
                         <motion.div {...reveal} className="overflow-hidden">
+                          <PainMap
+                            lang={lang}
+                            selected={painKeys}
+                            onChange={(keys, names) => {
+                              setPainKeys(keys);
+                              setPainZone(names.join(', '));
+                            }}
+                          />
+                          <label className="mb-1.5 mt-3 block text-xs font-medium text-white/75" htmlFor="ck-pain-zone">
+                            {pk.typeToo}
+                          </label>
                           <input
+                            id="ck-pain-zone"
                             type="text"
                             placeholder={t.checkin.painZonePlaceholder}
                             value={painZone}
                             onChange={(e) => setPainZone(e.target.value)}
-                            className="mb-3 w-full rounded-np-ctrl border border-np-line bg-white/5 px-3.5 py-2.5 text-sm text-np-text placeholder:text-np-text-3"
+                            className="mb-3 h-12 w-full rounded-2xl border border-white/10 bg-white/[0.05] px-4 text-sm text-white placeholder:text-white/50 focus:border-[#B8F23C]/60 focus:outline-none"
                           />
-                          <p className="mb-3 text-xs leading-relaxed text-np-text-2">{app.painNote}</p>
+                          <p className="mb-3 text-xs leading-relaxed text-white/80">{app.painNote}</p>
                         </motion.div>
                       )}
                     </AnimatePresence>
@@ -695,7 +797,7 @@ export default function CheckinForm({ onSubmitted }: { onSubmitted?: () => void 
                         <motion.div {...reveal} className="overflow-hidden">
                           <div className="pb-2">
                             <p className="mb-3 text-xs leading-relaxed text-np-text-2">{t.checkin.sorenessMapHint}</p>
-                            <SorenessSilhouette value={sorenessMap} onChange={setSorenessMap} lang={lang} framed={false} />
+                            <SorenessSilhouette value={sorenessMap} onChange={setSorenessMap} lang={lang} framed={false} tabs />
                           </div>
                         </motion.div>
                       )}
@@ -717,7 +819,7 @@ export default function CheckinForm({ onSubmitted }: { onSubmitted?: () => void 
                             <span className="text-xs text-np-text-2">{t.checkin.rpe}</span>
                             <BigValue value={rpe} max={10} />
                           </div>
-                          <SegmentScale value={rpe} max={10} onChange={setRpe} label={t.checkin.rpe} colorFor={() => STRAIN} />
+                          <GlowScale value={rpe} max={10} onChange={setRpe} label={t.checkin.rpe} colorFor={() => STRAIN} />
                           <p className="mt-2 text-xs text-np-text-3">{t.checkin.rpeHint}</p>
                         </div>
                         <div>
@@ -732,13 +834,13 @@ export default function CheckinForm({ onSubmitted }: { onSubmitted?: () => void 
                                 className={`np-num rounded-full border px-3.5 py-1.5 text-sm transition-colors ${
                                   durationMinutes === m
                                     ? 'border-np-strain/60 bg-np-strain/20 text-np-strain-light'
-                                    : 'border-np-line bg-white/5 text-np-text-2 hover:border-np-line-strong'
+                                    : 'border-np-line bg-np-veil/5 text-np-text-2 hover:border-np-line-strong'
                                 }`}
                               >
                                 {m}
                               </button>
                             ))}
-                            <label className="inline-flex items-center gap-1.5 rounded-full border border-np-line bg-white/5 px-3 py-1.5">
+                            <label className="inline-flex items-center gap-1.5 rounded-full border border-np-line bg-np-veil/5 px-3 py-1.5">
                               <input
                                 type="number"
                                 min={5}
@@ -775,26 +877,27 @@ export default function CheckinForm({ onSubmitted }: { onSubmitted?: () => void 
         </Notice>
       )}
 
-      <div className="flex gap-3 pt-1">
+      {/* sticky: Back / Next always stay above the floating dock, even on a short or half-scrolled card */}
+      <div className="sticky bottom-[calc(max(1rem,env(safe-area-inset-bottom))+5.5rem)] z-30 flex gap-3 pt-1">
         {step > 0 && (
           <button
             type="button"
             onClick={() => goTo(step - 1)}
-            className="np-btn-glass inline-flex h-14 shrink-0 items-center justify-center gap-2 rounded-np-card px-5 text-sm font-semibold"
+            className="np-btn-glass inline-flex h-14 shrink-0 items-center justify-center gap-2 rounded-full px-5 text-sm font-semibold"
           >
-            <ArrowLeft size={16} weight="bold" aria-hidden />
             {app.back}
           </button>
         )}
         <button
           type="submit"
           disabled={submitting}
-          className="np-btn-primary inline-flex h-14 min-w-0 flex-1 items-center justify-center gap-2 rounded-np-card text-base font-bold disabled:opacity-60"
+          className="np-btn-primary inline-flex h-14 min-w-0 flex-1 items-center justify-center gap-2 rounded-full text-base font-bold disabled:opacity-60"
         >
           {step === LAST ? (submitting ? t.common.loading : t.checkin.submit) : app.next}
-          {!submitting && <ArrowRight size={18} weight="bold" aria-hidden />}
         </button>
       </div>
+      <Disclaimer lang={lang} className="!mt-8" />
+      <AnimatePresence>{calculating && <CalcOverlay key="calc" title={pk.calc.title} sub={pk.calc.sub} />}</AnimatePresence>
     </form>
   );
 }

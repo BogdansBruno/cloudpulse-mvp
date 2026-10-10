@@ -177,7 +177,7 @@ export default function TeamInvitePanel() {
       <div className="flex flex-wrap items-end justify-between gap-2">
         <div>
           <h2 className="flex items-center gap-2 text-base font-semibold tracking-[-0.01em] text-zinc-50">
-            <QrCode size={18} weight="fill" className="text-[#CCFF00]" />
+            <QrCode size={18} weight="fill" className="text-[#32ADE6]" />
             {inv.panelTitle}
           </h2>
           <p className="mt-1 max-w-[56ch] text-xs leading-relaxed text-zinc-400">{inv.panelHint}</p>
@@ -191,8 +191,8 @@ export default function TeamInvitePanel() {
       </div>
 
       {error && (
-        <div className="flex gap-3 rounded-2xl bg-[#FF4D5E]/[0.08] p-3 text-sm text-zinc-200 ring-1 ring-inset ring-[#FF4D5E]/30">
-          <WarningOctagon size={16} weight="fill" className="mt-0.5 shrink-0 text-[#FF4D5E]" />
+        <div className="flex gap-3 rounded-2xl bg-[#FF3B30]/[0.08] p-3 text-sm text-zinc-200 ring-1 ring-inset ring-[#FF3B30]/30">
+          <WarningOctagon size={16} weight="fill" className="mt-0.5 shrink-0 text-[#FF3B30]" />
           <span>{error}</span>
         </div>
       )}
@@ -207,7 +207,7 @@ export default function TeamInvitePanel() {
               onChange={(e) => setNewName(e.target.value)}
               maxLength={60}
               placeholder={inv.teamNamePlaceholder}
-              className="mt-1.5 w-full rounded-xl bg-white/[0.05] px-3.5 py-2.5 text-sm text-zinc-50 placeholder-zinc-500 ring-1 ring-inset ring-white/10 focus:outline-none focus:ring-[#CCFF00]/50"
+              className="mt-1.5 w-full rounded-xl bg-white/[0.05] px-3.5 py-2.5 text-sm text-zinc-50 placeholder-zinc-500 ring-1 ring-inset ring-white/10 focus:outline-none focus:ring-[#32ADE6]/50"
             />
           </label>
           <div className="flex gap-2">
@@ -219,7 +219,7 @@ export default function TeamInvitePanel() {
             <button
               type="submit"
               disabled={creating || !newName.trim()}
-              className="rounded-xl bg-[#CCFF00] px-4 py-2.5 text-sm font-semibold text-zinc-950 disabled:opacity-50"
+              className="rounded-xl bg-white px-4 py-2.5 text-sm font-semibold text-zinc-950 disabled:opacity-50"
             >
               {creating ? inv.creating : inv.createTeam}
             </button>
@@ -256,7 +256,7 @@ export default function TeamInvitePanel() {
 
               <div className="mt-4 flex flex-wrap gap-2">
                 <button type="button" onClick={() => copyLink(team)} className={ghostBtn}>
-                  {copiedId === team.id ? <Check size={13} weight="bold" className="text-[#CCFF00]" /> : <Copy size={13} />}
+                  {copiedId === team.id ? <Check size={13} weight="bold" className="text-[#32ADE6]" /> : <Copy size={13} />}
                   {copiedId === team.id ? inv.copied : inv.copyLink}
                 </button>
                 <button type="button" onClick={() => openFullscreen(team)} disabled={!team.invite_active} className={ghostBtn}>
@@ -277,7 +277,7 @@ export default function TeamInvitePanel() {
                       type="button"
                       onClick={() => regenerate(team)}
                       disabled={busy}
-                      className="rounded-full bg-[#CCFF00] px-3 py-1.5 font-semibold text-zinc-950 disabled:opacity-50"
+                      className="rounded-full bg-white px-3 py-1.5 font-semibold text-zinc-950 disabled:opacity-50"
                     >
                       {inv.confirm}
                     </button>
@@ -291,7 +291,7 @@ export default function TeamInvitePanel() {
               <div className="mt-4 flex items-center justify-between gap-3 border-t border-white/[0.06] pt-3">
                 <div>
                   <p className="text-sm text-zinc-200">{inv.accepting}</p>
-                  <p className="text-xs" style={{ color: team.invite_active ? '#CCFF00' : '#A1A1AA' }}>
+                  <p className="text-xs" style={{ color: team.invite_active ? '#32ADE6' : '#C3C5C7' }}>
                     {team.invite_active ? inv.acceptingOn : inv.acceptingOff}
                   </p>
                 </div>
@@ -303,7 +303,7 @@ export default function TeamInvitePanel() {
                   disabled={busy}
                   onClick={() => toggleInvite(team)}
                   className={`relative h-7 w-12 shrink-0 rounded-full transition-colors duration-200 disabled:opacity-60 ${
-                    team.invite_active ? 'bg-[#CCFF00]' : 'bg-white/[0.12]'
+                    team.invite_active ? 'bg-white' : 'bg-white/[0.12]'
                   }`}
                 >
                   <span

@@ -16,7 +16,7 @@ export default function CoachInsight({ lang, input, chatHref = '/chat' }: { lang
   return (
     <div>
       <div className="flex items-center gap-3">
-        <span className="np-ai-orb np-logo-pulse flex h-9 w-9 shrink-0 items-center justify-center" style={{ ['--np-glow' as string]: 'rgb(124 77 255 / 0.55)' }} aria-hidden>
+        <span className="np-ai-orb np-logo-pulse flex h-9 w-9 shrink-0 items-center justify-center" style={{ ['--np-glow' as string]: 'rgb(255 122 89 / 0.55)' }} aria-hidden>
           <Icon name="sparkle" size={20} />
         </span>
         <div className="min-w-0">
@@ -30,7 +30,7 @@ export default function CoachInsight({ lang, input, chatHref = '/chat' }: { lang
         {input ? t.text(input) : NP[lang].noScore}
       </p>
       <p className="mt-2 text-[11px] leading-4 text-np-text-3">{t.disclaimer}</p>
-      <Link href={chatHref} className="np-btn-glass mt-3 flex h-11 w-full items-center justify-center gap-2 rounded-np-ctrl text-sm font-medium">
+      <Link href={chatHref} className="np-btn-glass mt-3 flex h-11 w-full items-center justify-center gap-2 rounded-full text-sm font-medium">
         {t.ask}
         <Icon name="arrowR" size={16} />
       </Link>

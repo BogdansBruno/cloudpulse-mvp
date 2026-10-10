@@ -9,8 +9,7 @@ import { useEffect, useState, type ReactElement } from 'react';
 import type { Lang } from '@/lib/i18n/translations';
 import type { ReadinessZone } from '@/lib/readiness-engine';
 import { LOCALE, NP, signed } from './copy';
-import { Icon } from './icons';
-import { ZONE, useReducedMotion } from './ui';
+import { DeltaPill, ZONE, useReducedMotion } from './ui';
 
 const R = 88;
 const C = 2 * Math.PI * R;
@@ -51,33 +50,32 @@ export default function ReadinessRing({
     <div className="mx-auto flex w-fit flex-col items-center">
     <div className="relative" style={{ width: size, height: size }}>
       {Z && (
-        <span
-          aria-hidden
-          className="pointer-events-none absolute inset-[-28%] rounded-full blur-3xl"
-          style={{ background: `radial-gradient(circle, ${Z.glow} 0%, transparent 65%)` }}
-        />
+        <span aria-hidden className="np-ambient np-ambient-pulse inset-[-30%]" style={{ ['--np-ambient' as string]: Z.ambient }} />
       )}
       <svg className="relative h-full w-full -rotate-90" viewBox="0 0 200 200" fill="none" aria-hidden>
         <defs>
           <linearGradient id={gid} x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0" stopColor={Z?.from ?? '#7D8594'} />
-            <stop offset="1" stopColor={Z?.to ?? '#7D8594'} />
+            <stop offset="0" stopColor={Z?.stops[0] ?? '#C3C5C7'} />
+            <stop offset="0.5" stopColor={Z?.stops[1] ?? '#C3C5C7'} />
+            <stop offset="1" stopColor={Z?.stops[2] ?? '#C3C5C7'} />
           </linearGradient>
         </defs>
-        <circle cx="100" cy="100" r={R} stroke="rgb(255 255 255 / 0.06)" strokeWidth="12" />
-        <circle cx="100" cy="100" r="72" stroke="rgb(255 255 255 / 0.08)" strokeWidth="1" strokeDasharray="1 5" />
+        <circle cx="100" cy="100" r={R} className="np-svg-track" stroke="rgb(255 255 255 / 0.1)" strokeWidth="3" />
+        <circle cx="100" cy="100" r="76" className="np-svg-grid" stroke="rgb(255 255 255 / 0.08)" strokeWidth="1" strokeDasharray="1 5" />
         {/* engine zone borders 50 and 75 as ticks on the track */}
         {[50, 75].map((p) => {
           const a = (p / 100) * 2 * Math.PI;
           return (
             <line
               key={p}
-              x1={100 + 80 * Math.cos(a)}
-              y1={100 + 80 * Math.sin(a)}
-              x2={100 + 96 * Math.cos(a)}
-              y2={100 + 96 * Math.sin(a)}
-              stroke="rgb(255 255 255 / 0.22)"
-              strokeWidth="1.5"
+              x1={100 + 79 * Math.cos(a)}
+              y1={100 + 79 * Math.sin(a)}
+              x2={100 + 97 * Math.cos(a)}
+              y2={100 + 97 * Math.sin(a)}
+              className="np-svg-tick" stroke="rgb(255 255 255 / 0.35)"
+              strokeWidth="1"
+              strokeLinecap="round"
+              shapeRendering="geometricPrecision"
             />
           );
         })}
@@ -89,19 +87,30 @@ export default function ReadinessRing({
             cy="100"
             r={R}
             stroke={`url(#${gid})`}
-            strokeWidth="12"
+            strokeWidth="3"
             strokeLinecap="round"
             strokeDasharray={C.toFixed(1)}
             strokeDashoffset={offset.toFixed(1)}
           />
         )}
+        {has && Z && score !== null && score > 0 && (
+          <circle
+            className="np-ring-head"
+            data-on={offset !== C}
+            cx={100 + R * Math.cos((Math.min(100, score) / 100) * 2 * Math.PI)}
+            cy={100 + R * Math.sin((Math.min(100, score) / 100) * 2 * Math.PI)}
+            r="4.5"
+            fill="#FFFFFF"
+            style={{ filter: `drop-shadow(0 0 6px ${Z.stops[2]})` }}
+          />
+        )}
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
         <span className="sr-only">{has ? `${t.readiness}: ${score} / 100, ${t.zone[zone]}` : t.noScore}</span>
-        <span className="np-overline" aria-hidden>
+        <span className="np-label" aria-hidden>
           {t.readiness}
         </span>
-        <span className="np-num mt-2 text-6xl" aria-hidden>
+        <span className="np-metric mt-2 text-6xl" aria-hidden>
           {has ? nf.format(score) : '—'}
         </span>
         {has && Z ? (
@@ -114,12 +123,7 @@ export default function ReadinessRing({
         )}
       </div>
     </div>
-      {has && delta && (
-        <p className="np-pill mt-3">
-          <Icon name={delta.delta > 0 ? 'up' : delta.delta < 0 ? 'down' : 'flat'} size={12} />
-          {t.vsAvg(signed(delta.delta, lang), delta.days)}
-        </p>
-      )}
+      {has && delta && <DeltaPill className="mt-3" delta={delta.delta} text={t.vsAvg(signed(delta.delta, lang), delta.days)} />}
     </div>
   );
 }

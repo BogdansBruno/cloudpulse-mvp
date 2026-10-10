@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
-import { CalendarBlank, CaretLeft, CaretRight } from '@phosphor-icons/react';
+import { CaretLeft, CaretRight } from '@phosphor-icons/react';
 import type { Lang } from '@/lib/i18n/translations';
 
 type Props = {
@@ -158,11 +158,10 @@ export default function DatePicker({ value, onChange, placeholder, lang }: Props
         aria-haspopup="dialog"
         aria-expanded={open}
         className={`flex w-full items-center gap-2.5 rounded-xl bg-white/[0.05] px-3.5 py-2.5 text-left text-sm ring-1 ring-inset transition-all duration-200 ${
-          open ? 'ring-2 ring-[#CCFF00]/50' : 'ring-white/10 hover:bg-white/[0.08]'
+          open ? 'ring-2 ring-[#B8F23C]/50' : 'ring-white/10 hover:bg-white/[0.08]'
         }`}
       >
-        <CalendarBlank size={16} className="shrink-0 text-zinc-400" />
-        <span className={value ? 'text-zinc-50' : 'text-zinc-500'}>
+        <span className={value ? 'text-white' : 'text-white/75'}>
           {value ? formatDisplayDate(value, lang) : placeholder}
         </span>
       </button>
@@ -195,14 +194,14 @@ export default function DatePicker({ value, onChange, placeholder, lang }: Props
                         type="button"
                         onClick={() => setViewDate(new Date(year, month - 1, 1))}
                         aria-label="Previous month"
-                        className="flex h-7 w-7 items-center justify-center rounded-lg text-zinc-400 transition-colors hover:bg-white/10 hover:text-white"
+                        className="flex h-7 w-7 items-center justify-center rounded-lg text-white/75 transition-colors hover:bg-white/10 hover:text-white"
                       >
                         <CaretLeft size={14} weight="bold" />
                       </button>
                       <button
                         type="button"
                         onClick={() => setLevel('months')}
-                        className="rounded-lg px-2 py-1 text-sm font-medium capitalize text-zinc-100 transition-colors hover:bg-white/10 hover:text-[#CCFF00]"
+                        className="rounded-lg px-2 py-1 text-sm font-medium capitalize text-white transition-colors hover:bg-white/10 hover:text-[#B8F23C]"
                       >
                         {monthLabel}
                       </button>
@@ -210,7 +209,7 @@ export default function DatePicker({ value, onChange, placeholder, lang }: Props
                         type="button"
                         onClick={() => setViewDate(new Date(year, month + 1, 1))}
                         aria-label="Next month"
-                        className="flex h-7 w-7 items-center justify-center rounded-lg text-zinc-400 transition-colors hover:bg-white/10 hover:text-white"
+                        className="flex h-7 w-7 items-center justify-center rounded-lg text-white/75 transition-colors hover:bg-white/10 hover:text-white"
                       >
                         <CaretRight size={14} weight="bold" />
                       </button>
@@ -218,7 +217,7 @@ export default function DatePicker({ value, onChange, placeholder, lang }: Props
 
                     <div className="mb-1 grid grid-cols-7 gap-y-1">
                       {weekdayLabels.map((w, i) => (
-                        <span key={i} className="flex h-7 items-center justify-center text-[11px] font-medium text-zinc-500">
+                        <span key={i} className="flex h-7 items-center justify-center text-[11px] font-medium text-white/75">
                           {w}
                         </span>
                       ))}
@@ -235,9 +234,9 @@ export default function DatePicker({ value, onChange, placeholder, lang }: Props
                             onClick={() => pickDay(iso)}
                             className={`mx-auto flex h-8 w-8 items-center justify-center rounded-full text-sm transition-colors ${
                               isSelected
-                                ? 'bg-[#CCFF00] font-bold text-black'
+                                ? 'bg-white font-bold text-black'
                                 : inMonth
-                                  ? `text-zinc-100 hover:bg-white/10 ${isToday ? 'ring-1 ring-white/25' : ''}`
+                                  ? `text-white hover:bg-white/10 ${isToday ? 'ring-1 ring-white/25' : ''}`
                                   : 'text-zinc-600 hover:bg-white/5'
                             }`}
                           >
@@ -256,14 +255,14 @@ export default function DatePicker({ value, onChange, placeholder, lang }: Props
                         type="button"
                         onClick={() => setViewDate(new Date(year - 1, month, 1))}
                         aria-label="Previous year"
-                        className="flex h-7 w-7 items-center justify-center rounded-lg text-zinc-400 transition-colors hover:bg-white/10 hover:text-white"
+                        className="flex h-7 w-7 items-center justify-center rounded-lg text-white/75 transition-colors hover:bg-white/10 hover:text-white"
                       >
                         <CaretLeft size={14} weight="bold" />
                       </button>
                       <button
                         type="button"
                         onClick={() => setLevel('years')}
-                        className="rounded-lg px-2 py-1 text-sm font-medium text-zinc-100 transition-colors hover:bg-white/10 hover:text-[#CCFF00]"
+                        className="rounded-lg px-2 py-1 text-sm font-medium text-white transition-colors hover:bg-white/10 hover:text-[#B8F23C]"
                       >
                         {year}
                       </button>
@@ -271,7 +270,7 @@ export default function DatePicker({ value, onChange, placeholder, lang }: Props
                         type="button"
                         onClick={() => setViewDate(new Date(year + 1, month, 1))}
                         aria-label="Next year"
-                        className="flex h-7 w-7 items-center justify-center rounded-lg text-zinc-400 transition-colors hover:bg-white/10 hover:text-white"
+                        className="flex h-7 w-7 items-center justify-center rounded-lg text-white/75 transition-colors hover:bg-white/10 hover:text-white"
                       >
                         <CaretRight size={14} weight="bold" />
                       </button>
@@ -286,7 +285,7 @@ export default function DatePicker({ value, onChange, placeholder, lang }: Props
                             setLevel('days');
                           }}
                           className={`rounded-lg py-2.5 text-sm capitalize transition-colors ${
-                            i === month ? 'bg-[#CCFF00] font-bold text-black' : 'text-zinc-100 hover:bg-white/10'
+                            i === month ? 'bg-white font-bold text-black' : 'text-white hover:bg-white/10'
                           }`}
                         >
                           {m}
@@ -303,18 +302,18 @@ export default function DatePicker({ value, onChange, placeholder, lang }: Props
                         type="button"
                         onClick={() => setViewDate(new Date(year - 12, month, 1))}
                         aria-label="Previous years"
-                        className="flex h-7 w-7 items-center justify-center rounded-lg text-zinc-400 transition-colors hover:bg-white/10 hover:text-white"
+                        className="flex h-7 w-7 items-center justify-center rounded-lg text-white/75 transition-colors hover:bg-white/10 hover:text-white"
                       >
                         <CaretLeft size={14} weight="bold" />
                       </button>
-                      <span className="text-sm font-medium text-zinc-100">
+                      <span className="text-sm font-medium text-white">
                         {yearsStart}–{yearsStart + 11}
                       </span>
                       <button
                         type="button"
                         onClick={() => setViewDate(new Date(year + 12, month, 1))}
                         aria-label="Next years"
-                        className="flex h-7 w-7 items-center justify-center rounded-lg text-zinc-400 transition-colors hover:bg-white/10 hover:text-white"
+                        className="flex h-7 w-7 items-center justify-center rounded-lg text-white/75 transition-colors hover:bg-white/10 hover:text-white"
                       >
                         <CaretRight size={14} weight="bold" />
                       </button>
@@ -329,7 +328,7 @@ export default function DatePicker({ value, onChange, placeholder, lang }: Props
                             setLevel('months');
                           }}
                           className={`rounded-lg py-2.5 text-sm font-mono tabular-nums transition-colors ${
-                            y === year ? 'bg-[#CCFF00] font-bold text-black' : 'text-zinc-100 hover:bg-white/10'
+                            y === year ? 'bg-white font-bold text-black' : 'text-white hover:bg-white/10'
                           }`}
                         >
                           {y}

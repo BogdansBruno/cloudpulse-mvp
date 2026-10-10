@@ -125,9 +125,9 @@ export function isReferred(zone: BodyZone, severity: SorenessSeverity): boolean 
 
 /** Colour per severity: lime (light) → amber → red (refer). */
 export const SEVERITY_COLOR: Readonly<Record<SorenessSeverity, string>> = {
-  1: '#CCFF00',
+  1: '#FF9500',
   2: '#E5E84A',
-  3: '#FFB020',
+  3: '#FFCC00',
   4: '#FF7A3D',
-  5: '#FF4D5E',
+  5: '#FF3B30',
 };

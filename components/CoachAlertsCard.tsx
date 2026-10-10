@@ -250,8 +250,8 @@ export default function CoachAlertsCard({
             aria-pressed={soundOn}
             className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium ring-1 ring-inset transition-colors ${
               soundOn
-                ? 'bg-[#CCFF00]/10 text-[#CCFF00] ring-[#CCFF00]/30'
-                : 'bg-[#CCFF00] text-zinc-950 ring-transparent'
+                ? 'bg-[#32ADE6]/10 text-[#32ADE6] ring-[#32ADE6]/30'
+                : 'bg-white text-zinc-950 ring-transparent'
             }`}
           >
             {soundOn ? <SpeakerHigh size={14} weight="fill" /> : <SpeakerSlash size={14} weight="fill" />}
@@ -265,7 +265,7 @@ export default function CoachAlertsCard({
 
       {alerts && open.length === 0 && (
         <p className="mt-4 inline-flex items-start gap-2 text-sm text-zinc-300">
-          <CheckCircle size={16} weight="fill" className="mt-0.5 shrink-0 text-[#CCFF00]" />
+          <CheckCircle size={16} weight="fill" className="mt-0.5 shrink-0 text-[#32ADE6]" />
           {a.none}
         </p>
       )}
@@ -321,7 +321,7 @@ export default function CoachAlertsCard({
         </ul>
       )}
 
-      {reactError && <p className="mt-2 text-xs text-[#FF4D5E]">{a.reactError}</p>}
+      {reactError && <p className="mt-2 text-xs text-[#FF3B30]">{a.reactError}</p>}
 
       {answered.length > 0 && (
         <div className="mt-4">
@@ -329,7 +329,7 @@ export default function CoachAlertsCard({
           <ul className="space-y-1">
             {answered.map((g) => (
               <li key={g.key} className="flex items-start gap-2 text-xs text-zinc-400">
-                <Check size={13} weight="bold" className="mt-0.5 shrink-0 text-[#CCFF00]" />
+                <Check size={13} weight="bold" className="mt-0.5 shrink-0 text-[#32ADE6]" />
                 <span>
                   <button type="button" onClick={() => onSelect(g.athleteId)} className="text-zinc-200 hover:underline">
                     {labelFor(g.athleteId)}

@@ -25,7 +25,7 @@ function inline(text: string, keyBase: string): ReactNode[] {
       );
     } else {
       out.push(
-        <code key={`${keyBase}c${i}`} className="rounded-md bg-white/10 px-1.5 py-0.5 font-mono text-[0.9em] text-np-text">
+        <code key={`${keyBase}c${i}`} className="rounded-md bg-np-veil/10 px-1.5 py-0.5 font-mono text-[0.9em] text-np-text">
           {tok.slice(1, -1)}
         </code>
       );
@@ -49,7 +49,7 @@ function CodeBlock({ code, copyLabel }: { code: string; copyLabel: string }): Re
             setTimeout(() => setDone(false), 1500);
           });
         }}
-        className="absolute right-2 top-2 rounded-md border border-np-line bg-white/5 px-2 py-0.5 text-[11px] font-medium text-np-text-2 hover:text-np-text"
+        className="absolute right-2 top-2 rounded-md border border-np-line bg-np-veil/5 px-2 py-0.5 text-[11px] font-medium text-np-text-2 hover:text-np-text"
       >
         {done ? '✓' : copyLabel}
       </button>

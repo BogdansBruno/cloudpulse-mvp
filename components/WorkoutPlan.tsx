@@ -31,13 +31,13 @@ const INTENSITY: Record<Intensity, { color: string; text: string; Icon: Icon }> 
   moderate: { color: HUB.amber, text: 'var(--amber-text)', Icon: Gauge },
   hard: { color: HUB.red, text: 'var(--red-text)', Icon: Flame },
 };
-const CYAN = '#00F0FF';
+const CYAN = '#32ADE6';
 
 // Warm-up reads as a softer lime, the main block as full lime, the
 // cool-down as cyan, so the bar shows the shape of the session at a glance.
 function phaseColor(i: number, n: number) {
   if (n === 1) return HUB.lime;
-  if (i === 0) return 'rgba(204,255,0,0.45)';
+  if (i === 0) return 'rgba(255,149,0,0.45)';
   if (i === n - 1) return 'rgba(0,240,255,0.75)';
   return HUB.lime;
 }
@@ -215,7 +215,7 @@ function PlanDay({
         ) : (
           <div className="h-1.5 overflow-hidden rounded-full bg-white/[0.07]">
             <motion.div
-              className="h-full rounded-full bg-[#CCFF00]"
+              className="h-full rounded-full bg-white"
               initial={reduce ? false : { width: 0 }}
               animate={{ width: `${(ev.duration / maxDuration) * 100}%` }}
               transition={{ ...SPRING, duration: 0.8, delay: reduce ? 0 : 0.1 + index * 0.05 }}
@@ -242,7 +242,7 @@ function PlanDay({
                   <ol className="space-y-2">
                     {steps.map((s, j) => (
                       <li key={j} className="flex gap-2.5">
-                        <span className="mt-px flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#CCFF00]/[0.12] font-mono text-[10px] font-semibold tabular-nums text-[#CCFF00]">
+                        <span className="mt-px flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#32ADE6]/[0.12] font-mono text-[10px] font-semibold tabular-nums text-[#32ADE6]">
                           {j + 1}
                         </span>
                         <span className="text-[13px] leading-relaxed text-zinc-300">{s}</span>
@@ -335,7 +335,7 @@ export default function WorkoutPlan({
           type="button"
           onClick={() => setExportOpen(true)}
           whileTap={reduce ? undefined : { scale: 0.97 }}
-          className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[#CCFF00] px-4 py-2.5 text-sm font-medium text-zinc-950"
+          className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-medium text-zinc-950"
         >
           <CalendarPlus size={16} weight="bold" />
           {exportLabel}

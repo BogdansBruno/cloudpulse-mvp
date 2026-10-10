@@ -1,6 +1,6 @@
 // lib/readiness-engine.ts
 //
-// Deterministic, ML-free load-management engine for CloudPulse.
+// Deterministic, ML-free load-management engine for Lotus.
 // Takes daily check-ins + session history and outputs a Readiness Score.
 //
 // IMPORTANT: this module contains ZERO calls to Claude / any LLM.

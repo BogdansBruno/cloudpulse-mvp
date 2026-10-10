@@ -6,11 +6,61 @@ import { useEffect, useState, type ReactElement, type ReactNode } from 'react';
 import type { ReadinessZone } from '@/lib/readiness-engine';
 
 /** Readiness zone → colours. The zone itself always comes from the engine (green ≥ 75, yellow 50–74, red < 50). */
-export const ZONE: Record<ReadinessZone, { from: string; to: string; glow: string; pill: string; dot: string; text: string; hex: string }> = {
-  green: { from: '#00E676', to: '#69F0AE', glow: 'rgb(0 230 118 / 0.28)', pill: 'np-pill-good', dot: 'bg-np-good', text: 'text-np-good', hex: '#00E676' },
-  yellow: { from: '#FFD600', to: '#FFAB00', glow: 'rgb(255 214 0 / 0.26)', pill: 'np-pill-warn', dot: 'bg-np-warn', text: 'text-np-warn', hex: '#FFD600' },
-  red: { from: '#FF3D00', to: '#FF6E40', glow: 'rgb(255 61 0 / 0.26)', pill: 'np-pill-danger', dot: 'bg-np-danger', text: 'text-np-danger', hex: '#FF3D00' },
+/** Colours of the engine zones (Lotus palette: sky blue · sage · terracotta) on the dark glass cards: `hex` for dots and rings, `stops` for the
+ *  thin gradient arcs (emerald: mint → emerald → deep green, amber: sand → amber → sunset orange,
+ *  coral: blush → coral → crimson), `ambient` for the soft light behind a hero ring. The zone ITSELF always comes
+ *  from the engine (green ≥ 75, yellow 50–74, red < 50); text uses the scoped `text-np-*` tokens. */
+export const ZONE: Record<
+  ReadinessZone,
+  { from: string; to: string; stops: [string, string, string]; glow: string; ambient: string; pill: string; dot: string; text: string; hex: string }
+> = {
+  green: {
+    from: '#3FE0A8',
+    to: '#B8F23C',
+    stops: ['#3FE0A8', '#8CEB5A', '#B8F23C'],
+    glow: 'rgb(184 242 60 / 0.40)',
+    ambient: 'rgb(184 242 60 / 0.14)',
+    pill: 'np-pill-good',
+    dot: 'bg-np-good',
+    text: 'text-np-good',
+    hex: '#B8F23C',
+  },
+  yellow: {
+    from: '#FFD66B',
+    to: '#FFB020',
+    stops: ['#FFD66B', '#FFC53D', '#FFB020'],
+    glow: 'rgb(255 197 61 / 0.40)',
+    ambient: 'rgb(255 197 61 / 0.14)',
+    pill: 'np-pill-warn',
+    dot: 'bg-np-warn',
+    text: 'text-np-warn',
+    hex: '#FFC53D',
+  },
+  red: {
+    from: '#FF8A6B',
+    to: '#FF3D5A',
+    stops: ['#FF8A6B', '#FF5C6C', '#FF3D5A'],
+    glow: 'rgb(255 92 108 / 0.42)',
+    ambient: 'rgb(255 92 108 / 0.14)',
+    pill: 'np-pill-danger',
+    dot: 'bg-np-danger',
+    text: 'text-np-danger',
+    hex: '#FF5C6C',
+  },
 };
+
+/** Glass Δ pill with a micro arrow: "▲ +6 к базе". */
+export function DeltaPill({ delta, text, className = '' }: { delta: number; text: string; className?: string }): ReactElement {
+  const d = delta > 0 ? 'M6 9.5V2.5M3 5.5l3-3 3 3' : delta < 0 ? 'M6 2.5v7M3 6.5l3 3 3-3' : 'M2.5 6h7M7 3.5 9.5 6 7 8.5';
+  return (
+    <span className={`np-delta ${className}`}>
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+        <path d={d} />
+      </svg>
+      {text}
+    </span>
+  );
+}
 
 export function useReducedMotion(): boolean {
   const [reduced, setReduced] = useState(false);

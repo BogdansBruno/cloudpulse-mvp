@@ -76,7 +76,7 @@ const ICS_LABELS: Record<
     duration: 'Длительность',
     min: 'мин',
     level: { light: 'лёгкая', moderate: 'средняя', hard: 'высокая' },
-    footer: 'План от CloudPulse AI-коуча, построен по твоему Readiness Score.',
+    footer: 'План от Lotus AI-коуча, построен по твоему Readiness Score.',
     reminder: 'через 15 минут',
   },
   lv: {
@@ -93,7 +93,7 @@ const ICS_LABELS: Record<
     duration: 'Ilgums',
     min: 'min',
     level: { light: 'viegla', moderate: 'vidēja', hard: 'augsta' },
-    footer: 'Plāns no CloudPulse AI trenera, veidots pēc tava Readiness Score.',
+    footer: 'Plāns no Lotus AI trenera, veidots pēc tava Readiness Score.',
     reminder: 'pēc 15 minūtēm',
   },
   en: {
@@ -110,7 +110,7 @@ const ICS_LABELS: Record<
     duration: 'Duration',
     min: 'min',
     level: { light: 'light', moderate: 'moderate', hard: 'hard' },
-    footer: 'Plan from your CloudPulse AI coach, built from your Readiness Score.',
+    footer: 'Plan from your Lotus AI coach, built from your Readiness Score.',
     reminder: 'in 15 minutes',
   },
 };
@@ -118,7 +118,7 @@ const ICS_LABELS: Record<
 /** Structured title + plain-text description shared by every export target. */
 export function buildEventText(event: WorkoutEvent, lang: IcsLang = 'ru'): { title: string; description: string } {
   const L = ICS_LABELS[lang];
-  const title = `[CloudPulse] ${event.sessionTitle || `${L.workout} · ${event.title}`}`;
+  const title = `[Lotus] ${event.sessionTitle || `${L.workout} · ${event.title}`}`;
 
   const lines: string[] = [];
   if (event.goal) lines.push(`${L.goal}: ${event.goal}`);
@@ -185,10 +185,10 @@ export function generateICS(events: WorkoutEvent[], lang: IcsLang = 'ru'): strin
   let ics = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
-    'PRODID:-//CloudPulse//Workout Calendar//EN',
+    'PRODID:-//Lotus//Workout Calendar//EN',
     'CALSCALE:GREGORIAN',
     'METHOD:PUBLISH',
-    'X-WR-CALNAME:CloudPulse Workouts',
+    'X-WR-CALNAME:Lotus Workouts',
     '',
   ].join('\r\n');
 

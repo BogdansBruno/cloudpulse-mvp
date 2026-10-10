@@ -18,7 +18,7 @@ const STYLE: Record<RosterGroup, { Icon: Icon; color: string }> = {
   available: { Icon: CheckCircle, color: HUB.lime },
   limited: { Icon: Warning, color: HUB.amber },
   out: { Icon: WarningOctagon, color: HUB.red },
-  unknown: { Icon: Question, color: '#A1A1AA' },
+  unknown: { Icon: Question, color: '#C3C5C7' },
 };
 
 export default function ParentMatchBriefCard({ brief, today }: { brief: MatchBrief; today: string }) {
@@ -69,7 +69,7 @@ export default function ParentMatchBriefCard({ brief, today }: { brief: MatchBri
       </ul>
 
       <p className="mt-4 flex gap-2 border-t border-white/[0.06] pt-3 text-xs leading-relaxed text-zinc-400">
-        <Handshake size={16} weight="fill" className="mt-px shrink-0 text-[#CCFF00]" />
+        <Handshake size={16} weight="fill" className="mt-px shrink-0 text-[#32ADE6]" />
         <span>
           {t.sameAsCoach} {t.coachDecides}
         </span>

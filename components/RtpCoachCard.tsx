@@ -112,7 +112,7 @@ export default function RtpCoachCard({
                 <button
                   type="button"
                   onClick={() => setConfirming(e.athleteId)}
-                  className="mt-3 w-full rounded-xl bg-[#CCFF00] px-3 py-2 text-sm font-semibold text-zinc-950"
+                  className="mt-3 w-full rounded-xl bg-white px-3 py-2 text-sm font-semibold text-zinc-950"
                 >
                   {r.clearButton}
                 </button>
@@ -133,7 +133,7 @@ export default function RtpCoachCard({
                       type="button"
                       disabled={busy === e.athleteId}
                       onClick={() => clear(e)}
-                      className="rounded-xl bg-[#CCFF00] px-3 py-2 text-sm font-semibold text-zinc-950 disabled:opacity-50"
+                      className="rounded-xl bg-white px-3 py-2 text-sm font-semibold text-zinc-950 disabled:opacity-50"
                     >
                       {r.clearYes}
                     </button>
@@ -141,7 +141,7 @@ export default function RtpCoachCard({
                 </div>
               )}
 
-              {errorFor === e.athleteId && <p className="mt-2 text-xs text-[#FF4D5E]">{r.clearError}</p>}
+              {errorFor === e.athleteId && <p className="mt-2 text-xs text-[#FF3B30]">{r.clearError}</p>}
             </li>
           );
         })}

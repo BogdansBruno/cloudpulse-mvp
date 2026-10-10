@@ -129,7 +129,7 @@ export default function TeacherRescheduleCard({
                   onClick={() => approve(d)}
                   disabled={locked}
                   aria-busy={thisOne}
-                  className="min-h-11 rounded-full bg-[#CCFF00] px-4 text-sm font-semibold text-zinc-950 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#CCFF00] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07080A] disabled:opacity-50"
+                  className="min-h-11 rounded-full bg-white px-4 text-sm font-semibold text-zinc-950 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF9500] focus-visible:ring-offset-2 focus-visible:ring-offset-[#07080A] disabled:opacity-50"
                 >
                   {t.moveTo(day(d))}
                 </button>
@@ -149,7 +149,7 @@ export default function TeacherRescheduleCard({
 
       {model.state === 'pending' && confirmingReject && (
         <div className="mt-4 space-y-2">
-          <p className="text-xs text-[#FFB020]">{t.rejectFinalHint}</p>
+          <p className="text-xs text-[#FFCC00]">{t.rejectFinalHint}</p>
           <label htmlFor={noteId} className="sr-only">
             {t.rejectNotePlaceholder}
           </label>
@@ -186,7 +186,7 @@ export default function TeacherRescheduleCard({
       )}
 
       {model.state === 'approved' && model.approvedDate && (
-        <p className="mt-4 text-sm font-medium text-[#CCFF00]" role="status">
+        <p className="mt-4 text-sm font-medium text-[#FF9500]" role="status">
           {t.approved(day(model.approvedDate))}
         </p>
       )}
@@ -197,7 +197,7 @@ export default function TeacherRescheduleCard({
       )}
 
       {failed && (
-        <p className="mt-3 text-xs text-[#FF4D5E]" role="alert">
+        <p className="mt-3 text-xs text-[#FF3B30]" role="alert">
           {t.error}
         </p>
       )}

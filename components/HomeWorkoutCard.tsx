@@ -13,7 +13,7 @@ import { COACH_LABELS } from '@/adp/src/components/labels';
 import LiquidGlassCard from '@/adp/src/components/ui/LiquidGlassCard';
 import { MICRO_LABEL, SLATE_300, SLATE_400 } from '@/adp/src/components/ui/typography';
 
-const TEAL = '#2DD4BF';
+const TEAL = '#30D158';
 
 export default function HomeWorkoutCard({ compact = false, className = '' }: { compact?: boolean; className?: string }) {
   const { lang } = useLanguage();
@@ -45,7 +45,7 @@ export default function HomeWorkoutCard({ compact = false, className = '' }: { c
             {summary ?? '…'}
           </span>
         </span>
-        <ArrowRight size={16} weight="bold" className="shrink-0 text-white/70" />
+        <ArrowRight size={16} weight="bold" className="shrink-0 text-white/75" />
       </Link>
     );
   }

@@ -362,7 +362,7 @@ export default function CoachPage() {
 
   return (
     <div className="relative min-h-[calc(100dvh-4.5rem)] shrink-0 overflow-x-clip bg-[#07080A] px-4 py-8 md:py-12">
-      <div className="pointer-events-none absolute -left-40 -top-40 h-[480px] w-[480px] rounded-full bg-[#CCFF00]/[0.05] blur-[140px]" />
+      <div className="pointer-events-none absolute -left-40 -top-40 h-[480px] w-[480px] rounded-full bg-[#D9A400]/[0.05] blur-[140px]" />
 
       <div className="relative mx-auto max-w-3xl">
         <header className="mb-6 flex flex-wrap items-end justify-between gap-3">
@@ -381,8 +381,8 @@ export default function CoachPage() {
         <TeamInvitePanel />
 
         {rosterError && (
-          <div className="mb-6 flex gap-3 rounded-2xl bg-[#FF4D5E]/[0.08] p-4 text-sm text-zinc-200 ring-1 ring-inset ring-[#FF4D5E]/30">
-            <WarningOctagon size={18} weight="fill" className="mt-0.5 shrink-0 text-[#FF4D5E]" />
+          <div className="mb-6 flex gap-3 rounded-2xl bg-[#FF3B30]/[0.08] p-4 text-sm text-zinc-200 ring-1 ring-inset ring-[#FF3B30]/30">
+            <WarningOctagon size={18} weight="fill" className="mt-0.5 shrink-0 text-[#FF3B30]" />
             <span>{t.coach.errorRoster}</span>
           </div>
         )}
@@ -449,7 +449,7 @@ export default function CoachPage() {
                 </div>
                 {summary.missing.length === 0 ? (
                   <p className="mt-3 inline-flex items-center gap-1.5 text-sm text-zinc-200">
-                    <CheckCircle size={16} weight="fill" className="text-[#CCFF00]" />
+                    <CheckCircle size={16} weight="fill" className="text-[#FFCC00]" />
                     {t.streak.teamAllDone}
                   </p>
                 ) : (
@@ -509,7 +509,7 @@ export default function CoachPage() {
                       title={done === null ? undefined : done ? t.streak.dayDone : t.streak.dayMissed}
                       className={`inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-sm font-medium transition-all ${
                         active
-                          ? 'bg-[#CCFF00] text-zinc-950'
+                          ? 'bg-white text-zinc-950'
                           : 'bg-white/[0.04] text-zinc-300 ring-1 ring-inset ring-white/[0.08] hover:bg-white/[0.07]'
                       }`}
                     >
@@ -533,8 +533,8 @@ export default function CoachPage() {
             </div>
 
             {athleteError && (
-              <div className="flex gap-3 rounded-2xl bg-[#FF4D5E]/[0.08] p-4 text-sm text-zinc-200 ring-1 ring-inset ring-[#FF4D5E]/30">
-                <WarningOctagon size={18} weight="fill" className="mt-0.5 shrink-0 text-[#FF4D5E]" />
+              <div className="flex gap-3 rounded-2xl bg-[#FF3B30]/[0.08] p-4 text-sm text-zinc-200 ring-1 ring-inset ring-[#FF3B30]/30">
+                <WarningOctagon size={18} weight="fill" className="mt-0.5 shrink-0 text-[#FF3B30]" />
                 <span>{athleteError}</span>
               </div>
             )}
@@ -564,7 +564,7 @@ export default function CoachPage() {
                       <Flame
                         size={13}
                         weight="fill"
-                        className={selectedCheckinStreak > 0 ? 'text-[#CCFF00]' : 'text-zinc-600'}
+                        className={selectedCheckinStreak > 0 ? 'text-[#FFCC00]' : 'text-zinc-600'}
                       />
                       {t.streak.athleteStreak(selectedCheckinStreak)}
                     </span>
@@ -596,7 +596,7 @@ export default function CoachPage() {
                     <p className="text-xs text-zinc-400">{t.coach.loadLabel}</p>
                     <p
                       className="mt-3 font-mono text-4xl font-light leading-none tabular-nums tracking-[-0.04em]"
-                      style={{ color: loadColor(acwrStatus) ?? '#FAFAFA' }}
+                      style={{ color: loadColor(acwrStatus) ?? '#FFFFFF' }}
                     >
                       {data.readiness.acwr != null ? data.readiness.acwr.toFixed(2) : '--'}
                     </p>
@@ -610,7 +610,7 @@ export default function CoachPage() {
                     <p className="text-xs text-zinc-400">{t.coach.streakLabel}</p>
                     <p
                       className="mt-3 inline-flex items-baseline gap-1.5 font-mono text-4xl font-light leading-none tabular-nums tracking-[-0.04em]"
-                      style={{ color: data.readiness.trainingStreak > 6 ? HUB.amber : '#FAFAFA' }}
+                      style={{ color: data.readiness.trainingStreak > 6 ? HUB.amber : '#FFFFFF' }}
                     >
                       <Barbell size={22} weight="fill" style={{ color: noRestColor(data.readiness.trainingStreak) }} />
                       {data.readiness.trainingStreak}
@@ -650,9 +650,9 @@ export default function CoachPage() {
                       {data.safetyViolations.map((v) => (
                         <div
                           key={v.code}
-                          className="flex gap-3 rounded-2xl bg-[#FF4D5E]/[0.08] p-3 text-sm text-zinc-200 ring-1 ring-inset ring-[#FF4D5E]/30"
+                          className="flex gap-3 rounded-2xl bg-[#FF3B30]/[0.08] p-3 text-sm text-zinc-200 ring-1 ring-inset ring-[#FF3B30]/30"
                         >
-                          <WarningOctagon size={16} weight="fill" className="mt-0.5 shrink-0 text-[#FF4D5E]" />
+                          <WarningOctagon size={16} weight="fill" className="mt-0.5 shrink-0 text-[#FF3B30]" />
                           <span>{translateViolation(t, v)}</span>
                         </div>
                       ))}

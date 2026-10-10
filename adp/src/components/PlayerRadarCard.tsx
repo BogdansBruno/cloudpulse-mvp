@@ -51,15 +51,15 @@ const CENTER = { x: WIDTH / 2, y: HEIGHT / 2 };
 const RADIUS = 92;
 const RINGS = [0.25, 0.5, 0.75, 1] as const;
 
-// CloudPulse palette: lime = now, zinc = the past.
-const LIME = '#CCFF00';
+// Lotus palette: lime = now, zinc = the past.
+const LIME = '#FF9500';
 const PAST = '#A1A1AA';
 const GRID = 'rgba(255,255,255,0.10)';
 
 const TREND_GLYPH: Readonly<Record<Trend, string>> = { up: '↑', down: '↓', same: '→', no_data: '·' };
 const TREND_TONE: Readonly<Record<Trend, string>> = {
-  up: 'text-[#CCFF00]',
-  down: 'text-[#FFB020]',
+  up: 'text-[#FF9500]',
+  down: 'text-[#FFCC00]',
   same: 'text-zinc-300',
   no_data: 'text-zinc-500',
 };

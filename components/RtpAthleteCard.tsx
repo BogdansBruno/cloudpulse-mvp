@@ -9,6 +9,7 @@ import type { Lang } from '@/lib/i18n/translations';
 import { HUB } from '@/components/PerformancePanel';
 import { addDays, todayUtc } from '@/lib/checkin-streak';
 import { SYNCED_EVENT } from '@/lib/offline-queue';
+import { cardClass, CARD_THEME } from '@/components/np/cardTheme';
 import {
   RTP_CLEAN_DAYS_REQUIRED,
   RTP_LOOKBACK_DAYS,
@@ -136,7 +137,7 @@ export default function RtpAthleteCard({ className = '' }: { className?: string 
 
   const chip = (active: boolean) =>
     `rounded-xl px-3 py-2 text-sm font-medium ring-1 ring-inset transition-colors ${
-      active ? 'bg-[#CCFF00] text-zinc-950 ring-transparent' : 'bg-white/[0.04] text-zinc-200 ring-white/[0.1] hover:bg-white/[0.08]'
+      active ? 'bg-white/[0.14] text-zinc-50 ring-white/40' : 'bg-white/[0.04] text-zinc-200 ring-white/[0.1] hover:bg-white/[0.08]'
     }`;
 
   return (
@@ -144,25 +145,32 @@ export default function RtpAthleteCard({ className = '' }: { className?: string 
       initial={reduce ? false : { opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ type: 'spring', bounce: 0, duration: 0.45 }}
-      className={`rounded-3xl bg-white/[0.03] p-5 ring-1 ring-inset ring-white/[0.08] backdrop-blur-2xl ${className}`}
+      className={`${cardClass('stress')} p-5 ${className}`}
       aria-label={r.title}
     >
-      <p className="inline-flex items-center gap-2 text-base font-semibold tracking-[-0.01em] text-zinc-50">
-        <ArrowCounterClockwise size={17} weight="bold" style={{ color: accent }} />
-        {r.title}
-      </p>
-      <p className="mt-0.5 text-xs text-zinc-400">{r.painOn(day(status.painDate), status.painZone)}</p>
+      <div className="flex items-start gap-3">
+        <span aria-hidden className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/[0.08] bg-white/[0.06]">
+          <ArrowCounterClockwise size={18} weight="bold" style={{ color: CARD_THEME.stress.accent }} />
+        </span>
+        <div className="min-w-0">
+          <p className="text-[11px] font-medium uppercase tracking-widest text-white/75">{r.painOn(day(status.painDate), status.painZone)}</p>
+          <p className="mt-0.5 text-[11px] font-semibold uppercase tracking-widest" style={{ color: accent }}>
+            {cleared ? r.stepCoach : status.state === 'ready' ? r.stepClean : r.stepPain}
+          </p>
+        </div>
+      </div>
+      <p className="np-editorial mt-4 text-[28px] leading-tight">{r.title}</p>
 
       <ol className="mt-4 grid grid-cols-3 gap-2">
         {steps.map((s) => (
-          <li key={s.label} className="rounded-2xl bg-white/[0.03] p-2.5 ring-1 ring-inset ring-white/[0.06]">
+          <li key={s.label} className={`rounded-2xl border p-2.5 ${s.done ? 'border-white/[0.1] bg-white/[0.05]' : 'border-white/[0.06] bg-black/20'}`}>
             {s.done ? (
               <CheckCircle size={16} weight="fill" style={{ color: s.label === r.stepPain ? HUB.red : HUB.lime }} />
             ) : (
-              <Circle size={16} className="text-zinc-600" />
+              <Circle size={16} className="text-white/30" />
             )}
             <p className="mt-1 text-[12px] font-medium leading-tight text-zinc-100">{s.label}</p>
-            {s.detail && <p className="mt-0.5 text-[11px] leading-tight text-zinc-500">{s.detail}</p>}
+            {s.detail && <p className="mt-0.5 text-[11px] leading-tight text-white/75">{s.detail}</p>}
           </li>
         ))}
       </ol>
@@ -177,7 +185,7 @@ export default function RtpAthleteCard({ className = '' }: { className?: string 
 
       {status.dueFollowup && (
         <div className="mt-4 rounded-2xl bg-white/[0.04] p-4 ring-1 ring-inset ring-white/[0.08]">
-          <p className="text-xs font-medium uppercase tracking-[0.08em] text-zinc-400">{r.followupTitle(status.dueFollowup)}</p>
+          <p className="text-xs font-medium uppercase tracking-[0.08em] text-white/75">{r.followupTitle(status.dueFollowup)}</p>
           <p className="mt-2 text-sm text-zinc-100">{r.qTrend(status.painZone)}</p>
           <div className="mt-2 grid grid-cols-3 gap-1.5" role="group" aria-label={r.qTrend(status.painZone)}>
             {RTP_TRENDS.map((tr) => (
@@ -199,22 +207,22 @@ export default function RtpAthleteCard({ className = '' }: { className?: string 
             type="button"
             onClick={send}
             disabled={!trend || saw === null || sending}
-            className="mt-3 h-11 w-full rounded-xl bg-[#CCFF00] text-sm font-semibold text-zinc-950 disabled:opacity-40"
+            className="np-btn-glass mt-3 h-11 w-full rounded-full text-sm font-semibold disabled:opacity-40"
           >
             {r.send}
           </button>
-          {sendError && <p className="mt-2 text-xs text-[#FF4D5E]">{r.sendError}</p>}
+          {sendError && <p className="mt-2 text-xs text-[#FF3B30]">{r.sendError}</p>}
         </div>
       )}
 
       {saidWorse && (
-        <p className="mt-3 flex gap-2 rounded-2xl bg-[#FF4D5E]/[0.08] p-3 text-sm leading-relaxed text-zinc-200 ring-1 ring-inset ring-[#FF4D5E]/30">
-          <WarningOctagon size={16} weight="fill" className="mt-0.5 shrink-0 text-[#FF4D5E]" />
+        <p className="mt-3 flex gap-2 rounded-2xl bg-[#FF3B30]/[0.08] p-3 text-sm leading-relaxed text-zinc-200 ring-1 ring-inset ring-[#FF3B30]/30">
+          <WarningOctagon size={16} weight="fill" className="mt-0.5 shrink-0 text-[#FF3B30]" />
           {r.worseNote}
         </p>
       )}
 
-      <p className="mt-4 text-[11px] leading-relaxed text-zinc-500">
+      <p className="mt-4 text-[11px] leading-relaxed text-white/75">
         {status.state === 'restricted' && `${r.noCheckinNote} `}
         {r.disclaimer}
       </p>

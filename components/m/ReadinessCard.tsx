@@ -34,7 +34,7 @@ function Arc({ value, color }: { value: number | null; color: string }): ReactEl
         const b = at(p, R - 4);
         return <line key={p} x1={a.x} y1={a.y} x2={b.x} y2={b.y} stroke="rgb(255 255 255 / 0.28)" strokeWidth={1} />;
       })}
-      {value !== null && <circle cx={knob.x} cy={knob.y} r={4} fill="#F2F4F7" />}
+      {value !== null && <circle cx={knob.x} cy={knob.y} r={4} fill="#FFFFFF" />}
     </svg>
   );
 }
@@ -50,7 +50,7 @@ export default function ReadinessCard({ lang, score, zone }: { lang: Lang; score
       </p>
 
       <div className="relative mx-auto mt-4 w-full max-w-[280px]">
-        <Arc value={has ? score : null} color={has ? ZONE_STROKE[zone] : '#7D8594'} />
+        <Arc value={has ? score : null} color={has ? ZONE_STROKE[zone] : '#C3C5C7'} />
         <div className="absolute inset-x-0 bottom-0 flex items-baseline justify-center gap-1">
           <span
             className={`text-[40px] font-medium leading-[44px] tracking-[-0.02em] ${has ? ZONE_TEXT[zone] : 'text-ds-text-3'}`}

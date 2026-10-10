@@ -35,7 +35,7 @@ export default function ProChart({
   max,
   ticks,
   color,
-  compareColor = 'rgba(255,255,255,0.55)',
+  compareColor = 'rgba(255,255,255,0.45)',
   refLines = [],
   selected,
   onSelect,
@@ -170,14 +170,14 @@ export default function ProChart({
           {/* grid + y ticks */}
           {ticks.map((tv) => (
             <g key={tv}>
-              <line x1={L} x2={W - R} y1={y(tv)} y2={y(tv)} stroke="rgba(255,255,255,0.07)" />
-              <text x={L - 8} y={y(tv) + 4} textAnchor="end" fontSize="11" fill="#8B93A3" style={{ fontVariantNumeric: 'tabular-nums' }}>
+              <line x1={L} x2={W - R} y1={y(tv)} y2={y(tv)} className="np-svg-grid" stroke="rgba(17,19,24,0.08)" />
+              <text x={L - 8} y={y(tv) + 4} textAnchor="end" fontSize="11" className="np-svg-text-3" fill="#6B7280" style={{ fontVariantNumeric: 'tabular-nums' }}>
                 {format(tv)}
               </text>
             </g>
           ))}
           {refLines.map((rv) => (
-            <line key={`r${rv}`} x1={L} x2={W - R} y1={y(rv)} y2={y(rv)} stroke="rgba(255,255,255,0.22)" strokeDasharray="4 5" />
+            <line key={`r${rv}`} x1={L} x2={W - R} y1={y(rv)} y2={y(rv)} className="np-svg-tick" stroke="rgba(17,19,24,0.3)" strokeDasharray="4 5" />
           ))}
 
           {/* selected day */}
@@ -201,15 +201,15 @@ export default function ProChart({
           {peak && (
             <g>
               <circle cx={x(peak.i)} cy={y(peak.v)} r={4} fill={color} />
-              <text x={labelX(peak.i)} y={y(peak.v) - 9} textAnchor={anchorAt(peak.i)} fontSize="11" fontWeight={600} fill="#E6E9EF" style={{ fontVariantNumeric: 'tabular-nums' }}>
+              <text x={labelX(peak.i)} y={y(peak.v) - 9} textAnchor={anchorAt(peak.i)} fontSize="11" fontWeight={700} className="np-svg-text" fill="#111318" style={{ fontVariantNumeric: 'tabular-nums' }}>
                 {format(peak.v)}
               </text>
             </g>
           )}
           {low && low.i !== peak?.i && (
             <g>
-              <circle cx={x(low.i)} cy={y(low.v)} r={4} fill="#0D0E12" stroke={color} strokeWidth={1.6} />
-              <text x={labelX(low.i)} y={y(low.v) + 17} textAnchor={anchorAt(low.i)} fontSize="11" fill="#B4BCCB" style={{ fontVariantNumeric: 'tabular-nums' }}>
+              <circle cx={x(low.i)} cy={y(low.v)} r={4} className="np-svg-hole" fill="#FFFFFF" stroke={color} strokeWidth={1.6} />
+              <text x={labelX(low.i)} y={y(low.v) + 17} textAnchor={anchorAt(low.i)} fontSize="11" className="np-svg-text-3" fill="#6B7280" style={{ fontVariantNumeric: 'tabular-nums' }}>
                 {format(low.v)}
               </text>
             </g>
@@ -218,14 +218,14 @@ export default function ProChart({
           {/* crosshair */}
           {ap && (
             <g pointerEvents="none">
-              <line x1={x(active)} x2={x(active)} y1={T} y2={height - B} stroke="rgba(255,255,255,0.35)" />
+              <line x1={x(active)} x2={x(active)} y1={T} y2={height - B} className="np-svg-tick" stroke="rgba(17,19,24,0.35)" />
               {ap.value !== null && <circle cx={x(active)} cy={y(ap.value)} r={5} fill="#FFFFFF" stroke={color} strokeWidth={2} />}
             </g>
           )}
 
           {/* date labels: ≤ 5, first start-aligned, last end-aligned */}
           {labelIdx.map((i) => (
-            <text key={points[i].date} x={x(i)} y={height - 9} textAnchor={i === 0 ? 'start' : i === n - 1 ? 'end' : 'middle'} fontSize="11" fill="#8B93A3">
+            <text key={points[i].date} x={x(i)} y={height - 9} textAnchor={i === 0 ? 'start' : i === n - 1 ? 'end' : 'middle'} fontSize="11" className="np-svg-text-3" fill="#6B7280">
               {dayLabel(points[i].date)}
             </text>
           ))}
@@ -235,15 +235,15 @@ export default function ProChart({
       {/* tooltip */}
       {hover !== null && ap && W > 0 && (
         <div
-          className="pointer-events-none absolute top-2 z-10 -translate-x-1/2 whitespace-nowrap rounded-lg border border-white/10 bg-[#1B1C24] px-2.5 py-1.5 text-xs text-white shadow-lg"
+          className="pointer-events-none absolute top-2 z-10 -translate-x-1/2 whitespace-nowrap rounded-lg border border-np-veil/10 bg-[#1B1C24] px-2.5 py-1.5 text-xs text-white shadow-lg"
           style={{ left: Math.min(W - 70, Math.max(70, x(hover))) }}
         >
-          <span className="text-[#9AA3B2]">{dayLabel(ap.date)}</span>{' '}
+          <span className="text-[#C3C5C7]">{dayLabel(ap.date)}</span>{' '}
           <span className="font-semibold tabular-nums">{ap.value === null ? '—' : format(ap.value)}</span>
           {cp && cp.value !== null && (
             <>
-              <span className="text-[#9AA3B2]"> · </span>
-              <span className="tabular-nums text-[#C8CEDA]">{format(cp.value)}</span>
+              <span className="text-[#C3C5C7]"> · </span>
+              <span className="tabular-nums text-[#D1D5DB]">{format(cp.value)}</span>
             </>
           )}
         </div>

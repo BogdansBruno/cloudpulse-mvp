@@ -146,9 +146,9 @@ input:-webkit-autofill:active {
    and gets a deeper, readable shade in the light theme.
    ====================================================================== */
 :root {
-  --accent-text: #ccff00;
-  --amber-text: #ffb020;
-  --red-text: #ff4d5e;
+  --accent-text: #FF9500;
+  --amber-text: #FFCC00;
+  --red-text: #FF3B30;
   --cyan-text: #00f0ff;
 }
 
@@ -208,12 +208,12 @@ html[data-theme='light'] .text-zinc-950 {
 }
 
 /* Lime text -> readable deep lime on light surfaces. */
-html[data-theme='light'] .text-\[\#CCFF00\] {
+html[data-theme='light'] .text-\[\#FF9500\] {
   color: var(--accent-text);
 }
 @media (hover: hover) {
-  html[data-theme='light'] .hover\:text-\[\#CCFF00\]:hover,
-  html[data-theme='light'] .group:hover .group-hover\:text-\[\#CCFF00\] {
+  html[data-theme='light'] .hover\:text-\[\#FF9500\]:hover,
+  html[data-theme='light'] .group:hover .group-hover\:text-\[\#FF9500\] {
     color: var(--accent-text);
   }
 }
@@ -286,7 +286,7 @@ html:not([data-theme='light']) .adp-ed [class*='bg-[#07080A]'] {
   background-color: transparent;
 }
 /* The old lime glow behind each page becomes a warm sand glow. */
-html:not([data-theme='light']) .adp-ed [class*='blur-[140px]'][class*='bg-[#CCFF00]'] {
+html:not([data-theme='light']) .adp-ed [class*='blur-[140px]'][class*='bg-white'] {
   background-color: rgba(120, 82, 58, 0.16);
 }
 
@@ -343,6 +343,6 @@ html:not([data-theme='light']) .adp-ed .text-zinc-600 {
 }
 
 /* Main lime call-to-action buttons become capsules, like the rest of ADP. */
-html:not([data-theme='light']) .adp-ed :is(button, a)[class*='bg-[#CCFF00]'][class*='w-full'] {
+html:not([data-theme='light']) .adp-ed :is(button, a)[class*='bg-white'][class*='w-full'] {
   border-radius: 9999px;
 }

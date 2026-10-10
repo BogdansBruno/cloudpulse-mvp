@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import {
   ArrowLeft,
-  ArrowRight,
   Plus,
   X,
   SoccerBall,
@@ -51,7 +50,7 @@ const FADE = { enter: { opacity: 0 }, center: { opacity: 1 }, exit: { opacity: 0
 function tileClass(selected: boolean) {
   return `relative flex flex-col items-start gap-3 rounded-2xl p-4 text-left ring-1 ring-inset transition-[background-color,box-shadow] duration-200 ${
     selected
-      ? 'bg-[#CCFF00]/[0.08] ring-[#CCFF00]/70 shadow-[0_0_0_1px_rgba(204,255,0,0.25),0_12px_32px_-12px_rgba(204,255,0,0.45)]'
+      ? 'bg-[#D9A400]/[0.08] ring-[#D9A400]/70 shadow-[0_0_0_1px_rgba(255,149,0,0.25),0_12px_32px_-12px_rgba(255,149,0,0.45)]'
       : 'bg-white/[0.03] ring-white/[0.08] hover:bg-white/[0.06] hover:ring-white/20'
   }`;
 }
@@ -104,9 +103,9 @@ function DateList({
           {dates.map((d) => (
             <span
               key={d}
-              className="inline-flex items-center gap-1.5 rounded-full bg-[#CCFF00]/[0.08] py-1.5 pl-3 pr-1.5 text-xs font-medium text-zinc-100 ring-1 ring-inset ring-[#CCFF00]/20"
+              className="inline-flex items-center gap-1.5 rounded-full bg-[#D9A400]/[0.08] py-1.5 pl-3 pr-1.5 text-xs font-medium text-zinc-100 ring-1 ring-inset ring-[#D9A400]/20"
             >
-              <IconCmp size={12} weight="fill" className="text-[#CCFF00]" />
+              <IconCmp size={12} weight="fill" className="text-[#FFCC00]" />
               {formatDisplayDate(d, lang)}
               <button
                 type="button"
@@ -231,7 +230,7 @@ export default function OnboardingPage() {
 
   return (
     <div className="relative min-h-[calc(100dvh-4.5rem)] shrink-0 overflow-x-clip bg-[#07080A] px-4 py-8 md:py-14">
-      <div className="pointer-events-none absolute -top-40 left-1/2 h-[480px] w-[480px] -translate-x-1/2 rounded-full bg-[#CCFF00]/[0.05] blur-[140px]" />
+      <div className="pointer-events-none absolute -top-40 left-1/2 h-[480px] w-[480px] -translate-x-1/2 rounded-full bg-[#D9A400]/[0.05] blur-[140px]" />
 
       <div className="relative mx-auto max-w-md">
         {/* Step progress: the steps really are a sequence */}
@@ -244,7 +243,7 @@ export default function OnboardingPage() {
             {Array.from({ length: TOTAL_STEPS }, (_, i) => (
               <div key={i} className="h-1 flex-1 overflow-hidden rounded-full bg-white/[0.08]">
                 <motion.div
-                  className="h-full rounded-full bg-[#CCFF00]"
+                  className="h-full rounded-full bg-white"
                   initial={false}
                   animate={{ width: i < step ? '100%' : '0%' }}
                   transition={reduce ? { duration: 0 } : SPRING}
@@ -283,7 +282,7 @@ export default function OnboardingPage() {
                         >
                           <span
                             className={`font-mono text-4xl font-light tabular-nums tracking-[-0.04em] ${
-                              selected ? 'text-[#CCFF00]' : 'text-zinc-50'
+                              selected ? 'text-[#FFCC00]' : 'text-zinc-50'
                             }`}
                           >
                             {option}
@@ -314,7 +313,7 @@ export default function OnboardingPage() {
                         >
                           <span
                             className={`flex h-9 w-9 items-center justify-center rounded-xl transition-colors ${
-                              selected ? 'bg-[#CCFF00] text-zinc-950' : 'bg-white/[0.06] text-zinc-200'
+                              selected ? 'bg-white text-zinc-950' : 'bg-white/[0.06] text-zinc-200'
                             }`}
                           >
                             <IconCmp size={20} weight={selected ? 'fill' : 'regular'} />
@@ -355,8 +354,8 @@ export default function OnboardingPage() {
           </AnimatePresence>
 
           {error && (
-            <div className="mt-5 flex gap-2.5 rounded-2xl bg-[#FF4D5E]/[0.08] p-3.5 text-sm text-zinc-200 ring-1 ring-inset ring-[#FF4D5E]/30">
-              <WarningOctagon size={18} weight="fill" className="mt-0.5 shrink-0 text-[#FF4D5E]" />
+            <div className="mt-5 flex gap-2.5 rounded-2xl bg-[#FF3B30]/[0.08] p-3.5 text-sm text-zinc-200 ring-1 ring-inset ring-[#FF3B30]/30">
+              <WarningOctagon size={18} weight="fill" className="mt-0.5 shrink-0 text-[#FF3B30]" />
               <span>{error}</span>
             </div>
           )}
@@ -377,10 +376,9 @@ export default function OnboardingPage() {
               onClick={handleNext}
               disabled={loading}
               whileTap={reduce || loading ? undefined : { scale: 0.97 }}
-              className="inline-flex h-14 flex-1 items-center justify-center gap-2 rounded-2xl bg-[#CCFF00] text-base font-semibold text-zinc-950 shadow-[0_0_30px_-6px_rgba(204,255,0,0.45),inset_0_1px_0_rgba(255,255,255,0.45)] transition-opacity disabled:opacity-60"
+              className="inline-flex h-14 flex-1 items-center justify-center gap-2 rounded-2xl bg-white text-base font-semibold text-zinc-950 shadow-[0_0_30px_-6px_rgba(255,149,0,0.45),inset_0_1px_0_rgba(255,255,255,0.45)] transition-opacity disabled:opacity-60"
             >
               {loading ? o.saving : step === TOTAL_STEPS ? o.start : o.next}
-              {!loading && <ArrowRight size={18} weight="bold" />}
             </motion.button>
           </div>
         </div>

@@ -9,7 +9,6 @@
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
-import { ArrowUp, Microphone, Paperclip, CalendarBlank, Moon, ForkKnife, ChartLineUp, Sparkle } from '@phosphor-icons/react';
 import { supabase } from '@/lib/supabase';
 import { parseScheduleFromAI, getTextBeforeSchedule, getTextAfterSchedule } from '@/lib/schedule-parser';
 import { parseQuestionsFromAI, getTextBeforeQuestions } from '@/lib/questions-parser';
@@ -24,6 +23,8 @@ import Md from '@/components/np/Md';
 import { ZONE } from '@/components/np/ui';
 import { NP } from '@/components/np/copy';
 import { APP } from '@/components/np/appCopy';
+import AiOrb from '@/components/np/AiOrb';
+import { Icon, type IconName } from '@/components/np/icons';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -53,7 +54,7 @@ function getSpeechCtor(): SpeechCtor | null {
 }
 
 const SPEECH_LANG = { ru: 'ru-RU', lv: 'lv-LV', en: 'en-US' } as const;
-const CHIP_ICONS = [CalendarBlank, Moon, ForkKnife, ChartLineUp];
+const CHIP_ICONS: IconName[] = ['calendar', 'moon', 'food', 'trend'];
 const SPRING = { type: 'spring', bounce: 0, duration: 0.4 } as const;
 
 // ACWR bands of the engine (0.8 / 1.3 / 1.5) as pill tones; the number itself is always shown.
@@ -62,22 +63,6 @@ function acwrPill(acwr: number): string {
   if (acwr <= 1.3) return 'np-pill-good';
   if (acwr <= 1.5) return 'np-pill-warn';
   return 'np-pill-danger';
-}
-
-function AiOrb({ state, size = 36 }: { state: 'idle' | 'thinking' | 'listening'; size?: number }) {
-  return (
-    <span
-      aria-hidden
-      className={`np-ai-orb np-logo-pulse relative inline-block shrink-0 ${state === 'thinking' ? 'scale-110' : ''}`}
-      style={{
-        width: size,
-        height: size,
-        transition: 'transform 300ms',
-        animationDuration: state === 'idle' ? '2.8s' : '1.1s',
-        ['--np-glow' as string]: state === 'listening' ? 'rgb(0 229 255 / 0.6)' : 'rgb(124 77 255 / 0.55)',
-      }}
-    />
-  );
 }
 
 export default function ChatPage() {
@@ -106,8 +91,10 @@ export default function ChatPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [t]);
 
+  // Follow the conversation, but leave the welcome screen at its top (title + chips).
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth' });
+    if (messages.length <= 1 && !loading) return;
+    messagesEndRef.current?.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'nearest' });
   }, [messages, loading, reduce]);
 
   // Same readiness history the Progress page uses, computed by the
@@ -231,7 +218,17 @@ export default function ChatPage() {
     { key: 'strength', label: t.hub.modeStrength },
     { key: 'cardio', label: t.hub.modeCardio },
   ];
-  const chips = [...t.chat.promptChips, app.chipYesterday];
+  // Smart chips: the first ones follow today's real numbers (never invented), then the usual ones.
+  const smart: string[] = [];
+  if (hasScore && today) {
+    smart.push(app.chipWhyScore(today.score));
+    smart.push(app.chipPlanToday);
+    if (today.acwr !== null && (today.acwr > 1.3 || today.acwr < 0.8)) smart.push(app.chipWhyAcwr(today.acwr.toFixed(2)));
+  } else if (history !== null) {
+    smart.push(app.chipCheckinFirst);
+  }
+  smart.push(app.chipYesterday);
+  const chips = Array.from(new Set([...smart, ...t.chat.promptChips])).slice(0, 4);
 
   const showWelcome = !seeded && messages.length === 1;
   const orb: 'idle' | 'thinking' | 'listening' = loading ? 'thinking' : listening ? 'listening' : 'idle';
@@ -247,10 +244,10 @@ export default function ChatPage() {
   );
 
   return (
-    <div className="mx-auto grid h-[calc(100dvh-3.5rem-env(safe-area-inset-top)-72px-env(safe-area-inset-bottom))] max-w-7xl gap-4 p-3 md:h-dvh md:p-5 lg:grid-cols-[320px_minmax(0,1fr)]">
+    <div className="mx-auto grid h-[calc(100dvh-3.5rem-env(safe-area-inset-top)-96px-env(safe-area-inset-bottom))] max-w-7xl gap-4 p-3 md:h-dvh md:p-5 lg:grid-cols-[320px_minmax(0,1fr)]">
       {/* readiness sidebar (desktop) */}
       <aside className="hidden min-h-0 space-y-3 overflow-y-auto lg:block" style={{ scrollbarWidth: 'none' }}>
-        <section className="np-card p-5" aria-labelledby="chat-today">
+        <section className="lt-card-readiness p-5" aria-labelledby="chat-today">
           <h2 id="chat-today" className="np-overline" style={{ fontFamily: 'inherit' }}>
             {app.sidebarTitle}
           </h2>
@@ -286,7 +283,7 @@ export default function ChatPage() {
             </p>
           )}
           {!hasScore && (
-            <Link href="/checkin" className="np-btn-glass mt-4 flex h-11 w-full items-center justify-center rounded-np-ctrl text-sm font-medium">
+            <Link href="/checkin" className="np-btn-glass mt-4 flex h-11 w-full items-center justify-center rounded-full text-sm font-medium">
               {t.hub.doCheckin}
             </Link>
           )}
@@ -295,8 +292,8 @@ export default function ChatPage() {
       </aside>
 
       {/* coach column */}
-      <section className="np-card np-glass flex min-h-0 flex-col overflow-hidden" aria-label={t.chat.title}>
-        <header className="flex flex-wrap items-center gap-3 border-b border-np-line px-4 py-3 md:px-5">
+      <section className="np-card flex min-h-0 flex-col overflow-hidden" aria-label={t.chat.title}>
+        <header className="flex shrink-0 flex-wrap items-center gap-3 border-b border-np-line px-4 py-3 md:px-5">
           <AiOrb state={orb} />
           <div className="min-w-0 leading-tight">
             <p className="truncate text-sm font-semibold text-np-text">{t.chat.title}</p>
@@ -305,48 +302,48 @@ export default function ChatPage() {
             </p>
           </div>
           <span className="np-pill np-pill-ai ml-auto hidden sm:inline-flex">
-            <Sparkle size={12} weight="fill" aria-hidden />
+            <Icon name="sparkle" size={12} active />
             {app.online}
           </span>
         </header>
 
-        {/* compact today strip (phone and tablet, where the sidebar is hidden) */}
-        <div className={`space-y-2 px-3 pt-3 lg:hidden ${showWelcome ? '' : 'hidden'}`}>
-          {hasScore && today && (
-            <div className="np-card flex items-center gap-3 px-3 py-2">
-              {dial(40)}
-              <span className={`np-pill ${ZONE[today.zone].pill}`}>{np.zone[today.zone]}</span>
-              {today.acwr !== null && <span className={`np-pill ${acwrPill(today.acwr)}`}>ACWR {today.acwr.toFixed(2)}</span>}
-            </div>
-          )}
-          <PlanCard compact />
-        </div>
-
         {/* messages */}
-        <div className="min-h-0 flex-1 overflow-y-auto px-3 py-5 md:px-6">
+        <div className="min-h-0 flex-1 overflow-y-auto px-3 py-5 [mask-image:linear-gradient(to_bottom,transparent,#000_16px,#000_calc(100%-16px),transparent)] md:px-6">
           <div className="mx-auto max-w-2xl space-y-5">
             {showWelcome && (
               <motion.div initial={reduce ? false : { opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={SPRING} className="pt-2 md:pt-8">
                 <p className="np-overline">{t.chat.heroTag}</p>
-                <h1 className="mt-3 text-3xl font-extrabold leading-tight tracking-tight text-np-text md:text-4xl" style={{ fontFamily: 'inherit' }}>
+                <h1 className="mt-3 text-3xl np-editorial font-semibold leading-tight text-np-text md:text-4xl">
                   {t.chat.subtitle}
                 </h1>
                 <div className="np-ai-bubble mt-5 max-w-[60ch] rounded-2xl rounded-tl-md px-4 py-3 text-sm leading-relaxed text-np-text-2">
                   <p className="whitespace-pre-wrap">{t.chat.welcome}</p>
                 </div>
+                {/* today + plan (phone and tablet, where the sidebar is hidden) — part of the welcome flow,
+                    so it scrolls with it and can never sit on top of the heading */}
+                <div className="mt-5 space-y-2 lg:hidden">
+                  {hasScore && today && (
+                    <div className="np-card flex flex-wrap items-center gap-3 px-3 py-2">
+                      {dial(40)}
+                      <span className={`np-pill ${ZONE[today.zone].pill}`}>{np.zone[today.zone]}</span>
+                      {today.acwr !== null && <span className={`np-pill ${acwrPill(today.acwr)}`}>ACWR {today.acwr.toFixed(2)}</span>}
+                    </div>
+                  )}
+                  <PlanCard compact />
+                </div>
                 <div className="mt-6 grid gap-2.5 sm:grid-cols-2">
                   {chips.map((chip, i) => {
-                    const Ico = CHIP_ICONS[i] ?? Sparkle;
+                    const ico = CHIP_ICONS[i] ?? 'sparkle';
                     return (
                       <button
                         key={chip}
                         type="button"
                         onClick={() => handleSend(chip)}
                         disabled={loading}
-                        className="np-btn-glass group flex items-start gap-3 rounded-np-card p-4 text-left disabled:opacity-50"
+                        className="np-chip group flex items-start gap-3 rounded-np-card p-4 text-left disabled:opacity-50"
                       >
-                        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/5 text-np-text-2 group-hover:text-np-text">
-                          <Ico size={16} aria-hidden />
+                        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-np-veil/5 text-np-text-2 transition-colors group-hover:text-np-text">
+                          <Icon name={ico} size={16} />
                         </span>
                         <span className="min-w-0 pt-1 text-sm leading-snug text-np-text">{chip}</span>
                       </button>
@@ -384,7 +381,7 @@ export default function ChatPage() {
                       className={
                         isAssistant
                           ? 'np-ai-bubble min-w-0 max-w-[92%] rounded-2xl rounded-tl-md px-4 py-3'
-                          : 'max-w-[80%] rounded-2xl rounded-br-md border border-np-line-strong bg-np-surface-3 px-4 py-2.5 text-np-text'
+                          : 'np-user-bubble max-w-[80%] rounded-2xl rounded-br-md px-4 py-2.5 text-np-text'
                       }
                     >
                       {displayText &&
@@ -424,7 +421,7 @@ export default function ChatPage() {
         </div>
 
         {/* command bar */}
-        <div className="border-t border-np-line bg-np-bg/40 p-3 md:p-4">
+        <div className="shrink-0 border-t border-np-line p-3 md:p-4">
           <div className="mx-auto max-w-2xl space-y-2.5">
             {!showWelcome && (
               <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-0.5 [scrollbar-width:none]" aria-label={t.chat.title}>
@@ -434,7 +431,7 @@ export default function ChatPage() {
                     type="button"
                     onClick={() => handleSend(chip)}
                     disabled={loading}
-                    className="np-btn-glass shrink-0 whitespace-nowrap rounded-full px-3.5 py-1.5 text-xs font-medium disabled:opacity-50"
+                    className="np-chip shrink-0 whitespace-nowrap px-3.5 py-1.5 text-xs font-medium disabled:opacity-50"
                   >
                     {chip}
                   </button>
@@ -452,9 +449,7 @@ export default function ChatPage() {
                     role="radio"
                     aria-checked={active}
                     onClick={() => setMode(active ? null : m.key)}
-                    className={`np-pill h-8 border px-3.5 text-xs transition-colors ${
-                      active ? 'np-pill-ai border-np-violet/60' : 'border-np-line text-np-text-2 hover:text-np-text'
-                    }`}
+                    className={`np-chip h-8 px-3.5 text-xs font-semibold ${active ? '!border-np-violet/50 !bg-np-violet/12 !text-np-violet' : 'text-np-text-2'}`}
                   >
                     {m.label}
                   </button>
@@ -462,20 +457,11 @@ export default function ChatPage() {
               })}
             </div>
 
-            <div className="flex items-end gap-1 rounded-[26px] border border-np-line-strong bg-np-surface/80 p-1.5 backdrop-blur-md transition-colors focus-within:border-np-text-3">
-              <button
-                type="button"
-                onClick={insertMetrics}
-                disabled={!today}
-                title={t.hub.attach}
-                aria-label={t.hub.attach}
-                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-np-text-2 transition-colors hover:bg-white/5 hover:text-np-text disabled:opacity-30"
-              >
-                <Paperclip size={18} aria-hidden />
-              </button>
-              <div className="relative min-w-0 flex-1">
+            {/* composer: one dark rounded shell — the message on top, the actions in a bar below */}
+            <div className="np-scope-dark rounded-[24px] border border-white/[0.08] bg-[#151922]/90 p-3 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.1)] backdrop-blur-xl transition-colors focus-within:border-white/[0.15]">
+              <div className="relative">
                 {!input && (
-                  <span aria-hidden className="pointer-events-none absolute inset-x-1 top-[11px] truncate text-[15px] leading-[22px] text-np-text-3">
+                  <span aria-hidden className="pointer-events-none absolute inset-x-1 top-[6px] truncate text-[15px] leading-[22px] text-[#71717A]">
                     {listening ? t.hub.listening : t.chat.placeholder}
                   </span>
                 )}
@@ -494,33 +480,48 @@ export default function ChatPage() {
                   }}
                   aria-label={t.chat.placeholder}
                   disabled={loading}
-                  className="block max-h-[160px] w-full resize-none overflow-y-auto bg-transparent px-1 py-[11px] text-[15px] leading-[22px] text-np-text disabled:opacity-50"
+                  className="block max-h-[160px] min-h-[34px] w-full resize-none overflow-y-auto bg-transparent px-1 py-[6px] text-[15px] leading-[22px] text-[#FFFFFF] focus:outline-none disabled:opacity-50"
                 />
               </div>
-              {voiceSupported && (
+              <div className="mt-2 flex items-center justify-between gap-2">
                 <button
                   type="button"
-                  onClick={toggleVoice}
-                  title={t.hub.voice}
-                  aria-label={t.hub.voice}
-                  aria-pressed={listening}
-                  className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full transition-colors ${
-                    listening ? 'bg-np-sleep/15 text-np-sleep' : 'text-np-text-2 hover:bg-white/5 hover:text-np-text'
-                  }`}
+                  onClick={insertMetrics}
+                  disabled={!today}
+                  title={t.hub.attach}
+                  aria-label={t.hub.attach}
+                  className="flex h-9 w-9 items-center justify-center rounded-lg text-[#C3C5C7] transition-colors hover:bg-white/5 hover:text-white disabled:opacity-30"
                 >
-                  <Microphone size={18} weight={listening ? 'fill' : 'regular'} aria-hidden />
+                  <Icon name="clip" size={18} />
                 </button>
-              )}
-              <button
-                type="button"
-                onClick={() => handleSend()}
-                disabled={loading || !input.trim()}
-                aria-label={t.chat.send}
-                className="np-btn-primary flex h-11 w-11 shrink-0 items-center justify-center rounded-full disabled:opacity-40"
-              >
-                <ArrowUp size={18} weight="bold" aria-hidden />
-              </button>
+                <div className="flex items-center gap-1">
+                  {voiceSupported && (
+                    <button
+                      type="button"
+                      onClick={toggleVoice}
+                      title={t.hub.voice}
+                      aria-label={t.hub.voice}
+                      aria-pressed={listening}
+                      className={`flex h-9 w-9 items-center justify-center rounded-lg transition-colors ${
+                        listening ? 'bg-[#F25CA8]/15 text-[#F25CA8]' : 'text-[#C3C5C7] hover:bg-white/5 hover:text-white'
+                      }`}
+                    >
+                      <Icon name="mic" size={18} active={listening} />
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => handleSend()}
+                    disabled={loading || !input.trim()}
+                    aria-label={t.chat.send}
+                    className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#B8F23C] text-[#0B0D11] shadow-[0_0_16px_rgb(184_242_60/0.3)] transition-[background-color,scale,opacity] hover:bg-[#6BE3F5] active:scale-95 disabled:opacity-40"
+                  >
+                    <Icon name="send" size={18} stroke={1.75} />
+                  </button>
+                </div>
+              </div>
             </div>
+            <p className="truncate text-center text-[10px] text-np-text-3">{APP[lang].v3.disclaimerShort}</p>
           </div>
         </div>
       </section>

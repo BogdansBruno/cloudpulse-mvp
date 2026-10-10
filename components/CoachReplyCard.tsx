@@ -9,6 +9,7 @@ import type { Lang } from '@/lib/i18n/translations';
 import { HUB } from '@/components/PerformancePanel';
 import { todayUtc } from '@/lib/checkin-streak';
 import { SYNCED_EVENT } from '@/lib/offline-queue';
+import { cardClass, CARD_THEME } from '@/components/np/cardTheme';
 import { ALERT_COLUMNS, athleteAlertStatus, parseAlert, parseAlerts, upsertAlerts, type CoachAlert } from '@/lib/coach-alerts';
 
 // ---------------------------------------------------------------------------
@@ -93,21 +94,23 @@ export default function CoachReplyCard({ className = '' }: { className?: string 
   const status = athleteAlertStatus(alerts, uid, today);
   if (status.state === 'none') return null;
 
-  const card = `rounded-3xl p-5 ring-1 ring-inset backdrop-blur-2xl ${className}`;
+  const card = `p-5 ${className}`;
 
   if (status.state === 'waiting') {
     return (
-      <div className={`${card} bg-white/[0.03] ring-white/[0.08]`} role="status">
-        <p className="inline-flex items-center gap-2 text-sm font-medium text-zinc-100">
-          <BellRinging size={16} weight="fill" style={{ color: HUB.amber }} />
-          {a.replyWaitingTitle}
+      <div className={`${card} ${cardClass('activity')}`} role="status">
+        <p className="flex items-center gap-3">
+          <span aria-hidden className="flex h-10 w-10 items-center justify-center rounded-full border border-white/[0.08] bg-white/[0.06]">
+            <BellRinging size={18} weight="fill" style={{ color: CARD_THEME.activity.accent }} />
+          </span>
+          <span className="np-editorial text-[22px] leading-tight">{a.replyWaitingTitle}</span>
           <span
             aria-hidden
             className={`h-1.5 w-1.5 rounded-full ${reduce ? '' : 'animate-pulse'}`}
             style={{ backgroundColor: HUB.amber }}
           />
         </p>
-        <p className="mt-1.5 text-sm leading-relaxed text-zinc-400">{a.replyWaiting(status.kind)}</p>
+        <p className="mt-3 text-sm leading-relaxed text-white/75">{a.replyWaiting(status.kind)}</p>
       </div>
     );
   }
@@ -118,14 +121,16 @@ export default function CoachReplyCard({ className = '' }: { className?: string 
       initial={reduce ? false : { opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ type: 'spring', bounce: 0, duration: 0.45 }}
-      className={`${card} bg-[#CCFF00]/[0.06] ring-[#CCFF00]/25`}
+      className={`${card} ${cardClass('readiness')}`}
       role="status"
     >
-      <p className="inline-flex items-center gap-2 text-xs text-zinc-400">
-        <ChatCircleText size={15} weight="fill" className="text-[#CCFF00]" />
+      <p className="flex items-center gap-3 text-[11px] font-medium uppercase tracking-widest text-white/75">
+        <span aria-hidden className="flex h-10 w-10 items-center justify-center rounded-full border border-white/[0.08] bg-white/[0.06]">
+          <ChatCircleText size={18} weight="fill" style={{ color: CARD_THEME.readiness.accent }} />
+        </span>
         {a.replyTitle(at)}
       </p>
-      <p className="mt-2 text-base font-medium leading-snug text-zinc-50">{a.reply[status.reaction]}</p>
+      <p className="np-editorial mt-3 text-[22px] leading-snug">{a.reply[status.reaction]}</p>
     </motion.div>
   );
 }

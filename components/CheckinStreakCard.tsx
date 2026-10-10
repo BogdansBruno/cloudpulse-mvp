@@ -2,13 +2,17 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Flame, CheckCircle, ArrowRight } from '@phosphor-icons/react';
+import { Flame, CheckCircle } from '@phosphor-icons/react';
 import { supabase } from '@/lib/supabase';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
 import type { Lang } from '@/lib/i18n/translations';
 import { addDays, computeCheckinStreak, recentDays, todayUtc } from '@/lib/checkin-streak';
 import type { CheckinStreak } from '@/lib/checkin-streak';
 import { SYNCED_EVENT } from '@/lib/offline-queue';
+import { cardClass, CARD_THEME } from '@/components/np/cardTheme';
+import { InfoButton } from '@/components/np/InfoSheet';
+
+const ACC = CARD_THEME.sleep.accent;
 
 // ---------------------------------------------------------------------------
 // Athlete's check-in streak: shown on /progress and on the check-in result
@@ -72,7 +76,7 @@ export default function CheckinStreakCard({
 
   if (hidden) return null;
 
-  const card = `rounded-3xl bg-white/[0.03] p-5 ring-1 ring-inset ring-white/[0.08] backdrop-blur-2xl ${className}`;
+  const card = `${cardClass('sleep')} p-5 ${className}`;
 
   if (!data) {
     return <div className={`${card} h-[172px] animate-pulse`} aria-busy />;
@@ -86,33 +90,37 @@ export default function CheckinStreakCard({
   return (
     <section className={card}>
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 className="flex items-center gap-2 text-sm text-zinc-400">
-          <Flame size={16} weight="fill" className={lit ? 'text-[#CCFF00]' : 'text-zinc-600'} />
+        <h2 className="flex items-center gap-3 text-[11px] font-medium uppercase tracking-widest text-white/75">
+          <span aria-hidden className="flex h-10 w-10 items-center justify-center rounded-full border border-white/[0.08] bg-white/[0.06]">
+            <Flame size={18} weight="fill" style={{ color: lit ? ACC : 'rgb(255 255 255 / 0.3)' }} />
+          </span>
           {s.title}
         </h2>
+        <div className="flex items-center gap-1">
         {doneToday ? (
-          <span className="inline-flex items-center gap-1 text-xs font-medium text-[#CCFF00]">
+          <span className="inline-flex items-center gap-1 text-[11px] font-semibold uppercase tracking-widest" style={{ color: ACC }}>
             <CheckCircle size={14} weight="fill" />
             {s.doneToday}
           </span>
         ) : (
           showCta && (
-            <Link href="/checkin" className="inline-flex items-center gap-1 text-xs font-semibold text-[#CCFF00]">
+            <Link href="/checkin" className="inline-flex items-center gap-1 text-xs font-semibold text-zinc-50 underline decoration-white/30 underline-offset-4 hover:decoration-white">
               {t.hub.doCheckin}
-              <ArrowRight size={13} weight="bold" />
             </Link>
           )
         )}
+          <InfoButton k="streak" accent={ACC} baseline={{ now: String(current) }} />
+        </div>
       </div>
 
-      <p className="mt-3 text-2xl font-semibold tracking-[-0.02em] text-zinc-50">{s.days(current)}</p>
-      <p className="mt-1 text-xs text-zinc-500">
+      <p className="np-editorial mt-4 text-[28px] leading-tight">{s.days(current)}</p>
+      <p className="mt-1 text-xs text-white/75">
         {!doneToday && <span className="text-zinc-300">{current > 0 ? s.keepGoing : s.startNew} · </span>}
         {s.best(best)}
       </p>
 
       <div className="mt-4">
-        <p className="mb-1.5 text-[11px] text-zinc-500">{s.last14}</p>
+        <p className="mb-1.5 text-[11px] text-white/75">{s.last14}</p>
         <ol className="grid grid-cols-[repeat(14,minmax(0,1fr))] gap-1">
           {data.days.map((d, i) => {
             const isToday = i === data.days.length - 1;
@@ -121,7 +129,7 @@ export default function CheckinStreakCard({
                 key={d.date}
                 title={`${dayLabel(d.date)} · ${d.done ? s.dayDone : s.dayMissed}`}
                 aria-label={`${dayLabel(d.date)}: ${d.done ? s.dayDone : s.dayMissed}`}
-                className={`h-5 rounded-md ${d.done ? 'bg-[#CCFF00]' : 'bg-white/[0.07]'} ${
+                className={`h-5 rounded-full ${d.done ? 'bg-[#3FE0A8]/85 shadow-[0_0_8px_rgb(82_196_165/0.45)]' : 'bg-[#9AA7B8]/10'} ${
                   isToday ? 'ring-1 ring-inset ring-white/40' : ''
                 }`}
               />
@@ -130,7 +138,7 @@ export default function CheckinStreakCard({
         </ol>
       </div>
 
-      <p className="mt-4 text-[11px] leading-relaxed text-zinc-500">{s.honesty}</p>
+      <p className="mt-4 text-[11px] leading-relaxed text-white/75">{s.honesty}</p>
     </section>
   );
 }

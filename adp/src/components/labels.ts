@@ -2,7 +2,7 @@
 //
 // UI copy for the ADP components in the three pilot languages (roadmap rule
 // 6: RU / LV / EN are part of every feature). Kept inside adp/ on purpose —
-// ADP does not import CloudPulse's translations.
+// ADP does not import Lotus's translations.
 //
 // `satisfies` makes the compiler check that every language has every key.
 

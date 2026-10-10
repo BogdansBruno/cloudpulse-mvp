@@ -1,47 +1,64 @@
-/* app/np-theme.css — ADP v3 "Night Performance" tokens + components (Tailwind v4).
-   Imported from globals.css after ds-tokens.css. Everything is namespaced
-   `np-` so the older Dark Minimal (`ds-`) and Dark Editorial screens keep
-   their own look.
+/* app/np-theme.css — Lotus colour system (Tailwind v4). Imported from globals.css after ds-tokens.css.
+   Everything is namespaced `np-`.
 
-   Utilities: bg-np-bg, bg-np-surface, bg-np-surface-2, border-np-line,
-   text-np-text-2, text-np-good, bg-np-strain/30, rounded-np-card, rounded-np-ctrl …
-   Colour jobs (CVD-checked on #131722):
-   - readiness zones come from the ENGINE (green ≥ 75, yellow 50–74, red < 50):
-     good #00E676 · warn #FFD600 · danger #FF3D00 (text, icon, ring, 2px line — never a filled panel)
-   - identity: sleep cyan #00E5FF (arcs start at violet #7C4DFF), load electric blue #2979FF
-   - heat #FF6B00 → #FF2E00 only for the overload zone of the Load Index (76–100)
-   - AI: violet → blue gradient, only on AI surfaces
-   - lime #CCFF00: the ONE filled action button + the focus ring */
+   Palette (components/np/status.ts → LT mirrors it for SVG / inline styles):
+     state     optimal/Push #B8F23C volt · good #3FE0A8 mint · fair/Steady #FFC53D amber · neutral #9AA7B8 slate ·
+               attention #FF7A59 coral
+     exertion  engaged #F25CA8 magenta · relax/sleep #8E8CFF periwinkle · crimson #FF3D5A (Recover / stop / critical / Safety Pass)
+   Canvas #0B0D11 (never pure black) with a soft ambient aura (volt + periwinkle; the live workout uses
+   rose + mint). Text #FFFFFF (never pure white), secondary #C3C5C7, micro labels white/40.
+   Glass: white/3 fill, blur-xl, white/8 hairline (white/15 on hover), a 1 px inset top highlight,
+   rounded-3xl cards · rounded-2xl widgets · rounded-full pills. Previous themes: outputs/backup-themes/. */
 
 @theme {
-  --color-np-bg: #0b0d12;
-  --color-np-surface: #131722;
-  --color-np-surface-2: #1c2230;
-  --color-np-surface-3: #232a3b;
+  --color-np-bg: #0B0D11;
+  --color-np-surface: #151922;
+  --color-np-surface-2: #1b202b;
+  --color-np-surface-3: #252b37;
   --color-np-line: rgb(255 255 255 / 0.08);
-  --color-np-line-strong: rgb(255 255 255 / 0.14);
+  --color-np-line-strong: rgb(255 255 255 / 0.15);
+  /* ink of faint fills and hairlines */
+  --color-np-veil: #FFFFFF;
 
-  --color-np-text: #f2f4f7;
-  --color-np-text-2: #a3a9b6;
-  --color-np-text-3: #8a92a3;
+  --color-np-text: #FFFFFF;
+  --color-np-text-2: rgb(255 255 255 / 0.88);
+  --color-np-text-3: rgb(255 255 255 / 0.7);
+  --color-np-slate: #C3C5C7;
 
-  --color-np-accent: #ccff00;
-  --color-np-accent-hover: #b8e600;
+  /* legacy names, now on the Lotus palette */
+  --color-np-accent: #B8F23C;
+  --color-np-accent-hover: #CBFA62;
+  --color-np-warm: #FFC53D;
+  --color-np-warm-light: #FFC53D;
+  --color-np-emerald: #3FE0A8;
 
-  --color-np-good: #00e676;
-  --color-np-warn: #ffd600;
-  --color-np-danger: #ff3d00;
+  --color-np-good: #3FE0A8;
+  --color-np-warn: #FFC53D;
+  --color-np-danger: #FF3D5A;
 
-  --color-np-sleep: #00e5ff;
-  --color-np-violet: #7c4dff;
-  --color-np-strain: #2979ff;
-  --color-np-strain-light: #5c9bff;
-  --color-np-heat: #ff6b00;
-  --color-np-heat-2: #ff2e00;
-  --color-np-awake: #3a3f4b;
+  --color-np-sleep: #8E8CFF;
+  --color-np-violet: #8E8CFF;
+  --color-np-strain: #FFC53D;
+  --color-np-strain-light: #FFC53D;
+  --color-np-heat: #FF7A59;
+  --color-np-heat-2: #FF3D5A;
+  --color-np-awake: #9AA7B8;
 
-  --radius-np-card: 16px;
-  --radius-np-ctrl: 12px;
+  --radius-np-card: 26px 26px 26px 8px; /* asymmetric: one sharp corner, a signature of Lotus */
+  --radius-np-ctrl: 16px;
+
+  --font-np: var(--font-np-manrope, 'Onest'), 'Manrope', ui-sans-serif, system-ui, sans-serif;
+  --font-np-serif: var(--font-np-serif-face, 'Noto Serif Display'), 'Iowan Old Style', Georgia, serif;
+
+  /* Lotus palette (badges, ranges, chart accents, zones) */
+  --color-np-st-optimal: #B8F23C;
+  --color-np-st-good: #3FE0A8;
+  --color-np-st-fair: #FFC53D;
+  --color-np-st-neutral: #9AA7B8;
+  --color-np-st-attention: #FF7A59;
+  --color-np-st-relaxed: #8E8CFF;
+  --color-np-st-engaged: #F25CA8;
+  --color-np-st-stressed: #FF3D5A;
 
   --animate-np-fade-up: np-fade-up 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both;
   --animate-np-glow: np-glow 2.8s ease-in-out infinite;
@@ -59,15 +76,59 @@
   @keyframes np-glow {
     0%,
     100% {
-      box-shadow: 0 0 0 0 var(--np-glow, rgb(204 255 0 / 0.45));
+      box-shadow: 0 0 0 0 var(--np-glow, rgb(184 242 60 / 0.4));
     }
     50% {
-      box-shadow: 0 0 14px 2px var(--np-glow, rgb(204 255 0 / 0.45));
+      box-shadow: 0 0 14px 2px var(--np-glow, rgb(184 242 60 / 0.4));
     }
   }
 }
 
-/* referenced by name from .np-typing-dot, so it lives outside @theme */
+/* referenced by name from component classes, so they live outside @theme */
+@keyframes np-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes np-breathe {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: scale(0.94);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.06);
+  }
+}
+@keyframes np-sheet-up {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+@keyframes np-pop-in {
+  from {
+    opacity: 0;
+    transform: scale(0.94) translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes np-list-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
 @keyframes np-typing {
   0%,
   60%,
@@ -82,139 +143,594 @@
 }
 
 @layer components {
+  /* ------------------------------------------------------------ canvas */
+  /* the page scrolls in the viewport: anchors and focused fields stop 120 px above the bottom edge, clear of the dock */
+  html:has(.np-app) {
+    scroll-padding-bottom: calc(env(safe-area-inset-bottom) + 120px);
+    /* installed-app feel: no rubber-band pull on the page edge, the canvas colour behind the notch, smooth momentum scroll */
+    background-color: #0b0d11;
+    overscroll-behavior-y: none;
+    -webkit-overflow-scrolling: touch;
+    -webkit-tap-highlight-color: transparent;
+  }
+  /* no 300 ms double-tap-to-zoom delay on controls (pinch-zoom of the page stays available) */
+  .np-app button,
+  .np-app a,
+  .np-app [role='button'],
+  .np-app [role='radio'],
+  .np-app [role='tab'] {
+    touch-action: manipulation;
+  }
+
   .np-app {
+    position: relative;
+    isolation: isolate;
+    /* soften every `text-white` / `bg-white/x` / `border-white/x` inside the app: never pure white */
+    --color-white: #FFFFFF;
     background-color: var(--color-np-bg);
     color: var(--color-np-text);
+    font-family: var(--font-np);
     font-variant-numeric: tabular-nums;
     -webkit-font-smoothing: antialiased;
   }
-  .np-app :where(a, button, input, [tabindex]):focus-visible {
-    outline: none;
-    box-shadow:
-      0 0 0 2px var(--color-np-bg),
-      0 0 0 4px var(--color-np-accent);
+  /* One uniform matted slate canvas (#0B0D11): no full-screen glows. Colour lives only inside the cards. */
+  /* Live workout (workout mode): rose coral from the top, mint teal from below. */
+  .np-mesh-deep {
+    background:
+      radial-gradient(70% 34% at 50% -4%, rgb(255 45 85 / 0.22), transparent 72%),
+      radial-gradient(60% 30% at 10% 104%, rgb(63 224 168 / 0.18), transparent 72%),
+      radial-gradient(40% 26% at 96% 60%, rgb(142 140 255 / 0.12), transparent 72%),
+      #0B0D11;
+  }
+  /* Page-level aura on top of the canvas (components/np/Aura.tsx): high-strain = terracotta. */
+  .np-aura {
+    pointer-events: none;
+    position: fixed;
+    z-index: -1;
+    border-radius: 9999px;
+    filter: blur(100px);
+    opacity: 0;
+    display: none;
+  }
+  .np-on-bg {
+    text-shadow: none;
   }
 
-  /* numbers: Inter 800, tight, tabular */
-  .np-num {
-    font-weight: 800;
-    letter-spacing: -0.02em;
+  .np-app :where(a, button, input, textarea, [tabindex]):focus-visible {
+    outline: none;
+    box-shadow:
+      0 0 0 2px #0B0D11,
+      0 0 0 4px rgb(184 242 60 / 0.7);
+  }
+
+  /* ------------------------------------------------------------ scopes */
+  .np-scope-light {
+    --color-np-surface: #ffffff;
+    --color-np-surface-2: rgb(15 23 42 / 0.05);
+    --color-np-surface-3: rgb(15 23 42 / 0.08);
+    --color-np-line: rgb(15 23 42 / 0.08);
+    --color-np-line-strong: rgb(15 23 42 / 0.14);
+    --color-np-veil: #0f172a;
+    --color-np-text: #0f172a;
+    --color-np-text-2: #475569;
+    --color-np-text-3: #64748b;
+    --color-np-good: #059669;
+    --color-np-warn: #b45309;
+    --color-np-danger: #dc2626;
+    color: var(--color-np-text);
+  }
+  /* kept as a class so older markup keeps working; values equal the root ones */
+  .np-scope-dark,
+  .np-island,
+  .np-ai-bubble {
+    color: var(--color-np-text);
+  }
+
+  /* ------------------------------------------------------------ type */
+  .np-num,
+  .np-metric {
+    font-weight: 600;
+    letter-spacing: -0.03em;
     font-variant-numeric: tabular-nums;
+    line-height: 0.95;
+    color: var(--color-np-text);
+  }
+  .np-num {
     line-height: 1;
+  }
+  /* big numbers: thin, crisp, white */
+  .np-metric {
+    font-weight: 300;
+    letter-spacing: -0.045em;
+  }
+  /* Editorial headlines: light serif, tight lines (H1 40 / H2 32 / H3 28). */
+  .np-editorial,
+  .np-h1,
+  .np-h2,
+  .np-h3 {
+    font-family: var(--font-np);
+    font-weight: 600;
+    letter-spacing: -0.03em;
+    color: var(--color-np-text);
+  }
+  /* Serif is kept ONLY for long-form reading: the monthly insight and the weekly summary. */
+  .np-journal {
+    font-family: var(--font-np-serif);
+    font-weight: 300;
+    letter-spacing: 0;
+    line-height: 1.35;
+    color: var(--color-np-text);
+  }
+  .np-h1 {
+    font-size: 40px;
+    line-height: 1;
+  }
+  .np-h2 {
+    font-size: 32px;
+    line-height: 1;
+  }
+  .np-h3 {
+    font-size: 28px;
+    line-height: 1.2;
+  }
+  .np-overline,
+  .np-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--color-np-text-3);
   }
   .np-overline {
     font-size: 11px;
+    letter-spacing: 0.12em;
+  }
+  .np-mono {
+    font-variant-numeric: tabular-nums;
     font-weight: 600;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--color-np-text-2);
+    letter-spacing: -0.02em;
   }
 
+  /* ------------------------------------------------------------ surfaces */
+  /* Dark frosted glass. */
+  /* Glass card material: translucent ink-blue glass, soft blur, faint hairline, radius 24, p-5 by default. */
   .np-card {
-    border: 1px solid var(--color-np-line);
+    border: 1px solid rgb(255 255 255 / 0.07);
     border-radius: var(--radius-np-card);
-    background-color: var(--color-np-surface);
+    background: #12151B;
+    box-shadow: inset 0 1px 0 0 rgb(255 255 255 / 0.04);
+    transition: border-color 200ms;
   }
+  .np-card:hover {
+    border-color: rgb(255 255 255 / 0.15);
+  }
+  /* Lotus tinted cards (same skins as components/np/cardTheme.ts, for markup that uses plain classes):
+     a diagonal tint of the card's colour fading into the midnight canvas, white/8 hairline, top highlight. */
+  .lt-card-readiness,
+  .lt-card-sleep,
+  .lt-card-activity,
+  .lt-card-stress,
+  .lt-card-alert {
+    border: 1px solid rgb(255 255 255 / 0.07);
+    border-radius: var(--radius-np-card);
+    box-shadow: inset 0 1px 0 0 rgb(255 255 255 / 0.08);
+    transition: border-color 200ms;
+  }
+  .lt-card-readiness:hover,
+  .lt-card-sleep:hover,
+  .lt-card-activity:hover,
+  .lt-card-stress:hover,
+  .lt-card-alert:hover {
+    filter: brightness(1.06);
+  }
+  /* Lotus cards: matte slate #12151B, one diagonal tint of the category colour from the top-left corner (not a centred halo),
+     and a short accent rail on the left edge (--lt-accent). One corner is sharp (radius 26 26 26 8). */
+  .lt-bg-readiness,
+  .lt-card-readiness,
+  .lt-bg-sleep,
+  .lt-card-sleep,
+  .lt-bg-activity,
+  .lt-card-activity,
+  .lt-bg-stress,
+  .lt-card-stress,
+  .lt-bg-alert,
+  .lt-card-alert {
+    position: relative;
+    isolation: isolate;
+    --lt-tint: 0.1;
+  }
+  .lt-bg-readiness,
+  .lt-card-readiness {
+    --lt-accent: #B8F23C;
+    background: linear-gradient(155deg, rgb(184 242 60 / 0.11) 0%, rgb(18 21 27 / 0) 46%), #12151b;
+  }
+  .lt-bg-sleep,
+  .lt-card-sleep {
+    --lt-accent: #8E8CFF;
+    background: linear-gradient(155deg, rgb(142 140 255 / 0.13) 0%, rgb(18 21 27 / 0) 46%), #12151b;
+  }
+  .lt-bg-activity,
+  .lt-card-activity {
+    --lt-accent: #FFB23D;
+    background: linear-gradient(155deg, rgb(255 178 61 / 0.12) 0%, rgb(18 21 27 / 0) 46%), #12151b;
+  }
+  .lt-bg-stress,
+  .lt-card-stress {
+    --lt-accent: #3FE0D0;
+    background: linear-gradient(155deg, rgb(63 224 208 / 0.11) 0%, rgb(18 21 27 / 0) 46%), #12151b;
+  }
+  .lt-bg-alert,
+  .lt-card-alert {
+    --lt-accent: #FF3D5A;
+    background: linear-gradient(155deg, rgb(255 61 90 / 0.17) 0%, rgb(18 21 27 / 0) 52%), #12151b;
+  }
+  .lt-bg-readiness::before,
+  .lt-card-readiness::before,
+  .lt-bg-sleep::before,
+  .lt-card-sleep::before,
+  .lt-bg-activity::before,
+  .lt-card-activity::before,
+  .lt-bg-stress::before,
+  .lt-card-stress::before,
+  .lt-bg-alert::before,
+  .lt-card-alert::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 22px;
+    width: 3px;
+    height: 30px;
+    border-radius: 0 3px 3px 0;
+    background: var(--lt-accent);
+    box-shadow: 0 0 14px var(--lt-accent);
+    opacity: 0.9;
+    pointer-events: none;
+  }
+  .lt-card-alert {
+    border-color: rgb(255 61 90 / 0.3);
+  }
+  /* Mode switch (Settings): two big options, the chosen one has a volt edge. */
+  .lt-mode-opt {
+    border: 1px solid rgb(255 255 255 / 0.1);
+    background: rgb(255 255 255 / 0.03);
+    border-radius: 18px 18px 18px 6px;
+    transition: border-color 160ms, background 160ms;
+  }
+  .lt-mode-opt.is-on {
+    border-color: #b8f23c;
+    background: rgb(184 242 60 / 0.08);
+    box-shadow: 0 0 0 1px rgb(184 242 60 / 0.25);
+  }
+  /* Status pill cluster: a row of small pills that touch, first and last rounded, middle ones square-ish. */
+  .lt-cluster {
+    display: inline-flex;
+  }
+  .lt-cluster > * {
+    border-radius: 6px;
+  }
+  .lt-cluster > :first-child {
+    border-radius: 999px 6px 6px 999px;
+  }
+  .lt-cluster > :last-child {
+    border-radius: 6px 999px 999px 6px;
+  }
+  .lt-cluster > * + * {
+    margin-left: 2px;
+  }
+  /* Hero / highlight: the same glass with a terracotta light bleeding in from one side. */
+  /* Hero card: the same glass with a faint teal light from the top. */
+  .np-glass-premium {
+    border: 1px solid rgb(255 255 255 / 0.1);
+    border-radius: 28px;
+    background:
+      linear-gradient(180deg, rgb(47 216 240 / 0.08) 0%, transparent 55%),
+      rgb(255 255 255 / 0.03);
+    -webkit-backdrop-filter: blur(24px) saturate(140%);
+    backdrop-filter: blur(24px) saturate(140%);
+    box-shadow:
+      inset 0 1px 0 0 rgb(255 255 255 / 0.08),
+      0 24px 48px -16px rgb(0 0 0 / 0.5);
+  }
+  /* Soft light placed behind a key card. */
+  .np-sunburst {
+    pointer-events: none;
+    position: absolute;
+    border-radius: 9999px;
+    background: radial-gradient(circle, rgb(47 216 240 / 0.22) 0%, rgb(142 140 255 / 0.1) 45%, transparent 70%);
+    filter: blur(30px);
+  }
+  /* Header chrome on the canvas. */
   .np-glass {
-    background-color: rgb(22 27 38 / 0.82);
-    -webkit-backdrop-filter: blur(20px) saturate(180%);
-    backdrop-filter: blur(20px) saturate(180%);
+    border-color: rgb(255 255 255 / 0.08);
+    background-color: rgb(14 17 23 / 0.84);
+    -webkit-backdrop-filter: blur(24px) saturate(150%);
+    backdrop-filter: blur(24px) saturate(150%);
+  }
+  /* Quiet helper text under cards (privacy notes, hints). */
+  .np-caption {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    line-height: 1.5;
+    color: var(--color-np-text-3);
+  }
+  /* Header avatar / settings button: small frosted disc, no bar behind it. */
+  .np-avatar-glass {
+    border: 1px solid rgb(255 255 255 / 0.12);
+    background-color: rgb(255 255 255 / 0.08);
+    -webkit-backdrop-filter: blur(20px) saturate(150%);
+    backdrop-filter: blur(20px) saturate(150%);
+    transition: background-color 200ms;
+  }
+  .np-avatar-glass:hover {
+    background-color: rgb(255 255 255 / 0.14);
+  }
+  /* Floating bottom bar: smoked glass, weightless, the page shows through. */
+  .np-tabbar.np-tabbar-float {
+    border: 1px solid rgb(255 255 255 / 0.08);
+    background-color: rgb(14 17 23 / 0.8);
+    -webkit-backdrop-filter: blur(28px) saturate(170%);
+    backdrop-filter: blur(28px) saturate(170%);
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.08),
+      0 12px 32px -12px rgb(0 0 0 / 0.5);
   }
 
-  .np-btn-primary {
-    background-color: var(--color-np-accent);
-    color: var(--color-np-bg);
+  /* A group of older cards framed as one panel. */
+  .np-island {
+    border: 1px solid rgb(255 255 255 / 0.1);
+    border-radius: 24px;
+    background-color: rgb(255 255 255 / 0.03);
+    -webkit-backdrop-filter: blur(40px) saturate(150%);
+    backdrop-filter: blur(40px) saturate(150%);
     box-shadow:
-      inset 0 1px 0 rgb(255 255 255 / 0.35),
-      inset 0 -2px 0 rgb(0 0 0 / 0.12);
+      inset 0 1px 0 0 rgb(255 255 255 / 0.08),
+      0 25px 50px -12px rgb(0 0 0 / 0.5);
+  }
+
+  /* Soft radial light behind a key metric. Set --np-ambient to the identity colour. */
+  .np-ambient {
+    pointer-events: none;
+    position: absolute;
+    border-radius: 9999px;
+    background: radial-gradient(circle, var(--np-ambient, rgb(47 216 240 / 0.2)) 0%, transparent 68%);
+    filter: blur(28px);
+  }
+  .np-ambient-pulse {
+    animation: np-breathe 5.5s ease-in-out infinite;
+  }
+
+  /* ------------------------------------------------------------ controls */
+  /* The ONE primary action: a sky-blue pill with midnight ink and a soft glow. */
+  .np-btn-primary {
+    border: 1px solid rgb(255 255 255 / 0.2);
+    background-color: #B8F23C;
+    color: #0B0D11;
+    font-weight: 600;
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.3),
+      0 0 24px rgb(184 242 60 / 0.3);
     transition:
-      background-color 120ms,
+      background-color 200ms,
       box-shadow 200ms,
       scale 120ms;
   }
   .np-btn-primary:hover {
-    background-color: var(--color-np-accent-hover);
+    background-color: #CBFA62;
     box-shadow:
-      inset 0 1px 0 rgb(255 255 255 / 0.35),
-      0 4px 20px rgb(204 255 0 / 0.35);
+      inset 0 1px 0 rgb(255 255 255 / 0.3),
+      0 0 32px rgb(184 242 60 / 0.45);
   }
   .np-btn-primary:active {
     scale: 0.98;
   }
+  /* Secondary: dark glass pill. */
   .np-btn-glass {
     border: 1px solid rgb(255 255 255 / 0.1);
-    background-color: rgb(255 255 255 / 0.05);
-    color: var(--color-np-text);
+    background-color: rgb(255 255 255 / 0.06);
+    color: #FFFFFF;
+    font-weight: 500;
+    -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: blur(20px);
     transition:
-      background-color 150ms,
-      border-color 150ms,
+      background-color 200ms,
+      border-color 200ms,
       scale 120ms;
   }
   .np-btn-glass:hover {
-    background-color: rgb(255 255 255 / 0.09);
-    border-color: rgb(255 255 255 / 0.16);
+    background-color: rgb(255 255 255 / 0.14);
+    border-color: rgb(255 255 255 / 0.22);
   }
   .np-btn-glass:active {
     scale: 0.98;
   }
+  :where(.np-scope-light) .np-btn-glass {
+    border-color: transparent;
+    background-color: #f3f3f3;
+    color: #0f172a;
+  }
 
+  /* Chips / segmented items: dark track, the selected one is a solid glass slider. */
+  .np-chip {
+    border: 1px solid rgb(255 255 255 / 0.1);
+    border-radius: 9999px;
+    background-color: rgb(255 255 255 / 0.05);
+    color: var(--color-np-text);
+    transition:
+      border-color 160ms,
+      background-color 160ms,
+      color 160ms;
+  }
+  .np-chip:hover {
+    border-color: rgb(255 255 255 / 0.2);
+    background-color: rgb(255 255 255 / 0.09);
+  }
+  .np-chip[aria-checked='true'],
+  .np-chip[aria-pressed='true'] {
+    border-color: rgb(255 255 255 / 0.2);
+    background-color: rgb(255 255 255 / 0.15);
+    color: #FFFFFF !important;
+  }
+
+  /* Floating pills: semi-transparent glass with a vivid ink. */
   .np-pill {
     display: inline-flex;
     align-items: center;
     gap: 0.375rem;
+    border: 1px solid rgb(255 255 255 / 0.2);
     border-radius: 9999px;
     padding: 0.125rem 0.625rem;
     font-size: 11px;
     font-weight: 600;
     line-height: 1.25rem;
     white-space: nowrap;
-    background-color: rgb(255 255 255 / 0.06);
+    background-color: rgb(255 255 255 / 0.1);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+    box-shadow: 0 8px 32px rgb(0 0 0 / 0.3);
     color: var(--color-np-text-2);
   }
   .np-pill-good {
-    background-color: rgb(0 230 118 / 0.12);
-    color: var(--color-np-good);
+    color: #3FE0A8;
   }
   .np-pill-warn {
-    background-color: rgb(255 214 0 / 0.12);
-    color: var(--color-np-warn);
+    color: #FF7A59;
   }
   .np-pill-danger {
-    background-color: rgb(255 61 0 / 0.14);
-    color: #ff6e40;
+    color: var(--color-np-danger);
   }
   .np-pill-strain {
-    background-color: rgb(41 121 255 / 0.14);
     color: var(--color-np-strain-light);
   }
   .np-pill-heat {
-    background-color: rgb(255 107 0 / 0.14);
     color: var(--color-np-heat);
   }
   .np-pill-ai {
-    background-color: rgb(124 77 255 / 0.16);
-    color: #b9a3ff;
+    color: var(--color-np-violet);
   }
 
+  /* ------------------------------------------------------------ telemetry */
+  .np-row {
+    display: flex;
+    min-height: 46px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    border-bottom: 1px solid rgb(255 255 255 / 0.06);
+    padding: 0.5rem 0;
+  }
+  .np-row:last-child {
+    border-bottom: 0;
+  }
+  /* Warning without a filled box: dark glass with a 3px accent line on the left. */
+  .np-flag {
+    border: 1px solid rgb(255 255 255 / 0.1);
+    border-left: 3px solid var(--np-accent-line, var(--color-np-warn));
+    border-radius: 10px 24px 24px 10px;
+    background-color: rgb(255 255 255 / 0.03);
+    -webkit-backdrop-filter: blur(40px);
+    backdrop-filter: blur(40px);
+    color: var(--color-np-text);
+  }
+  .np-delta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    border: 1px solid rgb(255 255 255 / 0.12);
+    border-radius: 9999px;
+    padding: 0.125rem 0.5rem 0.125rem 0.375rem;
+    background-color: rgb(255 255 255 / 0.06);
+    font-size: 11px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    color: var(--color-np-text-2);
+    white-space: nowrap;
+  }
+
+  /* SVG helpers (a class beats the presentation attribute). */
+  .np-svg-track {
+    stroke: rgb(255 255 255 / 0.1);
+  }
+  .np-svg-grid {
+    stroke: rgb(255 255 255 / 0.06);
+  }
+  .np-svg-tick {
+    stroke: rgb(255 255 255 / 0.35);
+  }
+  .np-svg-text {
+    fill: var(--color-np-text);
+  }
+  .np-svg-text-3 {
+    fill: var(--color-np-text-3);
+  }
+  .np-svg-line {
+    stroke: var(--color-np-emerald);
+  }
+  .np-svg-hole {
+    fill: var(--color-np-surface);
+  }
   .np-ring-arc {
     transition: stroke-dashoffset 1.2s cubic-bezier(0.4, 0, 0.2, 1);
-    filter: drop-shadow(0 0 6px var(--np-glow, transparent));
+    filter: drop-shadow(0 0 4px var(--np-glow, transparent));
+  }
+  /* the glowing dot at the head of a progress arc */
+  .np-ring-head {
+    opacity: 0;
+    transition: opacity 400ms 1s;
+  }
+  .np-ring-head[data-on='true'] {
+    opacity: 1;
   }
 
+  /* ------------------------------------------------------------ AI */
   .np-ai-orb {
-    --np-glow: rgb(124 77 255 / 0.55);
-    background-image: linear-gradient(135deg, var(--color-np-violet) 0%, var(--color-np-strain) 100%);
-    color: #fff;
+    --np-glow: rgb(47 216 240 / 0.45);
+    background-image: linear-gradient(135deg, #2FD8F0 0%, #3FE0A8 55%, #8E8CFF 100%);
+    color: #0B0D11;
     border-radius: 9999px;
   }
+  .np-orb-live {
+    position: relative;
+    isolation: isolate;
+    overflow: visible;
+  }
+  .np-orb-live::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 9999px;
+    background: conic-gradient(from 0deg, #2FD8F0, #3FE0A8, #FFC53D, #8E8CFF, #2FD8F0);
+    animation: np-spin var(--np-orb-speed, 6s) linear infinite;
+    z-index: -1;
+  }
+  .np-orb-live::after {
+    content: '';
+    position: absolute;
+    inset: -35%;
+    border-radius: 9999px;
+    background: radial-gradient(circle, var(--np-glow, rgb(184 242 60 / 0.4)) 0%, transparent 65%);
+    animation: np-breathe var(--np-orb-breathe, 3.2s) ease-in-out infinite;
+    z-index: -2;
+  }
+  .np-orb-live > .np-orb-core {
+    position: absolute;
+    inset: 22%;
+    border-radius: 9999px;
+    background: radial-gradient(circle at 35% 30%, rgb(255 255 255 / 0.95), rgb(255 255 255 / 0.2) 55%, transparent 70%);
+    mix-blend-mode: screen;
+  }
+  /* Coach answers: deeper glass with a terracotta → emerald hairline. */
   .np-ai-bubble {
     border: 1px solid transparent;
     background:
-      linear-gradient(rgb(28 34 48 / 0.92), rgb(28 34 48 / 0.92)) padding-box,
-      linear-gradient(135deg, rgb(124 77 255 / 0.75) 0%, rgb(41 121 255 / 0.5) 100%) border-box;
-    box-shadow: 0 0 24px -8px rgb(124 77 255 / 0.35);
-    -webkit-backdrop-filter: blur(12px);
-    backdrop-filter: blur(12px);
+      linear-gradient(rgb(18 21 28 / 0.92), rgb(18 21 28 / 0.92)) padding-box,
+      linear-gradient(135deg, rgb(47 216 240 / 0.55) 0%, rgb(142 140 255 / 0.3) 100%) border-box;
+    box-shadow: 0 16px 32px -20px rgb(0 0 0 / 0.7);
+  }
+  .np-user-bubble {
+    border: 1px solid rgb(255 255 255 / 0.1);
+    background-color: rgb(255 255 255 / 0.06);
+    color: #FFFFFF;
   }
   .np-typing-dot {
     animation: np-typing 1.2s ease-in-out infinite;
@@ -226,20 +742,44 @@
     animation-delay: 0.3s;
   }
 
+  /* ------------------------------------------------------------ navigation */
   .np-logo-pulse {
-    --np-glow: rgb(204 255 0 / 0.5);
+    --np-glow: rgb(47 216 240 / 0.45);
     animation: var(--animate-np-glow);
     border-radius: 9999px;
   }
   .np-nav-dot {
     opacity: 0;
     transition: opacity 200ms;
-    box-shadow: 0 0 8px rgb(204 255 0 / 0.8);
+    box-shadow: 0 0 8px rgb(47 216 240 / 0.9);
   }
-  [aria-current='page'] > .np-nav-dot {
+  [aria-current='page'] .np-nav-dot {
     opacity: 1;
   }
+  /* Floating dark glass capsule (phones and the desktop rail). */
+  .np-tabbar {
+    border: 1px solid rgb(255 255 255 / 0.1);
+    background-color: rgb(14 17 23 / 0.8);
+    -webkit-backdrop-filter: blur(40px) saturate(160%);
+    backdrop-filter: blur(40px) saturate(160%);
+    box-shadow:
+      0 20px 40px -12px rgb(0 0 0 / 0.7),
+      inset 0 1px 0 rgb(255 255 255 / 0.06);
+  }
 
+  /* iOS-style bottom sheet and the small popover (calendar: new event, colour key) */
+  .np-sheet-up {
+    animation: np-sheet-up 320ms cubic-bezier(0.32, 0.72, 0, 1) both;
+  }
+  .np-pop-in {
+    transform-origin: top right;
+    animation: np-pop-in 180ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  }
+  /* a list that re-filters: its rows glide in one after the other */
+  .np-list-in > * {
+    animation: np-list-in 260ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+    animation-delay: calc(var(--np-i, 0) * 45ms);
+  }
   .np-enter {
     animation: var(--animate-np-fade-up);
     animation-delay: calc(var(--np-i, 0) * 60ms);
@@ -247,12 +787,18 @@
 
   @media (prefers-reduced-motion: reduce) {
     .np-enter,
+    .np-sheet-up,
+    .np-pop-in,
+    .np-list-in > *,
     .np-logo-pulse,
     .np-typing-dot,
-    .np-glow {
+    .np-ambient-pulse,
+    .np-orb-live::before,
+    .np-orb-live::after {
       animation: none;
     }
-    .np-ring-arc {
+    .np-ring-arc,
+    .np-ring-head {
       transition: none;
     }
   }

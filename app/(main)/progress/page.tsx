@@ -1,23 +1,25 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+// /progress — analytics, v3.
+//
+//   period pills 7 / 30 / 90 days (one fetch of 90 days, sliced in the browser)
+//   correlation chart: readiness (cyan curve) vs ADP Load Index (blue bars), both 0–100
+//   ACWR: current ratio on the engine bands + the curve with the 0.8–1.3 band
+//   metric cards: average readiness (Δ vs the previous period), average sleep (check-in 1–7),
+//                 volume Σ RPE × min, monotony
+//   telemetry table, HRV (empty state: no sensor → no number), the rule-based insight
+//   the team / parent / scout / install cards stay below ("Team and access")
+//
+// Every number is the engine's (GET /api/checkin, recomputed from raw data) or a plain sum /
+// mean of it. Nothing is estimated.
+
+import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { motion, useReducedMotion } from 'motion/react';
-import {
-  Info,
-  Warning,
-  Sparkle,
-  WarningOctagon,
-  ArrowUpRight,
-  ArrowDownRight,
-  ArrowRight,
-} from '@phosphor-icons/react';
 import { supabase } from '@/lib/supabase';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
-import type { Lang } from '@/lib/i18n/translations';
 import { generateInsight, insightMessage } from '@/lib/generate-insight';
 import type { ReadinessHistoryPoint } from '@/lib/types/readiness';
-import { ReadinessRing, zoneMeta, HUB } from '@/components/PerformancePanel';
+import { loadIndex, usualDailyLoad } from '@/lib/load-index';
 import ParentAccessCard from '@/components/ParentAccessCard';
 import TeamMembershipCard from '@/components/TeamMembershipCard';
 import CheckinStreakCard from '@/components/CheckinStreakCard';
@@ -25,442 +27,397 @@ import CoachReplyCard from '@/components/CoachReplyCard';
 import RtpAthleteCard from '@/components/RtpAthleteCard';
 import InstallAppCard from '@/components/InstallAppCard';
 import ScoutShareCard from '@/components/ScoutShareCard';
+import { APP } from '@/components/np/appCopy';
+import { LOCALE, NP } from '@/components/np/copy';
+import { Icon } from '@/components/np/icons';
+import { DeltaPill, ZONE } from '@/components/np/ui';
+import { useMode } from '@/components/np/useMode';
+import { useAccount } from '@/components/np/useAccount';
+import { MODE } from '@/components/np/modeCopy';
+import { ACWR_PILL, CYAN, Disclaimer, TelemetryTable, acwrBand, type TelemetryRow } from '@/components/np/Telemetry';
+import { AcwrBar, AcwrChart, CorrelationChart, type CorrPoint } from '@/components/np/TrendChart';
 
-type HistoryPoint = ReadinessHistoryPoint;
+type Period = 7 | 30 | 90;
+const PERIODS: Period[] = [7, 30, 90];
 
-const LOCALE: Record<Lang, string> = { ru: 'ru-RU', lv: 'lv-LV', en: 'en-GB' };
-const SPRING = { type: 'spring', bounce: 0, duration: 0.5 } as const;
-
-// Zone thresholds from lib/readiness-engine.ts: red < 50, yellow < 75.
-const ZONE_LINES = [50, 75];
-
-function formatDay(iso: string, lang: Lang) {
-  return new Date(`${iso}T12:00:00`).toLocaleDateString(LOCALE[lang], { day: 'numeric', month: 'short' });
+/** Trailing 7-day mean of the values that exist (null when the window is empty). Only for the
+ *  "7-day avg" view: it smooths spikes, it never invents a day — the daily view stays one click away. */
+function rolling7(xs: (number | null)[]): (number | null)[] {
+  return xs.map((_, i) => {
+    const win = xs.slice(Math.max(0, i - 6), i + 1).filter((v): v is number => v !== null);
+    return win.length ? Math.round(win.reduce((a, b) => a + b, 0) / win.length) : null;
+  });
 }
 
-function average(points: HistoryPoint[]) {
-  const withData = points.filter((p) => p.hasCheckin);
-  if (withData.length === 0) return null;
-  return Math.round(withData.reduce((s, p) => s + p.score, 0) / withData.length);
+const mean = (xs: number[]) => (xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : null);
+
+function stats(pts: ReadinessHistoryPoint[]) {
+  const ck = pts.filter((p) => p.hasCheckin);
+  const sleeps = ck.map((p) => p.sleepQuality).filter((v): v is number => v !== null);
+  const avg = mean(ck.map((p) => p.score));
+  return {
+    checkins: ck.length,
+    avgReadiness: avg === null ? null : Math.round(avg),
+    avgSleep: mean(sleeps),
+    volume: pts.reduce((s, p) => s + (p.dailyLoad ?? 0), 0),
+    green: ck.filter((p) => p.zone === 'green').length,
+    yellow: ck.filter((p) => p.zone === 'yellow').length,
+    red: ck.filter((p) => p.zone === 'red').length,
+  };
 }
 
-const INSIGHT_STYLE = {
-  warning: { Icon: Warning, color: HUB.amber },
-  positive: { Icon: Sparkle, color: HUB.lime },
-  info: { Icon: Info, color: '#A1A1AA' },
-} as const;
-
-// ---------------------------------------------------------------------------
-// 30-day readiness histogram. Bars coloured by zone (legend + tooltip carry
-// the label, so identity is never colour alone). Days without a check-in are
-// drawn as neutral ghosts: the engine has a number for them, but no signal.
-// ---------------------------------------------------------------------------
-function ReadinessBars({ history }: { history: HistoryPoint[] }) {
-  const { t, lang } = useLanguage();
-  const reduce = useReducedMotion();
-  const [hover, setHover] = useState<number | null>(null);
-  const zoneLabel = (z: HistoryPoint['zone']) =>
-    z === 'green' ? t.progress.zoneGreen : z === 'yellow' ? t.progress.zoneYellow : t.progress.zoneRed;
-  const hp = hover !== null ? history[hover] : null;
-
+function MetricCard({
+  label,
+  value,
+  unit,
+  hint,
+  color,
+  glow,
+  delta,
+}: {
+  label: string;
+  value: string;
+  unit?: string;
+  hint?: string;
+  color?: string;
+  glow?: string;
+  delta?: { value: number; text: string } | null;
+}) {
   return (
-    <div>
-      <div className="relative h-48" onMouseLeave={() => setHover(null)}>
-        {/* Zone threshold guides */}
-        {ZONE_LINES.map((v) => (
-          <div key={v} className="pointer-events-none absolute inset-x-0" style={{ bottom: `${v}%` }}>
-            <div className="border-t border-dashed border-white/[0.07]" />
-            <span className="absolute right-0 -translate-y-full pb-0.5 font-mono text-[10px] tabular-nums text-zinc-600">
-              {v}
-            </span>
-          </div>
-        ))}
-
-        {/* Soft floor glow under the bars */}
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-[#CCFF00]/[0.05] to-transparent" />
-
-        <div className="relative flex h-full items-end gap-[2px]">
-          {history.map((p, i) => {
-            const color = p.hasCheckin ? zoneMeta(p.zone).color : 'rgba(255,255,255,0.12)';
-            const dimmed = hover !== null && hover !== i;
-            return (
-              <div
-                key={p.date}
-                className="flex h-full flex-1 items-end focus:outline-none"
-                onMouseEnter={() => setHover(i)}
-                onFocus={() => setHover(i)}
-                onBlur={() => setHover(null)}
-                tabIndex={0}
-                aria-label={`${formatDay(p.date, lang)}: ${p.hasCheckin ? `${p.score}, ${zoneLabel(p.zone)}` : t.progress.noCheckinDay}`}
-              >
-                <motion.div
-                  className="w-full origin-bottom rounded-t-[4px] transition-[opacity,transform] duration-150"
-                  style={{
-                    backgroundColor: color,
-                    opacity: dimmed ? 0.35 : p.hasCheckin ? 0.9 : 1,
-                    scaleY: hover === i ? 1.04 : 1,
-                  }}
-                  initial={reduce ? false : { height: 0 }}
-                  animate={{ height: `${Math.max(p.score, 3)}%` }}
-                  transition={reduce ? { duration: 0 } : { ...SPRING, delay: i * 0.015 }}
-                />
-              </div>
-            );
-          })}
-        </div>
-
-        {hp && hover !== null && (
-          <div
-            className="pointer-events-none absolute z-10 -translate-x-1/2 whitespace-nowrap rounded-xl bg-zinc-900/95 px-3 py-2 text-xs ring-1 ring-white/10 backdrop-blur"
-            style={{
-              left: `${Math.min(92, Math.max(8, ((hover + 0.5) / history.length) * 100))}%`,
-              bottom: `calc(${Math.max(hp.score, 3)}% + 10px)`,
-            }}
-          >
-            <p className="text-zinc-400">{formatDay(hp.date, lang)}</p>
-            {hp.hasCheckin ? (
-              <p className="mt-0.5 flex items-center gap-1.5">
-                <span className="font-mono text-sm tabular-nums text-zinc-50">{hp.score}</span>
-                <span style={{ color: zoneMeta(hp.zone).color }}>{zoneLabel(hp.zone)}</span>
-              </p>
-            ) : (
-              <p className="mt-0.5 text-zinc-300">{t.progress.noCheckinDay}</p>
-            )}
-          </div>
-        )}
-      </div>
-
-      <div className="mt-2 flex justify-between font-mono text-[11px] tabular-nums text-zinc-500">
-        <span>{formatDay(history[0].date, lang)}</span>
-        <span>{formatDay(history[history.length - 1].date, lang)}</span>
-      </div>
-
-      <div className="mt-4 flex flex-wrap gap-4 text-xs text-zinc-400">
-        {(['green', 'yellow', 'red'] as const).map((z) => {
-          const { color, Icon } = zoneMeta(z);
-          return (
-            <span key={z} className="inline-flex items-center gap-1.5">
-              <Icon size={14} weight="fill" style={{ color }} />
-              {zoneLabel(z)}
-            </span>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// ACWR trend with the 0.8-1.3 safe band and a crosshair tooltip.
-// ---------------------------------------------------------------------------
-function AcwrChart({ history }: { history: HistoryPoint[] }) {
-  const { t, lang } = useLanguage();
-  const [hover, setHover] = useState<number | null>(null);
-  const points = history.filter((p) => p.acwr !== null);
-
-  if (points.length < 2) {
-    return <p className="py-10 text-center text-sm text-zinc-500">{t.progress.insightNotEnoughData}</p>;
-  }
-
-  const W = 600;
-  const H = 160;
-  const maxVal = Math.max(2, ...points.map((p) => p.acwr as number)) * 1.05;
-  const xFor = (i: number) => (i / (history.length - 1 || 1)) * W;
-  const yFor = (v: number) => H - (v / maxVal) * H;
-
-  const d = history
-    .map((p, i) => {
-      if (p.acwr === null) return null;
-      const prev = history[i - 1];
-      return `${i === 0 || !prev || prev.acwr === null ? 'M' : 'L'}${xFor(i).toFixed(1)},${yFor(p.acwr).toFixed(1)}`;
-    })
-    .filter(Boolean)
-    .join(' ');
-
-  const hp = hover !== null ? history[hover] : null;
-  const showHover = hp !== null && hover !== null && hp.acwr !== null;
-
-  return (
-    <div className="relative">
-      <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" className="h-40 w-full" onMouseLeave={() => setHover(null)}>
-        <rect x={0} y={yFor(1.3)} width={W} height={yFor(0.8) - yFor(1.3)} fill={HUB.lime} opacity={0.08} />
-        <line
-          x1={0}
-          x2={W}
-          y1={yFor(1)}
-          y2={yFor(1)}
-          stroke="rgba(255,255,255,0.12)"
-          strokeDasharray="4 4"
-          vectorEffect="non-scaling-stroke"
-        />
-        <path
-          d={d}
-          fill="none"
-          stroke={HUB.lime}
-          strokeWidth={2}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          vectorEffect="non-scaling-stroke"
-        />
-        {showHover && hover !== null && (
-          <line x1={xFor(hover)} x2={xFor(hover)} y1={0} y2={H} stroke="rgba(255,255,255,0.25)" vectorEffect="non-scaling-stroke" />
-        )}
-        {history.map((p, i) => (
-          <rect
-            key={p.date}
-            x={xFor(i) - W / history.length / 2}
-            y={0}
-            width={W / history.length}
-            height={H}
-            fill="transparent"
-            onMouseEnter={() => setHover(i)}
-          />
-        ))}
-      </svg>
-      {showHover && hp && hover !== null && hp.acwr !== null && (
-        <>
-          <span
-            className="pointer-events-none absolute h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full ring-2 ring-[#0D0F13]"
-            style={{ left: `${(xFor(hover) / W) * 100}%`, top: `${(yFor(hp.acwr) / H) * 100}%`, backgroundColor: HUB.lime }}
-          />
-          <div
-            className="pointer-events-none absolute top-0 z-10 -translate-x-1/2 -translate-y-full whitespace-nowrap rounded-xl bg-zinc-900/95 px-3 py-2 text-xs ring-1 ring-white/10"
-            style={{ left: `${Math.min(92, Math.max(8, (xFor(hover) / W) * 100))}%` }}
-          >
-            <span className="text-zinc-400">{formatDay(hp.date, lang)}</span>{' '}
-            <span className="font-mono tabular-nums text-zinc-50">{hp.acwr.toFixed(2)}</span>
-          </div>
-        </>
-      )}
-    </div>
-  );
-}
-
-function Skeleton() {
-  return (
-    <div className="space-y-3" aria-busy>
-      <div className="h-16 animate-pulse rounded-3xl bg-white/[0.03]" />
-      <div className="grid gap-3 sm:grid-cols-3">
-        {[0, 1, 2].map((i) => (
-          <div key={i} className="h-32 animate-pulse rounded-3xl bg-white/[0.03]" />
-        ))}
-      </div>
-      <div className="h-72 animate-pulse rounded-3xl bg-white/[0.03]" />
+    <div className="np-card relative overflow-hidden p-4">
+      {glow && <span aria-hidden className="np-ambient -right-8 -top-10 h-28 w-28" style={{ ['--np-ambient' as string]: glow }} />}
+      <p className="np-label relative min-h-[2.4em] leading-[1.2]">{label}</p>
+      <p className="relative mt-2 flex items-baseline gap-1">
+        <span className="np-metric text-[34px]" style={{ color }}>
+          {value}
+        </span>
+        {unit && <span className="text-xs text-np-text-3">{unit}</span>}
+      </p>
+      {delta ? (
+        <p className="relative mt-2 flex flex-wrap items-center gap-x-1.5 gap-y-1">
+          <DeltaPill delta={delta.value} text={delta.text} />
+          {hint && <span className="text-[11px] text-np-text-3">{hint}</span>}
+        </p>
+      ) : hint ? (
+        <p className="relative mt-2 truncate text-[11px] text-np-text-3">{hint}</p>
+      ) : null}
     </div>
   );
 }
 
 export default function ProgressPage() {
   const { t, lang } = useLanguage();
-  const reduce = useReducedMotion();
-  const [history, setHistory] = useState<HistoryPoint[] | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const { role } = useAccount();
+  const { isPro } = useMode(role);
+  const mm = MODE[lang];
+  const pc = APP[lang].progress;
+  const tl = APP[lang].v3.telemetry;
+  const np = NP[lang];
+  const nf = new Intl.NumberFormat(LOCALE[lang]);
+  const fmt1 = (v: number) => v.toLocaleString(LOCALE[lang], { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+  const fmt2 = (v: number) => v.toLocaleString(LOCALE[lang], { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+  const [all, setAll] = useState<ReadinessHistoryPoint[] | null>(null);
+  const [error, setError] = useState(false);
+  const [period, setPeriod] = useState<Period>(30);
+  const [smooth, setSmooth] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
-
-    async function load() {
+    (async () => {
       try {
-        const { data: sessionData } = await supabase.auth.getSession();
-        const token = sessionData.session?.access_token;
-
-        const res = await fetch('/api/checkin?days=30', {
-          headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-        });
-
-        if (!res.ok) throw new Error('Failed to load history');
-        const data = await res.json();
-        if (!cancelled) setHistory(data.history ?? []);
-      } catch (err) {
-        if (!cancelled) setError(err instanceof Error ? err.message : 'Something went wrong');
+        const { data } = await supabase.auth.getSession();
+        const token = data.session?.access_token;
+        const res = await fetch('/api/checkin?days=90', { headers: token ? { Authorization: `Bearer ${token}` } : undefined });
+        if (!res.ok) throw new Error('history');
+        const body = await res.json();
+        if (!cancelled) setAll(body.history ?? []);
+      } catch {
+        if (!cancelled) setError(true);
       }
-    }
-
-    load();
+    })();
     return () => {
       cancelled = true;
     };
   }, []);
 
-  const last7 = history?.slice(-7) ?? [];
-  const prev7 = history?.slice(-14, -7) ?? [];
-  const today = history?.[history.length - 1] ?? null;
-  const avg7 = average(last7);
-  const avgPrev = average(prev7);
-  const delta = avg7 !== null && avgPrev !== null ? avg7 - avgPrev : null;
-  const redDaysLast7 = last7.filter((p) => p.hasCheckin && p.zone === 'red').length;
-  const insight = history ? generateInsight(history) : null;
-  const insightStyle = insight ? INSIGHT_STYLE[insight.severity] : null;
-  const todayZone = today ? zoneMeta(today.zone) : null;
+  const view = useMemo(() => {
+    if (!all || all.length === 0) return null;
+    const cur = all.slice(-period);
+    const prev = all.length >= period * 2 ? all.slice(-period * 2, -period) : null;
+    const s = stats(cur);
+    const p = prev ? stats(prev) : null;
+    const chart: CorrPoint[] = cur.map((pt) => ({
+      date: pt.date,
+      readiness: pt.score,
+      load: loadIndex(pt.dailyLoad ?? null, usualDailyLoad(pt.chronicLoad)),
+      checkin: pt.hasCheckin,
+    }));
+    const today = cur[cur.length - 1];
+    const lastMono = [...cur].reverse().find((pt) => pt.monotony !== null)?.monotony ?? null;
+    const peakLoad = chart.reduce<number | null>((m, c) => (c.load === null ? m : m === null ? c.load : Math.max(m, c.load)), null);
+    return { cur, s, p, chart, today, lastMono, peakLoad };
+  }, [all, period]);
 
-  const card = 'rounded-3xl bg-white/[0.03] p-5 ring-1 ring-inset ring-white/[0.08] backdrop-blur-2xl';
-  const rise = (i: number) => ({
-    initial: reduce ? false : ({ opacity: 0, y: 10 } as const),
-    animate: { opacity: 1, y: 0 },
-    transition: { ...SPRING, delay: reduce ? 0 : i * 0.06 },
-  });
+  const smoothChart = useMemo(() => {
+    if (!view) return [];
+    const r = rolling7(view.chart.map((c) => c.readiness));
+    const l = rolling7(view.chart.map((c) => c.load));
+    return view.chart.map((c, i) => ({ ...c, readiness: r[i], load: l[i] }));
+  }, [view]);
+
+  const insight = view ? generateInsight(view.cur) : null;
+  const insightTone = insight?.severity === 'warning' ? '#FFC53D' : insight?.severity === 'positive' ? '#3FE0A8' : '#FFC53D';
+
+  const rows: TelemetryRow[] = view
+    ? [
+        { key: 'ck', label: pc.checkinDays(view.s.checkins, view.cur.length), value: `${Math.round((view.s.checkins / view.cur.length) * 100)}%` },
+        { key: 'g', label: np.zone.green, value: String(view.s.green), color: ZONE.green.hex },
+        { key: 'y', label: np.zone.yellow, value: String(view.s.yellow), color: ZONE.yellow.hex },
+        { key: 'r', label: np.zone.red, value: String(view.s.red), color: ZONE.red.hex },
+        { key: 'pk', label: `${tl.load} · max`, value: view.peakLoad !== null ? String(view.peakLoad) : '—', unit: '/100', color: '#FFC53D' },
+        { key: 'st', label: tl.streak, hint: tl.streakHint, value: tl.streakDays(view.today.trainingStreak), pill: view.today.trainingStreak > 6 ? { text: '>6', cls: 'np-pill-warn' } : undefined },
+      ]
+    : [];
+
+  const vs = (a: number | null, b: number | null | undefined) => (a !== null && b !== null && b !== undefined ? a - b : null);
+  const dReady = view ? vs(view.s.avgReadiness, view.p?.avgReadiness) : null;
+  const redRun = view ? view.cur.slice(-7).filter((p) => p.hasCheckin && p.zone === 'red').length : 0;
 
   return (
-    <div className="relative min-h-[calc(100dvh-4.5rem)] shrink-0 overflow-x-clip bg-[#07080A] px-4 py-8 md:py-12">
-      <div className="pointer-events-none absolute -left-40 -top-40 h-[480px] w-[480px] rounded-full bg-[#CCFF00]/[0.05] blur-[140px]" />
+    <div className="relative mx-auto w-full max-w-5xl overflow-x-clip px-3 py-6 md:px-8 md:py-10">
+      <span aria-hidden className="np-ambient -left-24 -top-32 h-80 w-96" style={{ ['--np-ambient' as string]: 'rgb(255 197 61 / 0.1)' }} />
 
-      <div className="relative mx-auto max-w-3xl">
-        <header className="mb-6 flex flex-wrap items-end justify-between gap-3">
-          <h1 className="text-[30px] font-semibold leading-[1.1] tracking-[-0.03em] text-zinc-50 md:text-4xl">
-            {t.progress.title}
+      <header className="relative flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <p className="np-label">{pc.chartTitle}</p>
+          <h1 className="np-on-bg mt-1.5 text-[32px] np-editorial font-semibold leading-tight text-np-text md:text-[40px]">
+            {t.nav.progress}
           </h1>
-          <span
-            title={t.progress.subtitle}
-            className="inline-flex cursor-help items-center gap-1.5 rounded-full bg-white/[0.04] px-3 py-1 text-xs text-zinc-400 ring-1 ring-inset ring-white/[0.08]"
-          >
-            <Info size={13} />
-            {t.progress.badge}
-          </span>
-        </header>
-
-        <CoachReplyCard className="mb-3" />
-        <RtpAthleteCard className="mb-3" />
-        <CheckinStreakCard className="mb-3" />
-        <InstallAppCard className="mb-3" />
-
-        {error && (
-          <div className="mb-6 flex gap-3 rounded-2xl bg-[#FF4D5E]/[0.08] p-4 text-sm text-zinc-200 ring-1 ring-inset ring-[#FF4D5E]/30">
-            <WarningOctagon size={18} weight="fill" className="mt-0.5 shrink-0 text-[#FF4D5E]" />
-            <span>{error}</span>
-          </div>
-        )}
-
-        {!history && !error && <Skeleton />}
-
-        {history && history.length > 0 && (
-          <div className="space-y-3">
-            {insight && insightStyle && (
-              <motion.div {...rise(0)} className={`${card} flex gap-3`}>
-                <insightStyle.Icon size={20} weight="fill" className="mt-0.5 shrink-0" style={{ color: insightStyle.color }} />
-                <p className="text-[15px] leading-relaxed text-zinc-200">{insightMessage(insight, t.progress)}</p>
-              </motion.div>
-            )}
-
-            <div className="grid gap-3 sm:grid-cols-3">
-              {/* Today */}
-              <motion.div {...rise(1)} className={card}>
-                <p className="text-xs text-zinc-400">{t.progress.today}</p>
-                {today && today.hasCheckin && todayZone ? (
-                  <div className="mt-3 flex items-center gap-3">
-                    <ReadinessRing score={today.score} zone={today.zone} size={60} />
-                    <div>
-                      <p className="font-mono text-4xl font-light leading-none tabular-nums tracking-[-0.04em] text-zinc-50">
-                        {today.score}
-                      </p>
-                      <p className="mt-1.5 inline-flex items-center gap-1 text-xs" style={{ color: todayZone.color }}>
-                        <todayZone.Icon size={12} weight="fill" />
-                        {today.zone === 'green'
-                          ? t.progress.zoneGreen
-                          : today.zone === 'yellow'
-                            ? t.progress.zoneYellow
-                            : t.progress.zoneRed}
-                      </p>
-                    </div>
-                  </div>
-                ) : (
-                  <Link href="/checkin" className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-[#CCFF00]">
-                    {t.hub.doCheckin}
-                    <ArrowRight size={14} weight="bold" />
-                  </Link>
-                )}
-              </motion.div>
-
-              {/* 7-day average */}
-              <motion.div {...rise(2)} className={card}>
-                <p className="text-xs text-zinc-400">{t.progress.avg7d}</p>
-                <p className="mt-3 font-mono text-4xl font-light leading-none tabular-nums tracking-[-0.04em] text-zinc-50">
-                  {avg7 ?? '--'}
-                </p>
-                {delta !== null && (
-                  <p className="mt-2 inline-flex items-center gap-1 text-xs text-zinc-400">
-                    {delta >= 0 ? (
-                      <ArrowUpRight size={13} weight="bold" style={{ color: HUB.lime }} />
-                    ) : (
-                      <ArrowDownRight size={13} weight="bold" style={{ color: HUB.amber }} />
-                    )}
-                    <span className="font-mono tabular-nums text-zinc-200">
-                      {delta > 0 ? '+' : ''}
-                      {delta}
-                    </span>
-                    {t.progress.vsPrevWeek}
-                  </p>
-                )}
-              </motion.div>
-
-              {/* Red days */}
-              <motion.div {...rise(3)} className={card}>
-                <p className="text-xs text-zinc-400">{t.progress.redDays}</p>
-                <p className="mt-3 font-mono text-4xl font-light leading-none tabular-nums tracking-[-0.04em] text-zinc-50">
-                  {redDaysLast7}
-                  <span className="ml-1 text-base text-zinc-500">/7</span>
-                </p>
-                <div className="mt-3 flex gap-1" aria-hidden>
-                  {last7.map((p) => (
-                    <span
-                      key={p.date}
-                      className="h-2 flex-1 rounded-full"
-                      style={{
-                        backgroundColor: p.hasCheckin ? zoneMeta(p.zone).color : 'rgba(255,255,255,0.08)',
-                        opacity: p.hasCheckin ? 0.9 : 1,
-                      }}
-                    />
-                  ))}
-                </div>
-                <p className="mt-2 text-[11px] text-zinc-500">{t.progress.perWeek}</p>
-              </motion.div>
-            </div>
-
-            <motion.section {...rise(4)} className={card}>
-              <h2 className="mb-5 text-base font-semibold tracking-[-0.01em] text-zinc-50">{t.progress.last30}</h2>
-              <ReadinessBars history={history} />
-            </motion.section>
-
-            <motion.section {...rise(5)} className={card}>
-              <div className="mb-5 flex flex-wrap items-baseline justify-between gap-2">
-                <h2 className="text-base font-semibold tracking-[-0.01em] text-zinc-50">{t.progress.acwrTitle}</h2>
-                <span className="text-xs text-zinc-500">{t.progress.acwrSweetSpot}</span>
-              </div>
-              <AcwrChart history={history} />
-              <div className="mt-2 flex justify-between font-mono text-[11px] tabular-nums text-zinc-500">
-                <span>{formatDay(history[0].date, lang)}</span>
-                <span>{formatDay(history[history.length - 1].date, lang)}</span>
-              </div>
-            </motion.section>
-
-            {redDaysLast7 >= 2 && (
-              <motion.div {...rise(6)} className="flex gap-3 rounded-3xl bg-[#FF4D5E]/[0.08] p-5 ring-1 ring-inset ring-[#FF4D5E]/30">
-                <WarningOctagon size={20} weight="fill" className="mt-0.5 shrink-0 text-[#FF4D5E]" />
-                <div>
-                  <h2 className="text-base font-semibold text-zinc-50">{t.progress.slowDownTitle}</h2>
-                  <p className="mt-1 text-sm leading-relaxed text-zinc-300">{t.progress.slowDownBody(redDaysLast7)}</p>
-                </div>
-              </motion.div>
-            )}
-          </div>
-        )}
-
-        {history && history.length === 0 && (
-          <div className={`${card} text-center`}>
-            <p className="text-sm text-zinc-300">{t.hub.noCheckinTitle}</p>
-            <Link
-              href="/checkin"
-              className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-[#CCFF00] px-4 py-2 text-sm font-medium text-zinc-950"
+        </div>
+        {/* period capsule: a small dark pill, the active period lit in soft white glass */}
+        <div role="radiogroup" aria-label={pc.period} className="flex gap-0.5 rounded-full border border-white/10 bg-white/5 p-1 backdrop-blur-md">
+          {PERIODS.map((p) => (
+            <button
+              key={p}
+              type="button"
+              role="radio"
+              aria-checked={period === p}
+              onClick={() => setPeriod(p)}
+              className={`rounded-full px-3.5 py-1.5 text-xs font-semibold transition-[background-color,color] duration-300 ease-out ${
+                period === p ? 'border border-white/10 bg-[#2D2D32] text-white shadow-sm' : 'border border-transparent text-[#C3C5C7] hover:text-white'
+              }`}
             >
-              {t.hub.doCheckin}
-              <ArrowRight size={14} weight="bold" />
-            </Link>
-          </div>
-        )}
+              {pc.periods[p]}
+            </button>
+          ))}
+        </div>
+      </header>
 
-        <TeamMembershipCard />
-        <ParentAccessCard />
-        <ScoutShareCard className="mt-3" />
+      <div className="np-island relative mt-5 space-y-3 p-2 empty:hidden">
+        <CoachReplyCard />
+        <RtpAthleteCard />
       </div>
+
+      {error && (
+        <div className="np-flag relative mt-4 flex gap-3 p-4 text-sm text-np-text" style={{ ['--np-accent-line' as string]: '#FF7A59' }}>
+          <Icon name="close" size={18} className="mt-0.5 shrink-0 text-np-danger" />
+          {pc.errLoad}
+        </div>
+      )}
+
+      {!all && !error && (
+        <div className="relative mt-5 space-y-3" aria-busy>
+          <div className="h-72 animate-pulse rounded-np-card bg-np-veil/[0.03]" />
+          <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+            {[0, 1, 2, 3].map((i) => (
+              <div key={i} className="h-28 animate-pulse rounded-np-card bg-np-veil/[0.03]" />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {all && all.length === 0 && (
+        <div className="np-card relative mt-5 p-6 text-center">
+          <p className="text-sm text-np-text-2">{t.hub.noCheckinTitle}</p>
+          <Link href="/checkin" className="np-btn-primary mt-4 inline-flex h-11 items-center gap-2 rounded-full px-5 text-sm font-bold">
+            {t.hub.doCheckin}
+            <Icon name="arrowR" size={16} stroke={1.75} />
+          </Link>
+        </div>
+      )}
+
+      {view && (
+        <div className="relative mt-5 space-y-3">
+          {insight && (
+            <div className="np-flag flex gap-3 p-4" style={{ ['--np-accent-line' as string]: insightTone }}>
+              <Icon name="sparkle" size={18} active className="mt-0.5 shrink-0" style={{ color: insightTone }} />
+              <p className="text-[15px] leading-relaxed text-np-text">{insightMessage(insight, t.progress)}</p>
+            </div>
+          )}
+
+          {/* metric cards */}
+          <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+            <MetricCard
+              label={pc.avgReadiness}
+              value={view.s.avgReadiness !== null ? String(view.s.avgReadiness) : '—'}
+              unit="/100"
+              glow="rgb(255 197 61 / 0.16)"
+              delta={dReady !== null ? { value: dReady, text: `${dReady > 0 ? '+' : dReady < 0 ? '−' : '±'}${Math.abs(dReady)}` } : null}
+              hint={dReady !== null ? pc.vsPrev : pc.checkinDays(view.s.checkins, view.cur.length)}
+            />
+            <MetricCard
+              label={pc.avgSleep}
+              value={view.s.avgSleep !== null ? fmt1(view.s.avgSleep) : '—'}
+              unit="/7"
+              color={CYAN}
+              glow="rgb(255 197 61 / 0.18)"
+              hint={tl.sleepHint}
+            />
+            {isPro && (
+            <MetricCard
+              label={pc.totalVolume}
+              value={nf.format(Math.round(view.s.volume))}
+              unit={pc.volumeUnit}
+              color="#FFC53D"
+              glow="rgb(255 197 61 / 0.22)"
+              hint={pc.volumeHint}
+            />
+            )}
+            {isPro && (
+            <MetricCard
+              label={pc.monotony}
+              value={view.lastMono !== null ? fmt2(view.lastMono) : '—'}
+              hint={view.lastMono !== null ? (view.lastMono > 2 ? tl.monotonyHigh : tl.monotonyOk) : tl.monotonyHint}
+              color={view.lastMono !== null && view.lastMono > 2 ? '#FFC53D' : undefined}
+            />
+            )}
+          </div>
+
+          {/* correlation chart */}
+          <section className="lt-card-readiness p-4 md:p-5" aria-labelledby="pg-corr">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div className="min-w-0">
+                <h2 id="pg-corr" className="text-base font-semibold tracking-tight text-np-text" style={{ fontFamily: 'inherit' }}>
+                  {pc.chartTitle}
+                </h2>
+                <p className="mt-0.5 text-xs text-np-text-3">{pc.chartSub}</p>
+              </div>
+              <div className="flex items-center gap-3 text-[11px] text-np-text-2">
+                <span className="inline-flex items-center gap-1.5">
+                  <span className="h-0.5 w-5 rounded-full" style={{ backgroundColor: '#3FE0A8', boxShadow: '0 0 6px #3FE0A8' }} aria-hidden />
+                  {pc.legendReadiness}
+                </span>
+                <span className="inline-flex items-center gap-1.5">
+                  <span className="h-3 w-2 rounded-t-sm" style={{ background: 'linear-gradient(180deg, #FF7A59, #FFC53D, #FFC53D)' }} aria-hidden />
+                  {pc.legendLoad}
+                </span>
+              </div>
+            </div>
+            {/* daily values or the trailing 7-day average */}
+            <div role="radiogroup" aria-label={pc.viewLabel} className="mt-3 inline-flex gap-0.5 rounded-full bg-np-veil/5 p-1">
+              {([false, true] as const).map((v) => (
+                <button
+                  key={String(v)}
+                  type="button"
+                  role="radio"
+                  aria-checked={smooth === v}
+                  onClick={() => setSmooth(v)}
+                  className={`rounded-full px-3 py-1 text-xs font-semibold transition-[background-color,color] duration-300 ease-out ${
+                    smooth === v ? 'border border-white/10 bg-[#2D2D32] text-white shadow-sm' : 'border border-transparent text-np-text-3 hover:text-np-text'
+                  }`}
+                >
+                  {v ? pc.viewAvg : pc.viewDay}
+                </button>
+              ))}
+            </div>
+            <div className="mt-3">
+              <CorrelationChart points={smooth ? smoothChart : view.chart} lang={lang} />
+            </div>
+          </section>
+
+          {/* Athlete mode: the load in two plain sentences instead of ACWR and monotony */}
+          {!isPro && (
+            <section className="lt-card-activity p-4 md:p-5" aria-labelledby="pg-plain">
+              <h2 id="pg-plain" className="text-base font-semibold tracking-tight text-np-text">
+                {mm.simple.title}
+              </h2>
+              <p className="mt-3 text-[16px] leading-snug text-np-text">{view.today.acwr !== null ? mm.load[acwrBand(view.today.acwr)] : tl.monotonyHint}</p>
+              {view.lastMono !== null && <p className="mt-2 text-[14px] leading-snug text-np-text-2">{view.lastMono > 2 ? mm.mono.high : mm.mono.ok}</p>}
+              <p className="np-caption mt-4">{mm.simple.proHint}</p>
+            </section>
+          )}
+
+          {/* ACWR (Pro) */}
+          {isPro && (
+          <div className="grid gap-3 lg:grid-cols-[minmax(0,320px)_minmax(0,1fr)]">
+            <section className="lt-card-activity p-4 md:p-5">
+              <AcwrBar acwr={view.today.acwr} lang={lang} />
+            </section>
+            <section className="lt-card-activity p-4 md:p-5" aria-labelledby="pg-acwr">
+              <div className="flex flex-wrap items-baseline justify-between gap-2">
+                <h2 id="pg-acwr" className="text-base font-semibold tracking-tight text-np-text" style={{ fontFamily: 'inherit' }}>
+                  {t.progress.acwrTitle}
+                </h2>
+                {view.today.acwr !== null && (
+                  <span className={`np-pill ${ACWR_PILL[acwrBand(view.today.acwr)]}`}>{tl.acwrBand[acwrBand(view.today.acwr)]}</span>
+                )}
+              </div>
+              <div className="mt-3">
+                <AcwrChart points={view.cur.map((p) => ({ date: p.date, acwr: p.acwr }))} lang={lang} />
+              </div>
+            </section>
+          </div>
+          )}
+
+          {isPro && (
+          <div className="grid gap-3 lg:grid-cols-2">
+            <TelemetryTable title={pc.tableTitle} rows={rows} />
+            {/* HRV: no sensor in this app → an honest empty state, never a number */}
+            <section className="np-card relative overflow-hidden p-4 md:p-5">
+              <span aria-hidden className="np-ambient -bottom-16 -right-10 h-44 w-44" style={{ ['--np-ambient' as string]: 'rgb(255 197 61 / 0.12)' }} />
+              <div className="relative flex items-center justify-between gap-3">
+                <p className="np-label">{pc.hrvTitle}</p>
+                <span className="np-pill">{APP[lang].workout.ble.noSensor}</span>
+              </div>
+              <svg viewBox="0 0 300 70" className="relative mt-4 h-[70px] w-full" aria-hidden>
+                <path d="M0 40 H300" className="np-svg-grid" stroke="rgb(17 19 24 / 0.1)" strokeDasharray="3 6" />
+                <path d="M0 40 C40 40 50 22 80 26 S130 52 160 40 S220 18 250 30 S290 40 300 38" fill="none" stroke="rgb(14 165 233 / 0.35)" strokeWidth="2" strokeDasharray="2 6" strokeLinecap="round" />
+              </svg>
+              <p className="relative mt-3 text-sm leading-relaxed text-np-text-2">{pc.hrvEmpty}</p>
+            </section>
+          </div>
+          )}
+
+          {redRun >= 2 && (
+            <div className="np-flag flex gap-3 p-4" style={{ ['--np-accent-line' as string]: '#FF7A59' }}>
+              <Icon name="pulse" size={18} className="mt-0.5 shrink-0 text-np-danger" />
+              <div>
+                <h2 className="text-sm font-semibold text-np-text" style={{ fontFamily: 'inherit' }}>
+                  {t.progress.slowDownTitle}
+                </h2>
+                <p className="mt-1 text-sm leading-relaxed text-np-text-2">{t.progress.slowDownBody(redRun)}</p>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* team, parent access, scouting, install — the existing cards */}
+      <section className="relative mt-8" aria-labelledby="pg-more">
+        <h2 id="pg-more" className="np-label mb-3" style={{ fontFamily: 'inherit' }}>
+          {pc.more}
+        </h2>
+        <div className="np-island space-y-3 p-2">
+          <CheckinStreakCard />
+          <InstallAppCard />
+          <TeamMembershipCard />
+          <ParentAccessCard />
+          <ScoutShareCard />
+        </div>
+      </section>
+
+      <Disclaimer lang={lang} className="mt-8" />
     </div>
   );
 }

@@ -223,7 +223,7 @@ export default function DesignStudio({
         }}
       >
         <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3">
-          <a href={backHref} className="text-sm font-semibold text-white" aria-label={backLabel ?? 'CloudPulse'}>
+          <a href={backHref} className="text-sm font-semibold text-white" aria-label={backLabel ?? 'Lotus'}>
             {s.title}
           </a>
           <nav className="dx-scroll order-last -mx-1 flex w-full gap-1 overflow-x-auto px-1 md:order-none md:w-auto md:min-w-0 md:flex-1" role="tablist" aria-label={s.title}>

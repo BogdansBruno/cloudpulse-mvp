@@ -139,7 +139,7 @@ export default function QuickReplyQuestions({
           {questions.map((_, i) => (
             <div key={i} className="h-1 flex-1 overflow-hidden rounded-full bg-white/[0.07]">
               <motion.div
-                className="h-full rounded-full bg-[#CCFF00]"
+                className="h-full rounded-full bg-white"
                 initial={false}
                 animate={{ width: i < step ? '100%' : i === step ? '50%' : '0%' }}
                 transition={reduce ? { duration: 0 } : SPRING}
@@ -176,13 +176,13 @@ export default function QuickReplyQuestions({
                     whileTap={reduce ? undefined : { scale: 0.96 }}
                     className={`group flex flex-col items-start gap-3 rounded-2xl p-3.5 text-left ring-1 ring-inset transition-colors ${
                       selected
-                        ? 'bg-[#CCFF00]/10 ring-[#CCFF00]/60 shadow-[0_0_0_1px_rgba(204,255,0,0.25),0_10px_30px_-10px_rgba(204,255,0,0.45)]'
+                        ? 'bg-[#32ADE6]/10 ring-[#32ADE6]/60 shadow-[0_0_0_1px_rgba(255,149,0,0.25),0_10px_30px_-10px_rgba(255,149,0,0.45)]'
                         : 'bg-white/[0.03] ring-white/[0.08] hover:bg-white/[0.06] hover:ring-white/20'
                     }`}
                   >
                     <span
                       className={`flex h-9 w-9 items-center justify-center rounded-xl ${
-                        selected ? 'bg-[#CCFF00] text-zinc-950' : 'bg-white/[0.06] text-zinc-200'
+                        selected ? 'bg-white text-zinc-950' : 'bg-white/[0.06] text-zinc-200'
                       }`}
                     >
                       {Icon ? <Icon size={20} weight={selected ? 'fill' : 'regular'} /> : <DotsThree size={20} />}
@@ -211,7 +211,7 @@ export default function QuickReplyQuestions({
                     whileTap={reduce ? undefined : { scale: 0.96 }}
                     className={`rounded-full px-4 py-2 text-sm font-medium ring-1 ring-inset transition-colors ${
                       selected
-                        ? 'bg-[#CCFF00] text-zinc-950 ring-[#CCFF00]'
+                        ? 'bg-white text-zinc-950 ring-[#32ADE6]'
                         : 'bg-white/[0.04] text-zinc-200 ring-white/10 hover:ring-white/25'
                     }`}
                   >
@@ -237,7 +237,7 @@ export default function QuickReplyQuestions({
                 value={Number(answers[step]) || current.min}
                 onChange={(e) => handleSlider(Number(e.target.value))}
                 aria-label={current.text}
-                className="w-full accent-[#CCFF00]"
+                className="w-full accent-[#32ADE6]"
               />
               <div className="mt-1 flex justify-between font-mono text-[11px] tabular-nums text-zinc-500">
                 <span>{current.min}</span>
@@ -264,7 +264,7 @@ export default function QuickReplyQuestions({
             type="button"
             onClick={() => (isLast ? complete(answers) : goTo(step + 1))}
             whileTap={reduce ? undefined : { scale: 0.96 }}
-            className="rounded-full bg-[#CCFF00] px-5 py-2 text-sm font-medium text-zinc-950"
+            className="rounded-full bg-white px-5 py-2 text-sm font-medium text-zinc-950"
           >
             {isLast ? L.done : L.next}
           </motion.button>

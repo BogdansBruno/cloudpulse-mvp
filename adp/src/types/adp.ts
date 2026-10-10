@@ -6,7 +6,7 @@
 // the TypeScript type and runtime validation, and cannot drift apart.
 //
 // Dates are ISO calendar days ('YYYY-MM-DD', UTC); timestamps are ISO
-// strings. Nothing here imports from the CloudPulse site code.
+// strings. Nothing here imports from the Lotus site code.
 
 // ---------------------------------------------------------------------------
 // Enums
@@ -216,7 +216,7 @@ export type DailyStatus = {
 // Inputs (DTOs)
 // ---------------------------------------------------------------------------
 
-/** What the athlete submits. Scales are 1..7 like CloudPulse (7 = best). */
+/** What the athlete submits. Scales are 1..7 like Lotus (7 = best). */
 export type CheckInDto = {
   studentId: Uuid;
   /** Day the check-in was filled in (offline check-ins arrive later). */

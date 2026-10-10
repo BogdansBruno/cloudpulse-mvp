@@ -74,13 +74,16 @@ export type GlassTone = 'dark' | 'light' | 'editorial';
 export function glassSurface(tone: GlassTone, lifted = false) {
   if (tone === 'editorial') {
     return {
-      background: lifted ? 'rgba(28,29,41,0.80)' : 'rgba(22,23,33,0.75)',
-      border: '1px solid rgba(255,255,255,0.12)',
+      // Lotus: the neutral tinted card (a cool blue hint fading into the midnight canvas)
+      background: lifted
+        ? 'linear-gradient(135deg, rgba(30,58,74,0.45), rgba(19,23,34,0.94) 55%, rgba(13,16,23,0.96))'
+        : 'linear-gradient(135deg, rgba(30,58,74,0.32), rgba(19,23,34,0.92) 55%, rgba(13,16,23,0.95))',
+      border: '1px solid rgba(255,255,255,0.08)',
       backdropFilter: 'blur(40px) saturate(150%)',
       WebkitBackdropFilter: 'blur(40px) saturate(150%)',
       boxShadow: lifted
-        ? 'inset 0 1px 1px 0 rgba(255,255,255,0.26), 0 14px 36px -4px rgba(0,0,0,0.55)'
-        : 'inset 0 1px 1px 0 rgba(255,255,255,0.18), 0 12px 32px -4px rgba(0,0,0,0.5)',
+        ? 'inset 0 1px 0 0 rgba(255,255,255,0.14), 0 14px 36px -4px rgba(0,0,0,0.5)'
+        : 'inset 0 1px 0 0 rgba(255,255,255,0.1), 0 12px 32px -4px rgba(0,0,0,0.45)',
     } as const;
   }
   const dark = tone === 'dark';

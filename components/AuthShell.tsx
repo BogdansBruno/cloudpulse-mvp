@@ -20,7 +20,7 @@ export default function AuthShell({ children }: { children: ReactNode }) {
         className="absolute inset-0 pointer-events-none"
         style={{
           background:
-            'radial-gradient(ellipse 60% 50% at 50% 40%, rgba(204,255,0,0.10), transparent 60%), radial-gradient(ellipse 40% 40% at 70% 70%, rgba(0,240,255,0.06), transparent 60%)',
+            'radial-gradient(ellipse 60% 50% at 50% 40%, rgba(255,149,0,0.10), transparent 60%), radial-gradient(ellipse 40% 40% at 70% 70%, rgba(0,240,255,0.06), transparent 60%)',
         }}
       />
 
@@ -32,13 +32,13 @@ export default function AuthShell({ children }: { children: ReactNode }) {
       >
         <div className="flex flex-col items-center mb-6">
           <Link href="/chat" className="flex items-center gap-2 mb-3">
-            <div className="h-9 w-9 rounded-xl bg-[#CCFF00] text-zinc-950 flex items-center justify-center shadow-[0_0_20px_rgba(204,255,0,0.35)]">
+            <div className="h-9 w-9 rounded-xl bg-white text-zinc-950 flex items-center justify-center shadow-[0_0_20px_rgba(255,149,0,0.35)]">
               <Lightning size={18} weight="fill" />
             </div>
-            <span className="text-white font-semibold tracking-tight text-lg">CloudPulse</span>
+            <span className="text-white font-semibold tracking-tight text-lg">Lotus</span>
           </Link>
           <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-[11px] font-medium text-zinc-400">
-            <LockSimple size={11} weight="fill" className="text-[#CCFF00]" />
+            <LockSimple size={11} weight="fill" className="text-[#32ADE6]" />
             {t.auth.encrypted} · {t.auth.brandTag}
           </span>
         </div>

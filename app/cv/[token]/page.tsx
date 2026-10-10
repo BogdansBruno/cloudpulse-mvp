@@ -8,7 +8,7 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { Lightning, SealCheck, SealWarning, Printer } from '@phosphor-icons/react';
 import { supabase } from '@/lib/supabase';
-import { useLanguage } from '@/lib/i18n/LanguageContext';
+import { LANG_SWITCH, useLanguage } from '@/lib/i18n/LanguageContext';
 import { LANGS, type Lang } from '@/lib/i18n/translations';
 import { EXTRA } from '@/lib/i18n/extra';
 import { HUB } from '@/components/PerformancePanel';
@@ -48,22 +48,24 @@ export default function ScoutCvPage() {
       <div className="w-full max-w-2xl">
         <header className="mb-6 flex items-center justify-between print:hidden">
           <span className="inline-flex items-center gap-2 text-[15px] font-semibold text-white">
-            <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#CCFF00] text-zinc-950">
+            <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-white text-zinc-950">
               <Lightning size={15} weight="fill" />
             </span>
-            CloudPulse
+            Lotus
           </span>
-          <div className="flex gap-0.5 rounded-full border border-white/5 bg-black/20 p-1 text-xs">
-            {LANGS.map((l) => (
-              <button
-                key={l.code}
-                onClick={() => setLang(l.code)}
-                className={`rounded-full px-2.5 py-1 font-semibold ${lang === l.code ? 'bg-[#CCFF00] text-zinc-950' : 'text-zinc-400'}`}
-              >
-                {l.label}
-              </button>
-            ))}
-          </div>
+          {LANG_SWITCH && (
+            <div className="flex gap-0.5 rounded-full border border-white/5 bg-black/20 p-1 text-xs">
+              {LANGS.map((l) => (
+                <button
+                  key={l.code}
+                  onClick={() => setLang(l.code)}
+                  className={`rounded-full px-2.5 py-1 font-semibold ${lang === l.code ? 'bg-white text-zinc-950' : 'text-zinc-400'}`}
+                >
+                  {l.label}
+                </button>
+              ))}
+            </div>
+          )}
         </header>
 
         {cv === null && <p className="text-sm text-zinc-400">{t.loading}</p>}
@@ -88,7 +90,7 @@ export default function ScoutCvPage() {
                 {t.forRecipient(cv.recipient)}
               </p>
               <p className="mt-1 text-sm text-zinc-400">{t.period(date(cv.period.from), date(cv.period.to))}</p>
-              <p className="mt-3 flex gap-2 rounded-2xl bg-[#CCFF00]/[0.06] p-3 text-xs leading-relaxed text-zinc-300 ring-1 ring-inset ring-[#CCFF00]/25 print:text-black">
+              <p className="mt-3 flex gap-2 rounded-2xl bg-[#FF9500]/[0.06] p-3 text-xs leading-relaxed text-zinc-300 ring-1 ring-inset ring-[#FF9500]/25 print:text-black">
                 <SealCheck size={16} weight="fill" className="mt-px shrink-0" style={{ color: HUB.lime }} />
                 {t.verified}
               </p>

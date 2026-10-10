@@ -10,7 +10,7 @@
 //       engine's own rules-only plan. The athlete never sees an error.
 //
 // The model call is injected (ModelCall), so this file has no network code
-// and is fully unit-tested with fake models. The CloudPulse server passes a
+// and is fully unit-tested with fake models. The Lotus server passes a
 // Claude-backed call (lib/adp-claude.ts), or null when there is no API key /
 // the athlete hit the rate limit.
 

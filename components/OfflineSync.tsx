@@ -140,9 +140,9 @@ export default function OfflineSync() {
   return (
     <div className="px-3 pt-2 md:px-6" role="status" aria-live="polite">
       {!online ? (
-        <div className={`${strip} bg-[#FFB020]/[0.08] ring-[#FFB020]/25`}>
+        <div className={`${strip} bg-[#FFCC00]/[0.08] ring-[#FFCC00]/25`}>
           <span className="inline-flex items-center gap-1.5 font-medium">
-            <WifiSlash size={14} weight="bold" className="text-[#FFB020]" />
+            <WifiSlash size={14} weight="bold" className="text-[#FFCC00]" />
             {o.offlineBanner}
           </span>
           {pending > 0 && <span className="ml-auto text-zinc-400">{o.pending(pending)}</span>}
@@ -150,23 +150,23 @@ export default function OfflineSync() {
       ) : pending > 0 ? (
         <div className={`${strip} bg-white/[0.04] ring-white/[0.1]`}>
           <span className="inline-flex items-center gap-1.5 font-medium">
-            <CloudArrowUp size={14} weight="bold" className="text-[#CCFF00]" />
+            <CloudArrowUp size={14} weight="bold" className="text-[#32ADE6]" />
             {o.pending(pending)}
           </span>
           <button
             type="button"
             onClick={flush}
             disabled={syncing}
-            className="ml-auto font-semibold text-[#CCFF00] disabled:opacity-60"
+            className="ml-auto font-semibold text-[#32ADE6] disabled:opacity-60"
           >
             {syncing ? o.sending : o.sendNow}
           </button>
         </div>
       ) : (
         notice && (
-          <div className={`${strip} bg-[#CCFF00]/[0.08] ring-[#CCFF00]/25`}>
+          <div className={`${strip} bg-[#32ADE6]/[0.08] ring-[#32ADE6]/25`}>
             <span className="inline-flex items-center gap-1.5 font-medium">
-              <CheckCircle size={14} weight="fill" className="text-[#CCFF00]" />
+              <CheckCircle size={14} weight="fill" className="text-[#32ADE6]" />
               {notice}
             </span>
           </div>

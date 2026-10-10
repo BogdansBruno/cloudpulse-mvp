@@ -25,11 +25,11 @@ type Zone = ReadinessHistoryPoint['zone'];
 
 /** Editorial status colours: teal = optimal, yellow = caution, rose = stop, coral = strain. */
 export const ED = {
-  teal: '#2DD4BF',
-  yellow: '#FACC15',
-  rose: '#FB7185',
-  coral: '#FB923C',
-  indigo: '#A5B4FC',
+  teal: '#30D158',
+  yellow: '#FFCC00',
+  rose: '#FFCC00',
+  coral: '#FFCC00',
+  indigo: '#8E8CFF',
   track: 'rgba(255,255,255,0.10)',
 } as const;
 

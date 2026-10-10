@@ -1,12 +1,14 @@
 'use client';
 
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { motion, useReducedMotion } from 'motion/react';
-import { ShieldWarning, WarningOctagon } from '@phosphor-icons/react';
+import { ShieldWarning } from '@phosphor-icons/react';
 import { toDataURL } from 'qrcode';
 import { supabase } from '@/lib/supabase';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
 import type { Lang } from '@/lib/i18n/translations';
+import { setNotice } from '@/components/np/notices';
+import { cardClass, CARD_THEME } from '@/components/np/cardTheme';
 
 // ---------------------------------------------------------------------------
 // Shield Safety Pass — shown on /checkin when today's check-in carries a
@@ -50,7 +52,9 @@ export function formatPassId(id: string) {
 }
 
 // Page-level spacing lives here so /checkin gets no empty gap when there is no pass.
-function Frame({ children }: { children: ReactNode }) {
+// On Today it sits inside the page column (`inline`), so it brings no padding of its own.
+function Frame({ children, inline }: { children: ReactNode; inline?: boolean }) {
+  if (inline) return <div className="mb-4">{children}</div>;
   return (
     <div className="px-4 pt-6 md:pt-8">
       <div className="mx-auto max-w-lg">{children}</div>
@@ -58,8 +62,21 @@ function Frame({ children }: { children: ReactNode }) {
   );
 }
 
-export default function SafetyShield({ refreshKey = 0 }: { refreshKey?: number }) {
+/** What /api/pass said, for pages that must stay quiet (or celebrate) depending on it. `unknown` = offline / failed / signed out. */
+export type PassState = 'clear' | 'no_checkin' | 'caution' | 'block' | 'unknown';
+
+export default function SafetyShield({
+  refreshKey = 0,
+  inline = false,
+  onStatus,
+}: {
+  refreshKey?: number;
+  inline?: boolean;
+  onStatus?: (s: PassState) => void;
+}) {
   const { t, lang } = useLanguage();
+  const report = useRef(onStatus);
+  report.current = onStatus;
   const reduce = useReducedMotion();
   const [pass, setPass] = useState<PassResponse | null>(null);
   const [qr, setQr] = useState<string | null>(null);
@@ -72,17 +89,24 @@ export default function SafetyShield({ refreshKey = 0 }: { refreshKey?: number }
       setError(false);
       // Offline the pass can't be fetched or verified; the offline strip
       // already says so, and a load error here would only add noise.
-      if (!navigator.onLine) return;
+      if (!navigator.onLine) {
+        report.current?.('unknown');
+        return;
+      }
       try {
         const { data } = await supabase.auth.getSession();
         const token = data.session?.access_token;
-        if (!token) return; // not signed in: nothing to show
+        if (!token) {
+          report.current?.('unknown');
+          return; // not signed in: nothing to show
+        }
 
         const res = await fetch('/api/pass', { method: 'POST', headers: { Authorization: `Bearer ${token}` } });
         if (!res.ok) throw new Error('pass request failed');
         const body = (await res.json()) as PassResponse;
         if (cancelled) return;
         setPass(body);
+        report.current?.(body.status);
 
         if ((body.status === 'block' || body.status === 'caution') && body.token) {
           const url = `${window.location.origin}/pass?t=${encodeURIComponent(body.token)}`;
@@ -97,7 +121,10 @@ export default function SafetyShield({ refreshKey = 0 }: { refreshKey?: number }
           setQr(null);
         }
       } catch {
-        if (!cancelled) setError(true);
+        if (!cancelled) {
+          setError(true);
+          report.current?.('unknown');
+        }
       }
     }
 
@@ -107,22 +134,20 @@ export default function SafetyShield({ refreshKey = 0 }: { refreshKey?: number }
     };
   }, [refreshKey]);
 
-  if (error) {
-    return (
-      <Frame>
-        <div className="np-card flex gap-3 p-4 text-sm text-np-text-2">
-          <WarningOctagon size={18} className="mt-0.5 shrink-0" aria-hidden />
-          <span>{t.shield.loadError}</span>
-        </div>
-      </Frame>
-    );
-  }
+  // A failed check is a quiet notice (dot on the profile avatar, spelled out in Settings), not a banner.
+  useEffect(() => {
+    setNotice('passCheck', error);
+    return () => setNotice('passCheck', false);
+  }, [error]);
+  if (error) return null;
 
   if (!pass || (pass.status !== 'block' && pass.status !== 'caution')) return null;
 
   const isBlock = pass.status === 'block';
   // v3 colour job: zone colours are text, icon and a 2px line — never a filled panel.
-  const color = isBlock ? '#FF3D00' : '#FFD600';
+  // Lotus: a block is the crimson alert card, a caution the amber one.
+  const theme = isBlock ? 'alert' : 'activity';
+  const color = CARD_THEME[theme].accent;
 
   const directive = (code: PassCode) => {
     switch (code) {
@@ -144,21 +169,23 @@ export default function SafetyShield({ refreshKey = 0 }: { refreshKey?: number }
   };
 
   return (
-    <Frame>
+    <Frame inline={inline}>
     <motion.section
       initial={reduce ? false : { opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ type: 'spring', bounce: 0, duration: 0.5 }}
-      className="np-card overflow-hidden"
-      style={{ borderColor: `${color}66`, boxShadow: `0 0 28px -12px ${color}` }}
+      className={`${cardClass(theme)} overflow-hidden`}
+      style={{ borderColor: `${color}55`, boxShadow: `inset 0 1px 0 0 rgba(255,255,255,0.1), 0 0 32px -14px ${color}` }}
       aria-label={t.shield.title}
     >
-      <div className="flex items-center gap-3 border-b border-np-line px-5 py-4" style={{ borderTop: `2px solid ${color}` }}>
-        <ShieldWarning size={30} weight="fill" className="shrink-0" style={{ color }} aria-hidden />
-        <div className="min-w-0">
-          <p className="np-overline">{t.shield.title}</p>
-          <p className="text-xl font-bold leading-tight tracking-tight text-np-text">{isBlock ? t.shield.blockedHeading : t.shield.cautionHeading}</p>
+      <div className="px-5 pt-5">
+        <div className="flex items-center gap-3">
+          <span aria-hidden className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/[0.08] bg-white/[0.06]">
+            <ShieldWarning size={20} weight="fill" style={{ color }} />
+          </span>
+          <p className="min-w-0 text-[11px] font-medium uppercase tracking-widest text-white/75">{t.shield.title}</p>
         </div>
+        <p className="np-editorial mt-4 text-[26px] leading-tight">{isBlock ? t.shield.blockedHeading : t.shield.cautionHeading}</p>
       </div>
 
       <div className="space-y-4 p-5">
@@ -171,7 +198,7 @@ export default function SafetyShield({ refreshKey = 0 }: { refreshKey?: number }
           ))}
         </ul>
 
-        <div className="flex flex-col items-center gap-3 rounded-np-card border border-np-line bg-np-surface-2 p-4 sm:flex-row sm:items-center">
+        <div className="flex flex-col items-center gap-3 rounded-2xl border border-white/[0.08] bg-black/25 p-4 sm:flex-row sm:items-center">
           {qr ? (
             // eslint-disable-next-line @next/next/no-img-element -- data URL, nothing to optimise
             <img src={qr} alt="Safety Pass QR" width={176} height={176} className="h-44 w-44 shrink-0 rounded-xl" />

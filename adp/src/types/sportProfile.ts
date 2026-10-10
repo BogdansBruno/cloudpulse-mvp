@@ -243,7 +243,7 @@ export const MICRO_DOSE = {
   maxRpe: 5,
 } as const;
 
-/** Return-to-Play state as the CloudPulse engine reports it. */
+/** Return-to-Play state as the Lotus engine reports it. */
 export const RTP_STATES = ['none', 'restricted', 'ready', 'cleared'] as const;
 export type RtpState = (typeof RTP_STATES)[number];
 

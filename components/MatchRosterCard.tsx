@@ -31,7 +31,7 @@ const LOCALE: Record<Lang, string> = { ru: 'ru-RU', lv: 'lv-LV', en: 'en-GB' };
 const GROUP_STYLE: Record<RosterGroup, { Icon: Icon; color: string }> = {
   out: { Icon: WarningOctagon, color: HUB.red },
   limited: { Icon: Warning, color: HUB.amber },
-  unknown: { Icon: Question, color: '#A1A1AA' },
+  unknown: { Icon: Question, color: '#C3C5C7' },
   available: { Icon: CheckCircle, color: HUB.lime },
 };
 
@@ -110,7 +110,7 @@ export default function MatchRosterCard({
           onClick={copy}
           className="inline-flex items-center gap-1.5 rounded-full bg-white/[0.04] px-3 py-1.5 text-xs font-medium text-zinc-200 ring-1 ring-inset ring-white/[0.1] hover:bg-white/[0.07]"
         >
-          {copied ? <Check size={13} weight="bold" className="text-[#CCFF00]" /> : <Copy size={13} />}
+          {copied ? <Check size={13} weight="bold" className="text-[#32ADE6]" /> : <Copy size={13} />}
           {copied ? r.copied : r.copy}
         </button>
       </div>

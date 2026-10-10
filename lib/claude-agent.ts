@@ -202,7 +202,7 @@ function getSystemPrompt(
   const qx = QUESTIONS_EXAMPLE[uiLang];
   const minWord = uiLang === 'lv' ? 'minūtes' : uiLang === 'en' ? 'minutes' : 'минут';
 
-  return `You are CloudPulse, an AI Athletic & Lifestyle Coaching Agent.
+  return `You are Lotus, an AI Athletic & Lifestyle Coaching Agent.
 Your role: build adaptive training plans and guide students (13-18)
 to consistent physical activity without focusing on weight, appearance, or body metrics.
 

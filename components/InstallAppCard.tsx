@@ -11,7 +11,7 @@ import {
   INSTALLABLE_EVENT,
 } from '@/lib/pwa';
 
-// "Install CloudPulse" card on /progress. Shown only when installing is
+// "Install Lotus" card on /progress. Shown only when installing is
 // actually possible: an install prompt is waiting (Chrome / Edge / Samsung
 // Internet on Android), or iOS Safari (manual steps). Hidden once installed
 // or after the athlete closes it.
@@ -68,7 +68,7 @@ export default function InstallAppCard({ className = '' }: { className?: string 
     <section
       className={`relative flex gap-4 rounded-3xl bg-white/[0.03] p-5 ring-1 ring-inset ring-white/[0.08] backdrop-blur-2xl ${className}`}
     >
-      <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#CCFF00]/[0.12] text-[#CCFF00]">
+      <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white/[0.07] text-zinc-100">
         <DeviceMobile size={22} weight="fill" />
       </span>
       <div className="min-w-0 flex-1 pr-6">
@@ -78,7 +78,7 @@ export default function InstallAppCard({ className = '' }: { className?: string 
           <button
             type="button"
             onClick={install}
-            className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-[#CCFF00] px-4 py-2 text-sm font-semibold text-zinc-950"
+            className="np-btn-glass mt-3 inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-semibold"
           >
             <DownloadSimple size={15} weight="bold" />
             {o.installButton}

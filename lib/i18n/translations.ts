@@ -633,13 +633,13 @@ type Dict = {
 
 export const translations: Record<Lang, Dict> = {
   ru: {
-    nav: { brand: 'CloudPulse', chat: 'Чат', checkin: 'Чек-ин', progress: 'Прогресс', calendar: 'Календарь', training: 'Тренировка', signOut: 'Выйти' },
+    nav: { brand: 'Lotus', chat: 'Чат', checkin: 'Чек-ин', progress: 'Прогресс', calendar: 'Календарь', training: 'Тренировка', signOut: 'Выйти' },
     chat: {
-      title: 'CloudPulse Coach',
+      title: 'Lotus Coach',
       subtitle: 'Твой AI-партнёр по тренировкам',
       heroTag: 'AI Athletic Coach',
       welcome:
-        'Привет! Я CloudPulse, твой AI-коуч. Составим классный план тренировок?\n\nРасскажи о своих целях, любимых видах спорта, или спроси что угодно про тренировки, восстановление и активность!',
+        'Привет! Я Lotus, твой AI-коуч. Составим классный план тренировок?\n\nРасскажи о своих целях, любимых видах спорта, или спроси что угодно про тренировки, восстановление и активность!',
       placeholder: 'Спроси о тренировках, целях, восстановлении...',
       send: 'Отправить',
       addToCalendar: 'Добавить в календарь',
@@ -710,7 +710,7 @@ export const translations: Record<Lang, Dict> = {
     },
     onboarding: {
       title: 'Настроим твой профиль',
-      subtitle: 'CloudPulse',
+      subtitle: 'Lotus',
       stepOf: (i, n) => `Шаг ${i} из ${n}`,
       ageQ: 'Сколько тебе лет?',
       ageUnit: 'лет',
@@ -725,7 +725,7 @@ export const translations: Record<Lang, Dict> = {
       },
       datesTitle: 'Матчи и экзамены',
       datesBody:
-        'Необязательно, но так CloudPulse сможет снижать нагрузку перед экзаменами и беречь тебя вокруг матчей. Можно пропустить и добавить позже.',
+        'Необязательно, но так Lotus сможет снижать нагрузку перед экзаменами и беречь тебя вокруг матчей. Можно пропустить и добавить позже.',
       matchDates: 'Даты матчей',
       examDates: 'Даты экзаменов',
       add: 'Добавить',
@@ -797,9 +797,9 @@ export const translations: Record<Lang, Dict> = {
     },
     access: {
       lockdownTitle: 'Сайт временно недоступен',
-      lockdownBody: 'Владелец CloudPulse временно закрыл доступ для всех, кроме команды. Попробуй зайти чуть позже.',
+      lockdownBody: 'Владелец Lotus временно закрыл доступ для всех, кроме команды. Попробуй зайти чуть позже.',
       bannedTitle: 'Доступ закрыт',
-      bannedBody: 'Владелец CloudPulse ограничил доступ для этого аккаунта. Если это ошибка, свяжись с командой.',
+      bannedBody: 'Владелец Lotus ограничил доступ для этого аккаунта. Если это ошибка, свяжись с командой.',
       backToLogin: 'К странице входа',
     },
     shield: {
@@ -820,9 +820,9 @@ export const translations: Record<Lang, Dict> = {
         `Нагрузка за неделю в ${acwr} раза выше твоей обычной. Риск травмы повышен: снизь интенсивность.`,
       verifyTitle: 'Проверка Safety Pass',
       verifyChecking: 'Проверяю подпись…',
-      verifyValid: 'Подлинный пропуск CloudPulse',
+      verifyValid: 'Подлинный пропуск Lotus',
       verifyInvalid: 'Пропуск недействителен',
-      verifyInvalidBody: 'Подпись не совпадает: этот QR-код не выдан CloudPulse или был изменён.',
+      verifyInvalidBody: 'Подпись не совпадает: этот QR-код не выдан Lotus или был изменён.',
       verifyExpired: (date: string) => `Пропуск был действителен ${date} и сегодня уже не действует.`,
       verifyStatusBlock: 'Нагрузки ограничены',
       verifyStatusCaution: 'Рекомендована осторожность',
@@ -837,7 +837,7 @@ export const translations: Record<Lang, Dict> = {
       dirRtpAwaiting: 'Боли нет 2 дня. Полная нагрузка — после подтверждения тренера.',
       rRtp: 'После перерыва по здоровью: без полной нагрузки до допуска тренера',
       rRtpAwaiting: 'После перерыва по здоровью: ждёт подтверждения тренера',
-      verifyNote: 'Статус рассчитан системой CloudPulse по ежедневному чек-ину спортсмена. Подробности о здоровье не раскрываются.',
+      verifyNote: 'Статус рассчитан системой Lotus по ежедневному чек-ину спортсмена. Подробности о здоровье не раскрываются.',
     },
     coach: {
       navLabel: 'Тренер',
@@ -869,7 +869,7 @@ export const translations: Record<Lang, Dict> = {
     },
     calendar: {
       title: 'Школьный календарь',
-      subtitle: 'Контрольные, экзамены и матчи. CloudPulse учитывает их в расчёте готовности.',
+      subtitle: 'Контрольные, экзамены и матчи. Lotus учитывает их в расчёте готовности.',
       addTitle: 'Добавить событие',
       typeExam: 'Контрольная',
       typeMatch: 'Матч',
@@ -878,7 +878,7 @@ export const translations: Record<Lang, Dict> = {
       subjectPlaceholder: 'Например, математика',
       add: 'Добавить',
       upcomingTitle: 'Ближайшие события',
-      empty: 'Пока пусто. Добавь ближайшую контрольную или матч, и CloudPulse заранее снизит нагрузку.',
+      empty: 'Пока пусто. Добавь ближайшую контрольную или матч, и Lotus заранее снизит нагрузку.',
       loading: 'Загружаю календарь...',
       today: 'Сегодня',
       tomorrow: 'Завтра',
@@ -917,7 +917,7 @@ export const translations: Record<Lang, Dict> = {
       athleteFallback: 'Спортсмен',
       noConsentTitle: 'Доступ закрыт',
       noConsentBody: (name) =>
-        `${name} пока не открыл(а) доступ к своему статусу. Это можно сделать в приложении CloudPulse, раздел «Прогресс».`,
+        `${name} пока не открыл(а) доступ к своему статусу. Это можно сделать в приложении Lotus, раздел «Прогресс».`,
       noCheckin: 'Сегодня чек-ина ещё не было.',
       statusGreen: 'Готов(а) к тренировке',
       statusYellow: 'Лучше тренироваться полегче',
@@ -974,7 +974,7 @@ export const translations: Record<Lang, Dict> = {
     },
     invite: {
       joinTitle: 'Приглашение в команду',
-      joinSubtitle: 'Тренер приглашает тебя в CloudPulse',
+      joinSubtitle: 'Тренер приглашает тебя в Lotus',
       checking: 'Проверяю приглашение…',
       teamLabel: 'Команда',
       signInToJoin: 'Чтобы вступить, войди в аккаунт или создай новый — это займёт минуту.',
@@ -1053,7 +1053,7 @@ export const translations: Record<Lang, Dict> = {
       errDemoTeam: 'Это демонстрационная команда — в неё нельзя вступить. Попроси у своего тренера настоящий код.',
     },
     demo: {
-      title: 'Демо CloudPulse',
+      title: 'Демо Lotus',
       subtitle: 'Попробуйте приложение за любую роль — в один клик, без регистрации.',
       note: 'Все люди и данные здесь вымышленные. Демо-данные сбрасываются каждый день и по кнопке «Сбросить демо» — нажимайте что угодно.',
       athleteTitle: 'Спортсмен',
@@ -1094,7 +1094,7 @@ export const translations: Record<Lang, Dict> = {
     offline: {
       savedTitle: 'Сохранено на телефоне',
       savedBody: (date) =>
-        `Интернета сейчас нет. Чек-ин за ${date} сохранён и отправится сам, когда ты снова откроешь CloudPulse с интернетом.`,
+        `Интернета сейчас нет. Чек-ин за ${date} сохранён и отправится сам, когда ты снова откроешь Lotus с интернетом.`,
       noScore: 'Оценку готовности движок посчитает после отправки: без твоей истории из базы мы её не выдумываем.',
       painNote:
         'Ты отметил(а) боль. Не тренируйся через боль и скажи тренеру или школьной медсестре — это правило работает и без интернета.',
@@ -1105,7 +1105,7 @@ export const translations: Record<Lang, Dict> = {
       sending: 'Отправляю…',
       synced: (n) => (n === 1 ? 'Офлайн-чек-ин отправлен' : `Отправлено офлайн-чек-инов: ${n}`),
       expired: 'Чек-ин старше 7 дней не отправлен — такие сервер не принимает.',
-      installTitle: 'Установи CloudPulse на телефон',
+      installTitle: 'Установи Lotus на телефон',
       installBody: 'Иконка на главном экране и чек-ин даже без интернета.',
       installButton: 'Установить',
       installIos: 'В Safari нажми «Поделиться», затем «На экран „Домой“».',
@@ -1302,13 +1302,13 @@ export const translations: Record<Lang, Dict> = {
     common: { loading: 'Загружаю…' },
   },
   lv: {
-    nav: { brand: 'CloudPulse', chat: 'Tērzēšana', checkin: 'Pārbaude', progress: 'Progress', calendar: 'Kalendārs', training: 'Treniņš', signOut: 'Iziet' },
+    nav: { brand: 'Lotus', chat: 'Tērzēšana', checkin: 'Pārbaude', progress: 'Progress', calendar: 'Kalendārs', training: 'Treniņš', signOut: 'Iziet' },
     chat: {
-      title: 'CloudPulse Coach',
+      title: 'Lotus Coach',
       subtitle: 'Tavs AI treniņu partneris',
       heroTag: 'AI Athletic Coach',
       welcome:
-        'Sveiks! Es esmu CloudPulse, tavs AI treneris. Izveidosim lielisku treniņu plānu?\n\nPastāsti par saviem mērķiem, iecienītākajiem sporta veidiem, vai jautā jebko par treniņiem, atveseļošanos un aktivitāti!',
+        'Sveiks! Es esmu Lotus, tavs AI treneris. Izveidosim lielisku treniņu plānu?\n\nPastāsti par saviem mērķiem, iecienītākajiem sporta veidiem, vai jautā jebko par treniņiem, atveseļošanos un aktivitāti!',
       placeholder: 'Jautā par treniņiem, mērķiem, atveseļošanos...',
       send: 'Sūtīt',
       addToCalendar: 'Pievienot kalendāram',
@@ -1379,7 +1379,7 @@ export const translations: Record<Lang, Dict> = {
     },
     onboarding: {
       title: 'Iestatīsim tavu profilu',
-      subtitle: 'CloudPulse',
+      subtitle: 'Lotus',
       stepOf: (i, n) => `${i}. solis no ${n}`,
       ageQ: 'Cik tev ir gadu?',
       ageUnit: 'gadi',
@@ -1394,7 +1394,7 @@ export const translations: Record<Lang, Dict> = {
       },
       datesTitle: 'Spēles un eksāmeni',
       datesBody:
-        'Nav obligāti, bet tā CloudPulse var samazināt slodzi pirms eksāmeniem un sargāt tevi ap spēlēm. Vari izlaist un pievienot vēlāk.',
+        'Nav obligāti, bet tā Lotus var samazināt slodzi pirms eksāmeniem un sargāt tevi ap spēlēm. Vari izlaist un pievienot vēlāk.',
       matchDates: 'Spēļu datumi',
       examDates: 'Eksāmenu datumi',
       add: 'Pievienot',
@@ -1466,9 +1466,9 @@ export const translations: Record<Lang, Dict> = {
     },
     access: {
       lockdownTitle: 'Vietne īslaicīgi nav pieejama',
-      lockdownBody: 'CloudPulse īpašnieks īslaicīgi slēdzis piekļuvi visiem, izņemot komandu. Mēģini vēlreiz pēc brīža.',
+      lockdownBody: 'Lotus īpašnieks īslaicīgi slēdzis piekļuvi visiem, izņemot komandu. Mēģini vēlreiz pēc brīža.',
       bannedTitle: 'Piekļuve liegta',
-      bannedBody: 'CloudPulse īpašnieks ierobežojis piekļuvi šim kontam. Ja tā ir kļūda, sazinies ar komandu.',
+      bannedBody: 'Lotus īpašnieks ierobežojis piekļuvi šim kontam. Ja tā ir kļūda, sazinies ar komandu.',
       backToLogin: 'Uz pieslēgšanās lapu',
     },
     shield: {
@@ -1489,9 +1489,9 @@ export const translations: Record<Lang, Dict> = {
         `Nedēļas slodze ir ${acwr} reizes lielāka par tavu parasto. Traumu risks ir paaugstināts: samazini intensitāti.`,
       verifyTitle: 'Safety Pass pārbaude',
       verifyChecking: 'Pārbaudu parakstu…',
-      verifyValid: 'Īsta CloudPulse caurlaide',
+      verifyValid: 'Īsta Lotus caurlaide',
       verifyInvalid: 'Caurlaide nav derīga',
-      verifyInvalidBody: 'Paraksts nesakrīt: šo QR kodu nav izsniedzis CloudPulse vai tas ir mainīts.',
+      verifyInvalidBody: 'Paraksts nesakrīt: šo QR kodu nav izsniedzis Lotus vai tas ir mainīts.',
       verifyExpired: (date: string) => `Caurlaide bija derīga ${date} un šodien vairs nav derīga.`,
       verifyStatusBlock: 'Slodze ierobežota',
       verifyStatusCaution: 'Ieteicama piesardzība',
@@ -1506,7 +1506,7 @@ export const translations: Record<Lang, Dict> = {
       dirRtpAwaiting: 'Sāpju nav 2 dienas. Pilna slodze — pēc trenera apstiprinājuma.',
       rRtp: 'Pēc veselības pārtraukuma: bez pilnas slodzes līdz trenera atļaujai',
       rRtpAwaiting: 'Pēc veselības pārtraukuma: gaida trenera apstiprinājumu',
-      verifyNote: 'Statusu aprēķinājusi CloudPulse sistēma pēc sportista ikdienas pārbaudes. Veselības detaļas netiek atklātas.',
+      verifyNote: 'Statusu aprēķinājusi Lotus sistēma pēc sportista ikdienas pārbaudes. Veselības detaļas netiek atklātas.',
     },
     coach: {
       navLabel: 'Treneris',
@@ -1538,7 +1538,7 @@ export const translations: Record<Lang, Dict> = {
     },
     calendar: {
       title: 'Skolas kalendārs',
-      subtitle: 'Kontroldarbi, eksāmeni un spēles. CloudPulse tos ņem vērā gatavības aprēķinā.',
+      subtitle: 'Kontroldarbi, eksāmeni un spēles. Lotus tos ņem vērā gatavības aprēķinā.',
       addTitle: 'Pievienot notikumu',
       typeExam: 'Kontroldarbs',
       typeMatch: 'Spēle',
@@ -1547,7 +1547,7 @@ export const translations: Record<Lang, Dict> = {
       subjectPlaceholder: 'Piemēram, matemātika',
       add: 'Pievienot',
       upcomingTitle: 'Tuvākie notikumi',
-      empty: 'Pagaidām tukšs. Pievieno tuvāko kontroldarbu vai spēli, un CloudPulse laikus samazinās slodzi.',
+      empty: 'Pagaidām tukšs. Pievieno tuvāko kontroldarbu vai spēli, un Lotus laikus samazinās slodzi.',
       loading: 'Ielādēju kalendāru...',
       today: 'Šodien',
       tomorrow: 'Rīt',
@@ -1581,7 +1581,7 @@ export const translations: Record<Lang, Dict> = {
       athleteFallback: 'Sportists',
       noConsentTitle: 'Piekļuve slēgta',
       noConsentBody: (name) =>
-        `${name} vēl nav atvēris(-usi) piekļuvi savam statusam. To var izdarīt CloudPulse lietotnē, sadaļā «Progress».`,
+        `${name} vēl nav atvēris(-usi) piekļuvi savam statusam. To var izdarīt Lotus lietotnē, sadaļā «Progress».`,
       noCheckin: 'Šodien pārbaude vēl nav veikta.',
       statusGreen: 'Gatavs(-a) treniņam',
       statusYellow: 'Labāk trenēties vieglāk',
@@ -1638,7 +1638,7 @@ export const translations: Record<Lang, Dict> = {
     },
     invite: {
       joinTitle: 'Uzaicinājums komandā',
-      joinSubtitle: 'Treneris aicina tevi pievienoties CloudPulse',
+      joinSubtitle: 'Treneris aicina tevi pievienoties Lotus',
       checking: 'Pārbaudu uzaicinājumu…',
       teamLabel: 'Komanda',
       signInToJoin: 'Lai pievienotos, ienāc kontā vai izveido jaunu — tas aizņems minūti.',
@@ -1709,7 +1709,7 @@ export const translations: Record<Lang, Dict> = {
       errDemoTeam: 'Šī ir demonstrācijas komanda — tai nevar pievienoties. Palūdz savam trenerim īsto kodu.',
     },
     demo: {
-      title: 'CloudPulse demo',
+      title: 'Lotus demo',
       subtitle: 'Izmēģiniet lietotni jebkurā lomā — ar vienu klikšķi, bez reģistrācijas.',
       note: 'Visi cilvēki un dati šeit ir izdomāti. Demo dati tiek atiestatīti katru dienu un ar pogu «Atiestatīt demo» — droši spiediet jebko.',
       athleteTitle: 'Sportists',
@@ -1750,7 +1750,7 @@ export const translations: Record<Lang, Dict> = {
     offline: {
       savedTitle: 'Saglabāts telefonā',
       savedBody: (date) =>
-        `Internets šobrīd nav pieejams. Pārbaude par ${date} ir saglabāta un tiks nosūtīta pati, kad atkal atvērsi CloudPulse ar internetu.`,
+        `Internets šobrīd nav pieejams. Pārbaude par ${date} ir saglabāta un tiks nosūtīta pati, kad atkal atvērsi Lotus ar internetu.`,
       noScore: 'Gatavības novērtējumu dzinējs aprēķinās pēc nosūtīšanas: bez tavas vēstures no datubāzes mēs to neizdomājam.',
       painNote:
         'Tu atzīmēji sāpes. Netrenējies caur sāpēm un pasaki trenerim vai skolas medmāsai — šis noteikums darbojas arī bez interneta.',
@@ -1761,7 +1761,7 @@ export const translations: Record<Lang, Dict> = {
       sending: 'Sūtu…',
       synced: (n) => (n === 1 ? 'Bezsaistes pārbaude nosūtīta' : `Nosūtītas bezsaistes pārbaudes: ${n}`),
       expired: 'Pārbaude, kas vecāka par 7 dienām, netika nosūtīta — serveris tādas nepieņem.',
-      installTitle: 'Uzstādi CloudPulse telefonā',
+      installTitle: 'Uzstādi Lotus telefonā',
       installBody: 'Ikona sākuma ekrānā un pārbaude pat bez interneta.',
       installButton: 'Uzstādīt',
       installIos: 'Safari nospied «Kopīgot», tad «Pievienot sākuma ekrānam».',
@@ -1958,13 +1958,13 @@ export const translations: Record<Lang, Dict> = {
     common: { loading: 'Ielādē…' },
   },
   en: {
-    nav: { brand: 'CloudPulse', chat: 'Chat', checkin: 'Check-in', progress: 'Progress', calendar: 'Calendar', training: 'Workout', signOut: 'Sign out' },
+    nav: { brand: 'Lotus', chat: 'Chat', checkin: 'Check-in', progress: 'Progress', calendar: 'Calendar', training: 'Workouts', signOut: 'Sign out' },
     chat: {
-      title: 'CloudPulse Coach',
+      title: 'Lotus Coach',
       subtitle: 'Your AI fitness partner for better training',
       heroTag: 'AI Athletic Coach',
       welcome:
-        "Hey! I'm CloudPulse, your AI fitness coach. Ready to build an awesome training plan?\n\nTell me about your fitness goals, what sports you like, or ask me anything about training, recovery, or staying active!",
+        "Hey! I'm Lotus, your AI fitness coach. Ready to build an awesome training plan?\n\nTell me about your fitness goals, what sports you like, or ask me anything about training, recovery, or staying active!",
       placeholder: 'Ask anything about your training, goals, recovery...',
       send: 'Send',
       addToCalendar: 'Add to Calendar',
@@ -2035,7 +2035,7 @@ export const translations: Record<Lang, Dict> = {
     },
     onboarding: {
       title: "Let's set up your profile",
-      subtitle: 'CloudPulse',
+      subtitle: 'Lotus',
       stepOf: (i, n) => `Step ${i} of ${n}`,
       ageQ: 'How old are you?',
       ageUnit: 'years',
@@ -2050,7 +2050,7 @@ export const translations: Record<Lang, Dict> = {
       },
       datesTitle: 'Matches and exams',
       datesBody:
-        'Optional, but it lets CloudPulse ease your load before exams and protect you around match days. You can skip this and add it later.',
+        'Optional, but it lets Lotus ease your load before exams and protect you around match days. You can skip this and add it later.',
       matchDates: 'Match dates',
       examDates: 'Exam dates',
       add: 'Add',
@@ -2122,9 +2122,9 @@ export const translations: Record<Lang, Dict> = {
     },
     access: {
       lockdownTitle: 'Site temporarily unavailable',
-      lockdownBody: "The CloudPulse owner has temporarily closed access to everyone but the team. Please check back shortly.",
+      lockdownBody: "The Lotus owner has temporarily closed access to everyone but the team. Please check back shortly.",
       bannedTitle: 'Access revoked',
-      bannedBody: 'The CloudPulse owner has restricted access for this account. If this seems wrong, reach out to the team.',
+      bannedBody: 'The Lotus owner has restricted access for this account. If this seems wrong, reach out to the team.',
       backToLogin: 'Back to sign in',
     },
     shield: {
@@ -2145,9 +2145,9 @@ export const translations: Record<Lang, Dict> = {
         `This week's load is ${acwr}× your usual. Injury risk is elevated: lower the intensity.`,
       verifyTitle: 'Safety Pass check',
       verifyChecking: 'Checking signature…',
-      verifyValid: 'Genuine CloudPulse pass',
+      verifyValid: 'Genuine Lotus pass',
       verifyInvalid: 'Pass is not valid',
-      verifyInvalidBody: "The signature doesn't match: this QR code wasn't issued by CloudPulse or has been altered.",
+      verifyInvalidBody: "The signature doesn't match: this QR code wasn't issued by Lotus or has been altered.",
       verifyExpired: (date: string) => `This pass was valid on ${date} and is no longer valid today.`,
       verifyStatusBlock: 'Training restricted',
       verifyStatusCaution: 'Caution advised',
@@ -2162,7 +2162,7 @@ export const translations: Record<Lang, Dict> = {
       dirRtpAwaiting: 'No pain for 2 days. Full load after your coach confirms.',
       rRtp: 'After a health break: no full load until the coach confirms',
       rRtpAwaiting: 'After a health break: waiting for the coach to confirm',
-      verifyNote: "Status calculated by CloudPulse from the athlete's daily check-in. No health details are disclosed.",
+      verifyNote: "Status calculated by Lotus from the athlete's daily check-in. No health details are disclosed.",
     },
     coach: {
       navLabel: 'Coach',
@@ -2194,7 +2194,7 @@ export const translations: Record<Lang, Dict> = {
     },
     calendar: {
       title: 'School calendar',
-      subtitle: 'Tests, exams and matches. CloudPulse factors them into your readiness.',
+      subtitle: 'Tests, exams and matches. Lotus factors them into your readiness.',
       addTitle: 'Add an event',
       typeExam: 'Test / exam',
       typeMatch: 'Match',
@@ -2203,7 +2203,7 @@ export const translations: Record<Lang, Dict> = {
       subjectPlaceholder: 'e.g. Maths',
       add: 'Add',
       upcomingTitle: 'Coming up',
-      empty: 'Nothing here yet. Add your next test or match and CloudPulse will ease your load ahead of it.',
+      empty: 'Nothing here yet. Add your next test or match and Lotus will ease your load ahead of it.',
       loading: 'Loading calendar...',
       today: 'Today',
       tomorrow: 'Tomorrow',
@@ -2237,7 +2237,7 @@ export const translations: Record<Lang, Dict> = {
       athleteFallback: 'Athlete',
       noConsentTitle: 'Access closed',
       noConsentBody: (name) =>
-        `${name} hasn't shared their status yet. They can turn it on in the CloudPulse app, under "Progress".`,
+        `${name} hasn't shared their status yet. They can turn it on in the Lotus app, under "Progress".`,
       noCheckin: 'No check-in yet today.',
       statusGreen: 'Ready to train',
       statusYellow: 'Better to train lighter',
@@ -2294,7 +2294,7 @@ export const translations: Record<Lang, Dict> = {
     },
     invite: {
       joinTitle: 'Team invitation',
-      joinSubtitle: 'Your coach is inviting you to CloudPulse',
+      joinSubtitle: 'Your coach is inviting you to Lotus',
       checking: 'Checking the invitation…',
       teamLabel: 'Team',
       signInToJoin: 'To join, sign in or create an account — it takes a minute.',
@@ -2362,7 +2362,7 @@ export const translations: Record<Lang, Dict> = {
       errDemoTeam: 'This is a demo team — it can’t be joined. Ask your coach for the real code.',
     },
     demo: {
-      title: 'CloudPulse demo',
+      title: 'Lotus demo',
       subtitle: 'Try the app in any role — one click, no sign-up.',
       note: 'Every person and number here is made up. Demo data resets every day and with the “Reset demo” button — click anything you like.',
       athleteTitle: 'Athlete',
@@ -2403,7 +2403,7 @@ export const translations: Record<Lang, Dict> = {
     offline: {
       savedTitle: 'Saved on your phone',
       savedBody: (date) =>
-        `You're offline. Your check-in for ${date} is saved and will be sent automatically the next time you open CloudPulse with internet.`,
+        `You're offline. Your check-in for ${date} is saved and will be sent automatically the next time you open Lotus with internet.`,
       noScore: "The engine calculates your readiness score once it's sent: without your history from the database, we don't make one up.",
       painNote:
         "You reported pain. Don't train through pain, and tell your coach or the school nurse — this rule works without internet too.",
@@ -2414,7 +2414,7 @@ export const translations: Record<Lang, Dict> = {
       sending: 'Sending…',
       synced: (n) => (n === 1 ? 'Offline check-in sent' : `Offline check-ins sent: ${n}`),
       expired: "A check-in older than 7 days was not sent — the server doesn't accept those.",
-      installTitle: 'Install CloudPulse on your phone',
+      installTitle: 'Install Lotus on your phone',
       installBody: 'An icon on your home screen and check-ins even without internet.',
       installButton: 'Install',
       installIos: 'In Safari, tap Share, then "Add to Home Screen".',

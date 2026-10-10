@@ -1,9 +1,9 @@
 // lib/adp-coach.ts
 //
-// Glue between CloudPulse and the ADP safe AI coach (adp/). Pure functions,
+// Glue between Lotus and the ADP safe AI coach (adp/). Pure functions,
 // unit-tested in adp-coach.test.ts.
 //
-// CloudPulse already decides the day: the readiness engine gives a zone and
+// Lotus already decides the day: the readiness engine gives a zone and
 // Safety Guard gives hard stops (pain, match). Here that verdict is handed to
 // the ADP coach module as its EngineLimits — translated, never softened:
 //   - pain reported today (or the engine's pain block) → 'blocked';

@@ -112,20 +112,20 @@ export default function LoginPage() {
           <button
             type="button"
             onClick={handleForgotPassword}
-            className="mt-1.5 text-xs text-zinc-500 hover:text-[#CCFF00] transition-colors"
+            className="mt-1.5 text-xs text-zinc-500 hover:text-[#FF9500] transition-colors"
           >
             {t.auth.forgotPassword}
           </button>
         </div>
 
         {error && (
-          <div className="flex items-start gap-2 rounded-xl bg-[#FF4D5E]/10 border border-[#FF4D5E]/20 px-3 py-2.5 text-xs text-[#FF4D5E]">
+          <div className="flex items-start gap-2 rounded-xl bg-[#FF3B30]/10 border border-[#FF3B30]/20 px-3 py-2.5 text-xs text-[#FF3B30]">
             <WarningCircle size={14} className="shrink-0 mt-0.5" />
             <span>{error}</span>
           </div>
         )}
         {resetNotice && (
-          <div className="flex items-start gap-2 rounded-xl bg-[#CCFF00]/10 border border-[#CCFF00]/20 px-3 py-2.5 text-xs text-[#CCFF00]">
+          <div className="flex items-start gap-2 rounded-xl bg-[#FF9500]/10 border border-[#FF9500]/20 px-3 py-2.5 text-xs text-[#FF9500]">
             <CheckCircle size={14} className="shrink-0 mt-0.5" />
             <span>{resetNotice}</span>
           </div>
@@ -135,8 +135,8 @@ export default function LoginPage() {
           type="submit"
           disabled={loading}
           whileTap={{ scale: 0.98 }}
-          className="w-full flex items-center justify-center gap-2 rounded-xl py-3 text-sm font-bold text-black disabled:opacity-60 shadow-[0_0_24px_rgba(204,255,0,0.25)]"
-          style={{ background: 'linear-gradient(135deg, #CCFF00 0%, #00F0FF 100%)' }}
+          className="w-full flex items-center justify-center gap-2 rounded-xl py-3 text-sm font-bold text-black disabled:opacity-60 shadow-[0_0_24px_rgba(255,149,0,0.25)]"
+          style={{ background: 'linear-gradient(135deg, #FF9500 0%, #00F0FF 100%)' }}
         >
           {loading ? t.auth.signingIn : t.auth.signIn}
           {!loading && <ArrowRight size={16} weight="bold" />}
@@ -170,7 +170,7 @@ export default function LoginPage() {
         {t.auth.noAccount}{' '}
         <Link
           href={next ? `/signup?next=${encodeURIComponent(next)}` : '/signup'}
-          className="text-[#CCFF00] hover:brightness-110 font-medium"
+          className="text-[#FF9500] hover:brightness-110 font-medium"
         >
           {t.auth.signUp}
         </Link>

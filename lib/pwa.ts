@@ -1,6 +1,6 @@
 // lib/pwa.ts
 //
-// Shared bits for installing CloudPulse as an app. Chrome, Edge and Samsung
+// Shared bits for installing Lotus as an app. Chrome, Edge and Samsung
 // Internet fire `beforeinstallprompt` once, often before the page that shows
 // the install button is open, so ServiceWorkerRegister (root layout) catches
 // it early and parks it here for InstallAppCard. iOS Safari has no such

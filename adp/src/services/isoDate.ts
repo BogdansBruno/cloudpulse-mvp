@@ -1,7 +1,7 @@
 // adp/src/services/isoDate.ts
 //
 // Calendar-day helpers on 'YYYY-MM-DD' strings in UTC — the same convention
-// CloudPulse's /api/checkin uses, so "today" agrees across the system.
+// Lotus's /api/checkin uses, so "today" agrees across the system.
 
 import type { IsoDate } from '../types/adp';
 

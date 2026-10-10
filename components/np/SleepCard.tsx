@@ -14,7 +14,7 @@ import { DemoTag, Overline } from './ui';
 export type SleepStages = Record<SleepStageKey, number>; // minutes
 
 const ORDER: SleepStageKey[] = ['deep', 'rem', 'light', 'awake'];
-const COLOR: Record<SleepStageKey, string> = { deep: '#7C4DFF', rem: '#00E5FF', light: '#2979FF', awake: '#3A3F4B' };
+const COLOR: Record<SleepStageKey, string> = { deep: '#8E8CFF', rem: '#2FD8F0', light: '#3FE0A8', awake: '#9AA7B8' };
 
 export default function SleepCard({
   lang,
@@ -114,7 +114,7 @@ export default function SleepCard({
         <div className="flex shrink-0 items-center gap-2">
           <span className="flex gap-1" aria-hidden>
             {Array.from({ length: 7 }, (_, i) => (
-              <span key={i} className={`h-1.5 w-3 rounded-full ${quality !== null && i < quality ? 'bg-np-sleep' : 'bg-white/10'}`} />
+              <span key={i} className={`h-1.5 w-3 rounded-full ${quality !== null && i < quality ? 'bg-np-sleep' : 'bg-np-veil/10'}`} />
             ))}
           </span>
           <span className="np-num text-base">{quality !== null ? `${quality}/7` : '—'}</span>

@@ -29,9 +29,9 @@ export type Biometric = {
 
 const ICON: Record<BioKey, IconName> = { hrv: 'pulse', rhr: 'heart', spo2: 'drop', temp: 'thermo', resp: 'wind' };
 const STATUS: Record<BioStatus, { pill: string; dot: string; glow: string }> = {
-  good: { pill: 'np-pill-good', dot: '#00E676', glow: 'rgb(0 230 118 / 0.9)' },
-  warn: { pill: 'np-pill-warn', dot: '#FFD600', glow: 'rgb(255 214 0 / 0.9)' },
-  bad: { pill: 'np-pill-danger', dot: '#FF3D00', glow: 'rgb(255 61 0 / 0.9)' },
+  good: { pill: 'np-pill-good', dot: '#3FE0A8', glow: 'rgb(63 224 168 / 0.7)' },
+  warn: { pill: 'np-pill-warn', dot: '#FFC53D', glow: 'rgb(255 197 61 / 0.7)' },
+  bad: { pill: 'np-pill-danger', dot: '#FF7A59', glow: 'rgb(255 122 89 / 0.7)' },
 };
 // mobile: 2 columns, HRV spans both; ≥640px: 6 columns → 3 + 3 / 2 + 2 + 2
 const SPAN = ['col-span-2 sm:col-span-3', 'sm:col-span-3', 'sm:col-span-2', 'sm:col-span-2', 'sm:col-span-2'];
@@ -61,10 +61,10 @@ function Spark({ m, status, tall }: { m: Biometric; status: BioStatus; tall: boo
   return (
     <span className={`relative mt-3 block ${tall ? 'h-12' : 'h-9'}`} aria-hidden>
       <svg className="absolute inset-0 h-full w-full overflow-visible" viewBox={`0 0 100 ${H}`} preserveAspectRatio="none">
-        <rect x="0" y={y(m.hi)} width="100" height={y(m.lo) - y(m.hi)} fill="rgb(0 230 118 / 0.09)" />
-        <line x1="0" x2="100" y1={y(m.hi)} y2={y(m.hi)} stroke="rgb(0 230 118 / 0.25)" strokeDasharray="2 3" vectorEffect="non-scaling-stroke" />
-        <line x1="0" x2="100" y1={y(m.lo)} y2={y(m.lo)} stroke="rgb(0 230 118 / 0.25)" strokeDasharray="2 3" vectorEffect="non-scaling-stroke" />
-        <path d={d} stroke="#A3A9B6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" vectorEffect="non-scaling-stroke" />
+        <rect x="0" y={y(m.hi)} width="100" height={y(m.lo) - y(m.hi)} fill="rgb(63 224 168 / 0.08)" />
+        <line x1="0" x2="100" y1={y(m.hi)} y2={y(m.hi)} stroke="rgb(63 224 168 / 0.35)" strokeDasharray="2 3" vectorEffect="non-scaling-stroke" />
+        <line x1="0" x2="100" y1={y(m.lo)} y2={y(m.lo)} stroke="rgb(63 224 168 / 0.35)" strokeDasharray="2 3" vectorEffect="non-scaling-stroke" />
+        <path d={d} stroke="#C3C5C7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" vectorEffect="non-scaling-stroke" />
       </svg>
       <span
         className="absolute h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full ring-2 ring-np-surface"
@@ -83,7 +83,7 @@ export default function BiometricsGrid({ lang, items, demo = false, compact = fa
     <div>
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-2.5">
-          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/[0.06] text-np-text" aria-hidden>
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-np-veil/[0.06] text-np-text" aria-hidden>
             <Icon name="watch" size={16} />
           </span>
           <Overline>{t.bio.title}</Overline>
@@ -109,7 +109,7 @@ export default function BiometricsGrid({ lang, items, demo = false, compact = fa
               return (
                 <li key={m.k} className={`np-enter flex min-w-0 flex-col rounded-np-ctrl border border-np-line bg-np-surface-2/40 p-3.5 sm:p-4 ${compact ? 'sm:col-span-3' : SPAN[i]}`} style={{ ['--np-i' as string]: i }}>
                   <span className="flex items-center justify-between gap-2">
-                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/[0.06] text-np-text" aria-hidden>
+                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-np-veil/[0.06] text-np-text" aria-hidden>
                       <Icon name={ICON[m.k]} size={16} />
                     </span>
                     <span className={`np-pill ${STATUS[s].pill} min-w-0 px-2`}>
