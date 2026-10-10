@@ -1,10 +1,12 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import Link from 'next/link';
 import { motion, useReducedMotion } from 'motion/react';
 import { WarningOctagon, Info, Flame, Users, Barbell, CheckCircle } from '@phosphor-icons/react';
 import { supabase } from '@/lib/supabase';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
+import { STRAIN } from '@/lib/strain-copy';
 import { ReadinessRing, zoneMeta, loadStatus, noRestColor, HUB } from '@/components/PerformancePanel';
 import type { Penalty, SafetyViolation, InconsistencyFlag } from '@/lib/readiness-engine';
 import { translatePenalty, translateViolation, translateInconsistency } from '@/lib/engine-i18n';
@@ -107,7 +109,7 @@ function athleteLabel(a: RosterEntry, fallback: (id: string) => string) {
 }
 
 export default function CoachPage() {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const reduce = useReducedMotion();
 
   const [roster, setRoster] = useState<RosterEntry[] | null>(null);
@@ -377,6 +379,17 @@ export default function CoachPage() {
             {t.coach.navLabel}
           </span>
         </header>
+
+        <Link
+          href="/coach/war-room"
+          className="np-card mb-4 flex min-h-14 items-center gap-3 px-4 py-3 text-left"
+        >
+          <Users size={20} weight="fill" className="shrink-0 text-zinc-300" aria-hidden />
+          <span className="min-w-0 flex-1">
+            <span className="block text-sm font-semibold text-zinc-50">{STRAIN[lang].war.title}</span>
+            <span className="block truncate text-xs text-zinc-400">{STRAIN[lang].war.subtitle}</span>
+          </span>
+        </Link>
 
         <TeamInvitePanel />
 

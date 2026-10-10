@@ -59,6 +59,9 @@ import { pctVsAvg } from '@/components/np/trend';
 import { POLISH } from '@/components/np/polishCopy';
 import { InfoButton } from '@/components/np/InfoSheet';
 import { CalibrationBanner, DeviceStatus } from '@/components/np/DayStatus';
+import StrainSignalCard from '@/components/np/StrainSignalCard';
+import PlanAdjustCard from '@/components/np/PlanAdjustCard';
+import { strainInputFromPenalties, strainSignal } from '@/lib/strain-signal';
 import { AfternoonHero, EveningHero, PhaseSwitch, phaseOf } from '@/components/np/PhaseHeroes';
 import TagBar from '@/components/np/TagBar';
 import { tagImpacts, useTags } from '@/components/np/tags';
@@ -121,6 +124,7 @@ export default function TodayPage(): ReactElement {
       sleepSeries: history.slice(-7).map((p) => (p.hasCheckin ? p.sleepQuality : null)),
       loadSeries: history.slice(-7).map((p) => loadIndex(p.dailyLoad ?? null, usualDailyLoad(p.chronicLoad))),
       // Pro telemetry strip: the engine's own numbers for today
+      strainSignal: checked ? strainSignal(strainInputFromPenalties(last.acwr, last.zone, last.penaltyCodes)) : null,
       tele: { acwr: last.acwr, monotony: last.monotony, hooper: checked ? last.hooperScore : null, acute: last.acuteLoad, chronic: last.chronicLoad },
     };
   }, [history, today]);
@@ -415,6 +419,8 @@ export default function TodayPage(): ReactElement {
       <div id="safety-pass">
         <SafetyShield inline onStatus={setPass} />
       </div>
+      {zone !== null && <PlanAdjustCard className="mb-4" />}
+      <StrainSignalCard lang={lang} signal={day?.strainSignal ?? null} className="mb-4" />
       <DeviceStatus lang={lang} demo={isDemo} history={history} today={today} />
       <CalibrationBanner lang={lang} history={history} />
       {!isDemo && <CheckinBanner lang={lang} showNeeds className="mb-4" />}
