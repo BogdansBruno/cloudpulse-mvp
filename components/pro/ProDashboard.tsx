@@ -13,6 +13,7 @@
 // Nothing here is invented: a day without a check-in stays a gap, a missing
 // value shows "—", wearable blocks show an empty state.
 
+import { LotusMark } from '@/components/np/Lotus';
 import { useEffect, useMemo, useState, type ReactElement, type ReactNode } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -167,10 +168,7 @@ export default function ProDashboard(): ReactElement {
         <aside className="np-card hidden h-fit flex-col gap-1 p-3 lg:sticky lg:top-20 lg:flex" aria-label={t.title}>
           <div className="mb-3 flex h-10 items-center gap-3 px-1.5">
             <span className="relative flex h-8 w-8 shrink-0 items-center justify-center rounded-np-ctrl bg-np-surface-2" aria-hidden>
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                <path d="M2.5 12c1.6-2.1 3.1-3.9 4.8-3.9s3.2 1.9 3.8 3.9 2.1 3.9 3.8 3.9 3.2-1.8 4.8-3.9" stroke="#32ADE6" strokeWidth="1.75" strokeLinecap="round" />
-              </svg>
-              <span className="np-logo-pulse absolute h-2 w-2 bg-np-accent ring-2 ring-np-surface-2" />
+              <LotusMark size={22} />
             </span>
             <span className="hidden text-sm font-semibold tracking-tight xl:inline">Lotus</span>
           </div>

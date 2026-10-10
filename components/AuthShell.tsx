@@ -2,8 +2,9 @@
 
 import type { ReactNode } from 'react';
 import Link from 'next/link';
+import { LotusMark } from '@/components/np/Lotus';
 import { motion, useReducedMotion } from 'motion/react';
-import { LockSimple, Lightning } from '@phosphor-icons/react';
+import { LockSimple } from '@phosphor-icons/react';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
 
 // Shared full-screen shell for /login and /signup: deep charcoal ground,
@@ -32,9 +33,7 @@ export default function AuthShell({ children }: { children: ReactNode }) {
       >
         <div className="flex flex-col items-center mb-6">
           <Link href="/chat" className="flex items-center gap-2 mb-3">
-            <div className="h-9 w-9 rounded-xl bg-white text-zinc-950 flex items-center justify-center shadow-[0_0_20px_rgba(255,149,0,0.35)]">
-              <Lightning size={18} weight="fill" />
-            </div>
+            <LotusMark size={34} />
             <span className="text-white font-semibold tracking-tight text-lg">Lotus</span>
           </Link>
           <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-[11px] font-medium text-zinc-400">

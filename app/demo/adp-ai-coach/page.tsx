@@ -1,5 +1,7 @@
 'use client';
 
+import { LotusMark } from '@/components/np/Lotus';
+
 // /demo/adp-ai-coach — preview of the ADP "safe AI coach" module.
 //
 // A thin page: all logic and UI live in adp/ (the post-competition module).
@@ -8,7 +10,7 @@
 // navigation — open it by URL.
 
 import { useState } from 'react';
-import { ArrowLeft, Flask, Lightning } from '@phosphor-icons/react';
+import { ArrowLeft, Flask } from '@phosphor-icons/react';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
 import { LANGS } from '@/lib/i18n/translations';
 import AccessGate from '@/components/AccessGate';
@@ -29,9 +31,7 @@ function Preview() {
       <div className="relative w-full max-w-xl">
         <header className="mb-8 flex items-center justify-between gap-3">
           <a href="/demo" className="inline-flex items-center gap-2 text-[15px] font-semibold text-white">
-            <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-white text-zinc-950">
-              <Lightning size={15} weight="fill" />
-            </span>
+            <LotusMark size={22} />
             Lotus
           </a>
           <div className="flex gap-0.5 rounded-full border border-white/5 bg-black/20 p-1 text-xs">

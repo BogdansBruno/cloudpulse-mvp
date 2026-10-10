@@ -1,12 +1,14 @@
 'use client';
 
+import { LotusMark } from '@/components/np/Lotus';
+
 // /note?t=… — public check of an away-trip note for a teacher (no account).
 // Shows only what is inside the signed token: return date, hours on the road,
 // validity and the note number. No name, no health data.
 
 import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { Lightning, SealCheck, SealWarning, Bus } from '@phosphor-icons/react';
+import { SealCheck, SealWarning, Bus } from '@phosphor-icons/react';
 import { LANG_SWITCH, useLanguage } from '@/lib/i18n/LanguageContext';
 import { LANGS, type Lang } from '@/lib/i18n/translations';
 import { EXTRA } from '@/lib/i18n/extra';
@@ -43,9 +45,7 @@ function NoteCheck() {
       <div className="w-full max-w-md">
         <header className="mb-6 flex items-center justify-between">
           <span className="inline-flex items-center gap-2 text-[15px] font-semibold text-white">
-            <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-white text-zinc-950">
-              <Lightning size={15} weight="fill" />
-            </span>
+            <LotusMark size={22} />
             Lotus
           </span>
           {LANG_SWITCH && (

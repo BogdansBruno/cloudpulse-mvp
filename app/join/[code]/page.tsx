@@ -1,10 +1,12 @@
 'use client';
 
+import { LotusMark } from '@/components/np/Lotus';
+
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { motion, useReducedMotion } from 'motion/react';
-import { Lightning, UsersThree, CheckCircle, WarningOctagon, ArrowRight, Eye, SignOut } from '@phosphor-icons/react';
+import { UsersThree, CheckCircle, WarningOctagon, ArrowRight, Eye, SignOut } from '@phosphor-icons/react';
 import { supabase, signOut } from '@/lib/supabase';
 import { LANG_SWITCH, useLanguage } from '@/lib/i18n/LanguageContext';
 import { LANGS } from '@/lib/i18n/translations';
@@ -164,9 +166,7 @@ function JoinFlow() {
       <div className="relative w-full max-w-md">
         <header className="mb-8 flex items-center justify-between">
           <span className="inline-flex items-center gap-2 text-[15px] font-semibold text-white">
-            <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-white text-zinc-950">
-              <Lightning size={15} weight="fill" />
-            </span>
+            <LotusMark size={22} />
             Lotus
           </span>
           {LANG_SWITCH && (

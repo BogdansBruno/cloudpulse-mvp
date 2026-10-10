@@ -1,12 +1,14 @@
 'use client';
 
+import { LotusMark } from '@/components/np/Lotus';
+
 // /cv/<token> — what a scout sees (lib/scout-cv.ts, supabase/sql/15 scout_cv()).
 // No account needed. The link works only after a parent switched it on, only
 // until it expires, and stops the moment the athlete or parent revokes it.
 
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
-import { Lightning, SealCheck, SealWarning, Printer } from '@phosphor-icons/react';
+import { SealCheck, SealWarning, Printer } from '@phosphor-icons/react';
 import { supabase } from '@/lib/supabase';
 import { LANG_SWITCH, useLanguage } from '@/lib/i18n/LanguageContext';
 import { LANGS, type Lang } from '@/lib/i18n/translations';
@@ -48,9 +50,7 @@ export default function ScoutCvPage() {
       <div className="w-full max-w-2xl">
         <header className="mb-6 flex items-center justify-between print:hidden">
           <span className="inline-flex items-center gap-2 text-[15px] font-semibold text-white">
-            <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-white text-zinc-950">
-              <Lightning size={15} weight="fill" />
-            </span>
+            <LotusMark size={22} />
             Lotus
           </span>
           {LANG_SWITCH && (

@@ -1,8 +1,10 @@
 'use client';
 
+import { LotusMark } from '@/components/np/Lotus';
+
 import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { SealCheck, SealWarning, ShieldWarning, Lightning } from '@phosphor-icons/react';
+import { SealCheck, SealWarning, ShieldWarning } from '@phosphor-icons/react';
 import { LANG_SWITCH, useLanguage } from '@/lib/i18n/LanguageContext';
 import { LANGS } from '@/lib/i18n/translations';
 import { HUB } from '@/components/PerformancePanel';
@@ -69,9 +71,7 @@ function PassCheck() {
       <div className="w-full max-w-md">
         <header className="mb-6 flex items-center justify-between">
           <span className="inline-flex items-center gap-2 text-[15px] font-semibold text-white">
-            <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-white text-zinc-950">
-              <Lightning size={15} weight="fill" />
-            </span>
+            <LotusMark size={22} />
             Lotus
           </span>
           {LANG_SWITCH && (

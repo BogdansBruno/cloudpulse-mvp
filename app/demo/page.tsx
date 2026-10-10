@@ -1,8 +1,10 @@
 'use client';
 
+import { LotusMark } from '@/components/np/Lotus';
+
 import { useEffect, useState } from 'react';
 import { motion, useReducedMotion } from 'motion/react';
-import { Lightning, PersonSimpleRun, Users, House, ArrowRight, Flask, WarningOctagon, LockSimple } from '@phosphor-icons/react';
+import { PersonSimpleRun, Users, House, ArrowRight, Flask, WarningOctagon, LockSimple } from '@phosphor-icons/react';
 import type { Icon } from '@phosphor-icons/react';
 import { supabase } from '@/lib/supabase';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
@@ -70,9 +72,7 @@ function DemoPicker() {
       <div className="relative w-full max-w-2xl">
         <header className="mb-10 flex items-center justify-between">
           <span className="inline-flex items-center gap-2 text-[15px] font-semibold text-white">
-            <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-white text-zinc-950">
-              <Lightning size={15} weight="fill" />
-            </span>
+            <LotusMark size={22} />
             Lotus
           </span>
           <div className="flex gap-0.5 rounded-full border border-white/5 bg-black/20 p-1 text-xs">
