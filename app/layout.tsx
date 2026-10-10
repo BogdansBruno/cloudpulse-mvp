@@ -3,6 +3,7 @@ import { Cormorant_Garamond, Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Providers from "@/components/Providers";
 import ServiceWorkerRegister from "@/components/ServiceWorkerRegister";
+import UpdateBanner from "@/components/UpdateBanner";
 import { THEME_INIT_SCRIPT } from "@/lib/theme/theme-shared";
 
 const geistSans = Geist({
@@ -63,7 +64,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
       </head>
       <body className="min-h-full flex flex-col bg-[#0B0D11]">
-        <Providers>{children}</Providers>
+        <Providers>
+          {children}
+          <UpdateBanner />
+        </Providers>
         <ServiceWorkerRegister />
       </body>
     </html>
