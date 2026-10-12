@@ -906,7 +906,7 @@ export default function CheckinForm({ onSubmitted }: { onSubmitted?: () => void 
 
       <Disclaimer lang={lang} className="!mt-8" />
       {/* Back / Next live in their own sticky bar: solid glass behind them (and behind the floating dock), so they never float raw over the card text */}
-      <div className="sticky bottom-[calc(max(1rem,env(safe-area-inset-bottom))+5rem)] z-30 -mx-3 flex shrink-0 gap-3 border-t border-white/[0.06] bg-[#0B0D11]/90 px-3 pb-3 pt-3 backdrop-blur-md after:pointer-events-none after:absolute after:inset-x-0 after:top-full after:h-[calc(max(1rem,env(safe-area-inset-bottom))+5rem)] after:bg-[#0B0D11]/90 after:backdrop-blur-md">
+      <div className="sticky bottom-[calc(max(1rem,env(safe-area-inset-bottom))+5rem)] [html[data-kb]_&]:bottom-0 z-30 -mx-3 flex shrink-0 gap-3 border-t border-white/[0.06] bg-[#0B0D11]/90 px-3 pb-3 pt-3 backdrop-blur-md after:pointer-events-none after:absolute after:inset-x-0 after:top-full after:h-[calc(max(1rem,env(safe-area-inset-bottom))+5rem)] after:bg-[#0B0D11]/90 after:backdrop-blur-md">
         {step > 0 && (
           <button
             type="button"

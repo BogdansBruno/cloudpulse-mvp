@@ -24,6 +24,7 @@ import { ZONE } from '@/components/np/ui';
 import { NP } from '@/components/np/copy';
 import { APP } from '@/components/np/appCopy';
 import AiOrb from '@/components/np/AiOrb';
+import { LotusDisc } from '@/components/np/Lotus';
 import { Icon, type IconName } from '@/components/np/icons';
 
 interface Message {
@@ -244,7 +245,7 @@ export default function ChatPage() {
   );
 
   return (
-    <div className="mx-auto grid h-[calc(100dvh-env(safe-area-inset-top)-188px-env(safe-area-inset-bottom))] min-h-[420px] max-w-7xl gap-4 p-3 md:h-dvh md:p-5 lg:grid-cols-[320px_minmax(0,1fr)]">
+    <div className="mx-auto grid h-[calc(100dvh-env(safe-area-inset-top)-188px-env(safe-area-inset-bottom))] min-h-[420px] max-w-7xl gap-4 p-3 [html[data-kb]_&]:h-[calc(var(--vvh)-96px)] md:h-dvh md:p-5 lg:grid-cols-[320px_minmax(0,1fr)]">
       {/* readiness sidebar (desktop) */}
       <aside className="hidden min-h-0 space-y-3 overflow-y-auto lg:block" style={{ scrollbarWidth: 'none' }}>
         <section className="lt-card-readiness p-5" aria-labelledby="chat-today">
@@ -294,8 +295,13 @@ export default function ChatPage() {
       {/* coach column */}
       <section className="np-card flex min-h-0 flex-col overflow-hidden" aria-label={t.chat.title}>
         <header className="flex shrink-0 items-center gap-3 border-b border-np-line px-4 py-3 md:px-5">
-          <AiOrb state={orb} />
-          <div className="min-w-0 leading-tight">
+          <span className="relative inline-flex shrink-0">
+            <LotusDisc size={36} />
+            {orb !== 'idle' && (
+              <span aria-hidden className={`absolute inset-0 animate-pulse rounded-full ring-2 ${orb === 'listening' ? 'ring-[#FF3D5A]/70' : 'ring-[#B8F23C]/70'}`} />
+            )}
+          </span>
+          <div className="min-w-0 flex-1 leading-tight">
             <p className="truncate text-sm font-semibold text-np-text">{t.chat.title}</p>
             <p className="mt-0.5 truncate text-xs text-np-text-2" aria-live="polite">
               {status}

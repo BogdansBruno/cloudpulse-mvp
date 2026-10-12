@@ -41,7 +41,7 @@ function NoteCheck() {
     new Date(`${iso}T12:00:00Z`).toLocaleDateString(LOCALE[lang], { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
 
   return (
-    <main className="flex min-h-dvh flex-col items-center bg-[#07080A] px-4 py-8">
+    <main className="flex min-h-dvh flex-col items-center bg-[#07080A] px-4 pb-[calc(env(safe-area-inset-bottom)+2rem)] pt-[calc(env(safe-area-inset-top)+2rem)]">
       <div className="w-full max-w-md">
         <header className="mb-6 flex items-center justify-between">
           <span className="inline-flex items-center gap-2 text-[15px] font-semibold text-white">

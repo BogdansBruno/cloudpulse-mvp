@@ -160,7 +160,7 @@ function JoinFlow() {
     'inline-flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-white text-[15px] font-semibold text-zinc-950 shadow-[0_0_30px_-6px_rgba(255,149,0,0.45)] transition-opacity disabled:opacity-50';
 
   return (
-    <main className="relative flex min-h-dvh flex-col items-center overflow-x-clip bg-[#07080A] px-4 py-8">
+    <main className="relative flex min-h-dvh flex-col items-center overflow-x-clip bg-[#07080A] px-4 pb-[calc(env(safe-area-inset-bottom)+2rem)] pt-[calc(env(safe-area-inset-top)+2rem)]">
       <div className="pointer-events-none absolute -top-40 left-1/2 h-[480px] w-[480px] -translate-x-1/2 rounded-full bg-[#FF9500]/[0.06] blur-[140px]" />
 
       <div className="relative w-full max-w-md">

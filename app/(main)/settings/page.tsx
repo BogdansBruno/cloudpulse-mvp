@@ -10,7 +10,7 @@ import { LANGS } from '@/lib/i18n/translations';
 import { LANG_SWITCH, useLanguage } from '@/lib/i18n/LanguageContext';
 import { APP } from '@/components/np/appCopy';
 import { Icon } from '@/components/np/icons';
-import AiOrb from '@/components/np/AiOrb';
+import { LotusDisc } from '@/components/np/Lotus';
 import { Card, Overline } from '@/components/np/ui';
 import { NAV_HREF } from '@/components/np/nav';
 import { useAccount, useOnline } from '@/components/np/useAccount';
@@ -36,7 +36,7 @@ export default function SettingsPage() {
   return (
     <div className="mx-auto w-full max-w-xl px-3 pb-12 pt-6 md:px-8 md:pt-12">
       <header className="flex items-center gap-3">
-        <AiOrb size={44} />
+        <LotusDisc size={44} />
         <h1 className="text-[32px] font-light leading-tight tracking-[-0.03em] text-np-text" style={{ fontFamily: 'inherit' }}>
           {sc.title}
         </h1>

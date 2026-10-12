@@ -829,3 +829,29 @@
     }
   }
 }
+
+/* iOS Safari zooms the whole page when a field with text smaller than 16px gets focus, and leaves it zoomed and shifted
+   (the login card then sits half off-screen). 16px on iPhone and iPad stops that. Not in a layer on purpose, so it
+   beats every `text-sm` utility. */
+@supports (-webkit-touch-callout: none) {
+  input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='file']),
+  textarea,
+  select {
+    font-size: 16px;
+  }
+}
+
+/* Native-app feel on a phone: no rubber-band at the ends of the page, no double-tap zoom (pinch zoom stays: it is an accessibility
+   feature, and the focus-zoom is already stopped by the 16px rule above). While the keyboard is open (components/ViewportKeyboard.tsx
+   sets data-kb on <html>) the bottom dock steps aside, so the input never has to fight it. */
+html,
+body {
+  overscroll-behavior-y: none;
+}
+html {
+  touch-action: manipulation;
+  -webkit-text-size-adjust: 100%;
+}
+html[data-kb] [data-kb-hide] {
+  display: none;
+}

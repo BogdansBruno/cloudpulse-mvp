@@ -48,6 +48,8 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
+  // Android Chrome: the keyboard shrinks the page (and the chat box with it) instead of covering it. iOS is handled by components/ViewportKeyboard.tsx.
+  interactiveWidget: "resizes-content",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

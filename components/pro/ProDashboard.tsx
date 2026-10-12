@@ -219,7 +219,7 @@ export default function ProDashboard(): ReactElement {
             <h1 className="mr-2 text-xl font-bold tracking-[-0.01em]" style={{ fontFamily: 'inherit' }}>
               {t.title}
             </h1>
-            <div className="flex items-center gap-1.5">
+            <div className="flex w-full min-w-0 items-center gap-1.5 sm:w-auto">
               <button
                 type="button"
                 onClick={() => setSel((s) => Math.max(0, s - 1))}
@@ -229,9 +229,9 @@ export default function ProDashboard(): ReactElement {
               >
                 <Icon name="chevL" size={16} />
               </button>
-              <span className="flex h-10 min-w-[15rem] items-center gap-2 rounded-full border border-np-line px-4 text-sm">
+              <span className="flex h-10 min-w-0 flex-1 items-center gap-2 rounded-full border border-np-line px-4 text-sm sm:min-w-[15rem] sm:flex-none">
                 <Icon name="calendar" size={16} className="text-np-text-3" />
-                <span className="first-letter:uppercase">{dateLabel}</span>
+                <span className="truncate first-letter:uppercase">{dateLabel}</span>
               </span>
               <button
                 type="button"

@@ -31,6 +31,9 @@ export default function AuthField({ icon, type, value, onChange, placeholder, la
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
           autoComplete={autoComplete}
+          autoCapitalize="none"
+          autoCorrect="off"
+          spellCheck={false}
           required
           className="w-full bg-transparent px-3 py-2.5 text-sm text-white placeholder-zinc-600 focus:outline-none"
         />

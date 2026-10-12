@@ -25,7 +25,7 @@ function Preview() {
   const [map, setMap] = useState<SorenessMap>([]);
 
   return (
-    <main className="relative flex min-h-dvh flex-col items-center overflow-x-clip bg-[#07080A] px-4 py-8">
+    <main className="relative flex min-h-dvh flex-col items-center overflow-x-clip bg-[#07080A] px-4 pb-[calc(env(safe-area-inset-bottom)+2rem)] pt-[calc(env(safe-area-inset-top)+2rem)]">
       <div className="pointer-events-none absolute -top-40 left-1/2 h-[520px] w-[520px] -translate-x-1/2 rounded-full bg-[#FF9500]/[0.05] blur-[140px]" />
 
       <div className="relative w-full max-w-xl">

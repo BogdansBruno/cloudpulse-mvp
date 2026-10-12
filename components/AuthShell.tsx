@@ -15,7 +15,7 @@ export default function AuthShell({ children }: { children: ReactNode }) {
   const reduce = useReducedMotion();
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[#050505] flex items-center justify-center px-4 py-12">
+    <div className="relative min-h-screen overflow-hidden bg-[#050505] flex items-center justify-center px-4 pb-[calc(env(safe-area-inset-bottom)+3rem)] pt-[calc(env(safe-area-inset-top)+3rem)]">
       <div className="absolute inset-0 bg-grid-dots opacity-40" />
       <div
         className="absolute inset-0 pointer-events-none"

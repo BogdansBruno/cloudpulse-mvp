@@ -68,6 +68,7 @@ export function TabBar({
   return (
     <nav
       aria-label={label}
+      data-kb-hide
       className="fixed inset-x-0 bottom-[max(1rem,env(safe-area-inset-bottom))] z-50 flex items-center justify-center gap-3 px-4 max-[359px]:gap-2 max-[359px]:px-3"
     >
       <div className="flex w-full max-w-[320px] min-w-0 items-center justify-between gap-0.5 rounded-full border border-white/[0.08] bg-[#12151B]/90 px-1.5 py-1.5 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.1),0_16px_40px_-12px_rgb(0_0_0/0.6)] backdrop-blur-2xl max-[359px]:px-1">
