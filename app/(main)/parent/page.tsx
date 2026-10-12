@@ -92,7 +92,7 @@ export default function ParentPage() {
     };
   }, [load]);
 
-  const card = 'rounded-3xl bg-white/[0.03] p-5 ring-1 ring-inset ring-white/[0.08] backdrop-blur-2xl';
+  const card = 'np-card p-5';
   const statusText = (z: Zone) => (z === 'green' ? p.statusGreen : z === 'yellow' ? p.statusYellow : p.statusRed);
   const today = todayUtc();
   const fmt = (iso: string, opts: Intl.DateTimeFormatOptions) =>
@@ -101,8 +101,8 @@ export default function ParentPage() {
   const time = (iso: string) => new Date(iso).toLocaleTimeString(LOCALE[lang], { hour: '2-digit', minute: '2-digit' });
 
   return (
-    <div className="relative min-h-[calc(100dvh-4.5rem)] shrink-0 overflow-x-clip bg-[#07080A] px-4 py-8 md:py-12">
-      <div className="pointer-events-none absolute -left-40 -top-40 h-[480px] w-[480px] rounded-full bg-[#D9A400]/[0.05] blur-[140px]" />
+    <div className="relative min-h-[calc(100dvh-4.5rem)] shrink-0 overflow-x-clip bg-[#0B0D11] px-4 py-8 md:py-12">
+      <div className="pointer-events-none absolute -left-40 -top-40 h-[480px] w-[480px] rounded-full bg-[#B8F23C]/[0.05] blur-[140px]" />
 
       <div className="relative mx-auto max-w-lg">
         <header className="mb-6">
@@ -183,7 +183,7 @@ export default function ParentPage() {
                         <div className="flex items-center gap-3.5">
                           <span
                             className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl"
-                            style={{ backgroundColor: meta.color, color: '#07080A' }}
+                            style={{ backgroundColor: meta.color, color: '#0B0D11' }}
                           >
                             <meta.Icon size={28} weight="fill" />
                           </span>
@@ -211,7 +211,7 @@ export default function ParentPage() {
                         ) : (
                           <>
                             <p className="flex items-center gap-2 text-xs text-zinc-400">
-                              <ChatCircleText size={14} weight="fill" className="text-[#FFCC00]" />
+                              <ChatCircleText size={14} weight="fill" className="text-[#B8F23C]" />
                               {p.coachAnswered(time(row.coach.at))}
                             </p>
                             <p className="mt-1 text-sm font-medium text-zinc-100">{p.coachReply[row.coach.reaction]}</p>
@@ -326,7 +326,7 @@ export default function ParentPage() {
                   {tips.length > 0 && (
                     <section className={card}>
                       <h3 className="flex items-center gap-2 text-sm font-semibold text-zinc-200">
-                        <Lightbulb size={16} weight="fill" className="text-[#FFCC00]" />
+                        <Lightbulb size={16} weight="fill" className="text-[#B8F23C]" />
                         {p.tipsTitle}
                       </h3>
                       <ul className="mt-3 space-y-2">
@@ -344,7 +344,7 @@ export default function ParentPage() {
             })}
 
             <section className={`${card} flex gap-3`}>
-              <ShieldCheck size={20} weight="fill" className="mt-0.5 shrink-0 text-[#FFCC00]" />
+              <ShieldCheck size={20} weight="fill" className="mt-0.5 shrink-0 text-[#B8F23C]" />
               <div>
                 <h2 className="text-sm font-semibold text-zinc-200">{p.privacyTitle}</h2>
                 <p className="mt-1 text-sm leading-relaxed text-zinc-400">{p.privacyBody}</p>

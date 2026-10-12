@@ -101,7 +101,7 @@ export default function ScoutShareCard({ className = '' }: { className?: string 
     'w-full rounded-xl bg-white/[0.05] px-3.5 py-2.5 text-sm text-zinc-50 placeholder-zinc-500 ring-1 ring-inset ring-white/10 focus:outline-none focus:ring-white/40';
 
   return (
-    <section className={`rounded-3xl bg-white/[0.03] p-5 ring-1 ring-inset ring-white/[0.08] backdrop-blur-2xl ${className}`}>
+    <section className={`np-card p-5 ${className}`}>
       <h2 className="inline-flex items-center gap-2 text-base font-semibold tracking-[-0.01em] text-zinc-50">
         <IdentificationCard size={18} weight="fill" className="text-zinc-300" />
         {t.title}

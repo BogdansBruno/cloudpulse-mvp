@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getUserFromToken, createUserScopedClient } from '@/lib/supabase-server';
+import { blockedResponse } from '@/lib/server-access';
 import { loadDevStore, saveDevStore } from '@/lib/dev-store';
 import type {
   ProfileRequestBody,
@@ -78,6 +79,8 @@ export async function POST(req: Request) {
     if (!user && !devMode) {
       return NextResponse.json({ error: 'Not signed in' }, { status: 401 });
     }
+    const blocked = await blockedResponse(token);
+    if (blocked) return blocked;
 
     const body = (await req.json().catch(() => ({}))) as ProfileRequestBody;
     const has = (k: keyof ProfileRequestBody) => Object.prototype.hasOwnProperty.call(body, k);
@@ -140,6 +143,8 @@ export async function PATCH(req: Request) {
     if (!user && !devMode) {
       return NextResponse.json({ error: 'Not signed in' }, { status: 401 });
     }
+    const blocked = await blockedResponse(token);
+    if (blocked) return blocked;
 
     const body = (await req.json().catch(() => ({}))) as CalendarRequestBody;
     const examDates = cleanDates(body.examDates);
@@ -180,6 +185,8 @@ export async function GET(req: Request) {
     if (!user && !devMode) {
       return NextResponse.json({ error: 'Not signed in' }, { status: 401 });
     }
+    const blocked = await blockedResponse(token);
+    if (blocked) return blocked;
 
     if (devMode) {
       const store = loadDevStore();

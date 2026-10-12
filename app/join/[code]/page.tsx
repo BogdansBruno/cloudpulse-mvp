@@ -155,13 +155,13 @@ function JoinFlow() {
   };
 
   const next = encodeURIComponent(joinPath(code));
-  const card = 'rounded-3xl bg-white/[0.03] p-5 ring-1 ring-inset ring-white/[0.08] backdrop-blur-2xl';
+  const card = 'np-card p-5';
   const primaryBtn =
-    'inline-flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-white text-[15px] font-semibold text-zinc-950 shadow-[0_0_30px_-6px_rgba(255,149,0,0.45)] transition-opacity disabled:opacity-50';
+    'inline-flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-[#B8F23C] text-[15px] font-semibold text-zinc-950 shadow-[0_0_30px_-6px_rgba(184,242,60,0.45)] transition-opacity disabled:opacity-50';
 
   return (
-    <main className="relative flex min-h-dvh flex-col items-center overflow-x-clip bg-[#07080A] px-4 pb-[calc(env(safe-area-inset-bottom)+2rem)] pt-[calc(env(safe-area-inset-top)+2rem)]">
-      <div className="pointer-events-none absolute -top-40 left-1/2 h-[480px] w-[480px] -translate-x-1/2 rounded-full bg-[#FF9500]/[0.06] blur-[140px]" />
+    <main className="relative flex min-h-dvh flex-col items-center overflow-x-clip bg-[#0B0D11] px-4 pb-[calc(env(safe-area-inset-bottom)+2rem)] pt-[calc(env(safe-area-inset-top)+2rem)]">
+      <div className="pointer-events-none absolute -top-40 left-1/2 h-[480px] w-[480px] -translate-x-1/2 rounded-full bg-[#B8F23C]/[0.06] blur-[140px]" />
 
       <div className="relative w-full max-w-md">
         <header className="mb-8 flex items-center justify-between">
@@ -192,7 +192,7 @@ function JoinFlow() {
           transition={{ type: 'spring', bounce: 0, duration: 0.45 }}
         >
           <div className="mb-6 flex items-center gap-3">
-            <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#FF9500]/10 text-[#FF9500]">
+            <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#B8F23C]/10 text-[#B8F23C]">
               <UsersThree size={22} weight="fill" />
             </span>
             <div>
@@ -233,7 +233,7 @@ function JoinFlow() {
           {stage.kind === 'already' && (
             <section className={card}>
               <p className="flex items-center gap-2 text-[15px] text-zinc-100">
-                <CheckCircle size={20} weight="fill" className="text-[#FF9500]" />
+                <CheckCircle size={20} weight="fill" className="text-[#B8F23C]" />
                 {inv.alreadyMember(stage.teamName)}
               </p>
               <button type="button" onClick={handleContinue} className={`${primaryBtn} mt-5`}>
@@ -246,7 +246,7 @@ function JoinFlow() {
           {stage.kind === 'joined' && (
             <section className={card}>
               <p className="flex items-center gap-2 text-lg font-semibold text-zinc-50">
-                <CheckCircle size={24} weight="fill" className="text-[#FF9500]" />
+                <CheckCircle size={24} weight="fill" className="text-[#B8F23C]" />
                 {inv.joinedTitle(stage.teamName)}
               </p>
               <p className="mt-2 text-sm leading-relaxed text-zinc-400">{inv.joinedBody}</p>
@@ -272,7 +272,7 @@ function JoinFlow() {
                     maxLength={ATHLETE_LABEL_MAX}
                     placeholder={inv.labelPlaceholder}
                     autoComplete="nickname"
-                    className="mt-2 w-full rounded-xl bg-white/[0.05] px-3.5 py-3 text-[15px] text-zinc-50 placeholder-zinc-500 ring-1 ring-inset ring-white/10 focus:outline-none focus:ring-[#FF9500]/50"
+                    className="mt-2 w-full rounded-xl bg-white/[0.05] px-3.5 py-3 text-[15px] text-zinc-50 placeholder-zinc-500 ring-1 ring-inset ring-white/10 focus:outline-none focus:ring-[#B8F23C]/50"
                   />
                   <span className="mt-1.5 block text-xs text-zinc-500">{inv.labelHint}</span>
                 </label>
@@ -298,7 +298,7 @@ function JoinFlow() {
                     type="checkbox"
                     checked={agreed}
                     onChange={(e) => setAgreed(e.target.checked)}
-                    className="h-5 w-5 shrink-0 accent-[#FF9500]"
+                    className="h-5 w-5 shrink-0 accent-[#B8F23C]"
                   />
                   {inv.agree}
                 </label>

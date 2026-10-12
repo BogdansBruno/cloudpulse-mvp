@@ -23,7 +23,7 @@ export default function AuthField({ icon, type, value, onChange, placeholder, la
   return (
     <div>
       <label className="block text-xs font-medium text-zinc-500 mb-1.5">{label}</label>
-      <div className="relative flex items-center rounded-xl bg-zinc-950/60 border border-white/10 transition-all duration-200 focus-within:ring-2 focus-within:ring-[#32ADE6]/40 focus-within:border-[#32ADE6]/30">
+      <div className="relative flex items-center rounded-xl bg-zinc-950/60 border border-white/10 transition-all duration-200 focus-within:ring-2 focus-within:ring-[#B8F23C]/40 focus-within:border-[#B8F23C]/30">
         <span className="pl-3.5 text-zinc-500">{icon}</span>
         <input
           type={inputType}

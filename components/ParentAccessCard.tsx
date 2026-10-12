@@ -5,6 +5,7 @@ import { UsersThree, WarningOctagon } from '@phosphor-icons/react';
 import { supabase } from '@/lib/supabase';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
 import type { Lang } from '@/lib/i18n/translations';
+import GuardianGate, { useSharingLock } from '@/components/GuardianConsent';
 
 // ---------------------------------------------------------------------------
 // Athlete-side consent switches for parent access (GDPR). Shown only when the
@@ -38,6 +39,7 @@ export default function ParentAccessCard() {
   const [hasCalendar, setHasCalendar] = useState(false);
   const [saving, setSaving] = useState<string | null>(null);
   const [errorKey, setErrorKey] = useState<string | null>(null);
+  const lock = useSharingLock();
 
   useEffect(() => {
     let cancelled = false;
@@ -119,7 +121,7 @@ export default function ParentAccessCard() {
           role="switch"
           aria-checked={on}
           aria-label={`${title}: ${link.parent_label || c.parentFallback}`}
-          disabled={saving === key}
+          disabled={saving === key || (lock.locked && !on)}
           onClick={() => toggle(link, flag)}
           className={`relative mt-0.5 h-7 w-12 shrink-0 rounded-full transition-colors duration-200 disabled:opacity-60 ${
             on ? 'bg-[#30D158]' : 'bg-white/[0.12]'
@@ -136,11 +138,13 @@ export default function ParentAccessCard() {
   };
 
   return (
-    <section className="mt-3 rounded-3xl bg-white/[0.03] p-5 ring-1 ring-inset ring-white/[0.08] backdrop-blur-2xl">
+    <section className="mt-3 np-card p-5">
       <h2 className="mb-4 flex items-center gap-2 text-base font-semibold tracking-[-0.01em] text-zinc-50">
         <UsersThree size={18} weight="fill" className="text-zinc-400" />
         {c.title}
       </h2>
+
+      {lock.locked && <GuardianGate onUnlocked={lock.unlock} />}
 
       <ul className="space-y-5">
         {links.map((link) => {

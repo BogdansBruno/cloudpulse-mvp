@@ -162,13 +162,12 @@ export default function CoachPage() {
           return;
         }
 
-        const { data: profilesData, error: profilesError } = await supabase
-          .from('profiles')
-          .select('id, sport, age, match_dates, exam_dates')
-          .in('id', athleteIds);
+        // Team profiles come from a database function that returns only the
+        // fields this screen needs (supabase/sql/17), not the profiles table.
+        const { data: profilesData, error: profilesError } = await supabase.rpc('coach_team_profiles');
         if (profilesError) throw profilesError;
 
-        const profiles = (profilesData ?? []) as DbProfileRow[];
+        const profiles = (Array.isArray(profilesData) ? profilesData : []) as DbProfileRow[];
         const profileById = new Map(profiles.map((p) => [p.id, p]));
         const merged: RosterEntry[] = teamMembers.map((l) => ({
           athleteId: l.athlete_id,
@@ -208,26 +207,25 @@ export default function CoachPage() {
     async function loadCheckins() {
       // Calendar dates can change any time (the athlete edits /calendar):
       // re-read them with every refresh — exam storm and next match follow.
-      const { data: dateProfiles, error: dateProfilesError } = await supabase
-        .from('profiles')
-        .select('id, match_dates, exam_dates')
-        .in('id', athleteIds);
+      const { data: dateProfiles, error: dateProfilesError } = await supabase.rpc('coach_team_profiles');
       if (!cancelled && !dateProfilesError) {
-        const rows = (dateProfiles ?? []) as Pick<DbProfileRow, 'id' | 'match_dates' | 'exam_dates'>[];
+        const rows = (Array.isArray(dateProfiles) ? dateProfiles : []) as Pick<DbProfileRow, 'id' | 'match_dates' | 'exam_dates'>[];
         setMatchDates(rows.flatMap((p) => p.match_dates ?? []));
         setStormAthletes(rows.map((p) => ({ examDates: p.exam_dates ?? [], matchDates: p.match_dates ?? [] })));
       }
 
-      // Check-in dates for the whole roster (RLS: checkins_coach_view_team).
-      // 60 days is plenty for a current streak and keeps the query small.
+      // Check-ins for the whole roster, computed fields only, through a
+      // database function (supabase/sql/17: coach_team_checkins). 60 days is
+      // plenty for a current streak; today's rows come out of the same list.
       const today = todayUtc();
-      const { data: dateRows, error: datesError } = await supabase
-        .from('checkins')
-        .select('user_id, date, pain_flag, pain_zone')
-        .in('user_id', athleteIds)
-        .gte('date', addDays(today, -60))
-        .lte('date', today);
-      if (!cancelled && !datesError) setCheckinRows((dateRows ?? []) as DbCheckinDateRow[]);
+      const { data: teamRows, error: datesError } = await supabase.rpc('coach_team_checkins', {
+        p_since: addDays(today, -60),
+        p_until: today,
+      });
+      const allRows = (Array.isArray(teamRows) ? teamRows : []) as (DbCheckinDateRow & DbTodayCheckinRow & { date: string })[];
+      const mine = new Set(athleteIds);
+      const dateRows = allRows.filter((r) => mine.has(r.user_id));
+      if (!cancelled && !datesError) setCheckinRows(dateRows);
 
       // Return-to-Play: coach confirmations and follow-up answers (RLS: own team).
       const rtpSince = addDays(today, -RTP_LOOKBACK_DAYS);
@@ -245,16 +243,13 @@ export default function CoachPage() {
         );
       }
 
-      // Match squad (RLS: checkins_coach_view_team). Only computed outputs
-      // are read here — score, zone, ACWR, pain block — not the raw answers.
-      const { data: todayRows, error: todayError } = await supabase
-        .from('checkins')
-        .select('user_id, readiness_score, zone, acwr, is_pain_blocked, pain_zone')
-        .in('user_id', athleteIds)
-        .eq('date', today);
+      // Match squad. Only computed outputs are read here — score, zone,
+      // ACWR, pain block — never the raw 1-7 answers.
+      const todayRows = dateRows.filter((r) => r.date === today);
+      const todayError = datesError;
       if (!cancelled && !todayError) {
         const map = new Map<string, RosterCheckin>();
-        for (const row of (todayRows ?? []) as DbTodayCheckinRow[]) {
+        for (const row of todayRows as DbTodayCheckinRow[]) {
           map.set(row.user_id, {
             score: row.readiness_score,
             zone: row.zone,
@@ -309,7 +304,7 @@ export default function CoachPage() {
     };
   }, [selectedId, refreshKey, readinessKey, t.coach.errorReadiness, t.coach.forbidden]);
 
-  const card = 'rounded-3xl bg-white/[0.03] p-5 ring-1 ring-inset ring-white/[0.08] backdrop-blur-2xl';
+  const card = 'np-card p-5';
   const zoneLabel = (z: 'green' | 'yellow' | 'red') =>
     z === 'green' ? t.progress.zoneGreen : z === 'yellow' ? t.progress.zoneYellow : t.progress.zoneRed;
 
@@ -363,8 +358,8 @@ export default function CoachPage() {
   };
 
   return (
-    <div className="relative min-h-[calc(100dvh-4.5rem)] shrink-0 overflow-x-clip bg-[#07080A] px-4 py-8 md:py-12">
-      <div className="pointer-events-none absolute -left-40 -top-40 h-[480px] w-[480px] rounded-full bg-[#D9A400]/[0.05] blur-[140px]" />
+    <div className="relative min-h-[calc(100dvh-4.5rem)] shrink-0 overflow-x-clip bg-[#0B0D11] px-4 py-8 md:py-12">
+      <div className="pointer-events-none absolute -left-40 -top-40 h-[480px] w-[480px] rounded-full bg-[#B8F23C]/[0.05] blur-[140px]" />
 
       <div className="relative mx-auto max-w-3xl">
         <header className="mb-6 flex flex-wrap items-end justify-between gap-3">
@@ -462,7 +457,7 @@ export default function CoachPage() {
                 </div>
                 {summary.missing.length === 0 ? (
                   <p className="mt-3 inline-flex items-center gap-1.5 text-sm text-zinc-200">
-                    <CheckCircle size={16} weight="fill" className="text-[#FFCC00]" />
+                    <CheckCircle size={16} weight="fill" className="text-[#B8F23C]" />
                     {t.streak.teamAllDone}
                   </p>
                 ) : (
@@ -577,7 +572,7 @@ export default function CoachPage() {
                       <Flame
                         size={13}
                         weight="fill"
-                        className={selectedCheckinStreak > 0 ? 'text-[#FFCC00]' : 'text-zinc-600'}
+                        className={selectedCheckinStreak > 0 ? 'text-[#B8F23C]' : 'text-zinc-600'}
                       />
                       {t.streak.athleteStreak(selectedCheckinStreak)}
                     </span>

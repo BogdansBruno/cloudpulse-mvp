@@ -57,7 +57,7 @@ export default function TravelRecoveryCard({ className = '' }: { className?: str
         return;
       }
       const url = `${window.location.origin}/note?t=${encodeURIComponent(body.token)}`;
-      const qr = await toDataURL(url, { margin: 1, width: 240, errorCorrectionLevel: 'M', color: { dark: '#07080A', light: '#FFFFFF' } });
+      const qr = await toDataURL(url, { margin: 1, width: 240, errorCorrectionLevel: 'M', color: { dark: '#0B0D11', light: '#FFFFFF' } });
       setNote({ qr, id: body.id });
     } catch {
       setNote('unavailable');

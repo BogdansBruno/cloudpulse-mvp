@@ -140,9 +140,9 @@ export default function OfflineSync() {
   return (
     <div className="px-3 pt-2 md:px-6" role="status" aria-live="polite">
       {!online ? (
-        <div className={`${strip} bg-[#FFCC00]/[0.08] ring-[#FFCC00]/25`}>
+        <div className={`${strip} bg-[#FFC53D]/[0.08] ring-[#FFC53D]/25`}>
           <span className="inline-flex items-center gap-1.5 font-medium">
-            <WifiSlash size={14} weight="bold" className="text-[#FFCC00]" />
+            <WifiSlash size={14} weight="bold" className="text-[#FFC53D]" />
             {o.offlineBanner}
           </span>
           {pending > 0 && <span className="ml-auto text-zinc-400">{o.pending(pending)}</span>}

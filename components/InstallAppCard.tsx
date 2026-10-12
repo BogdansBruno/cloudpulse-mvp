@@ -66,7 +66,7 @@ export default function InstallAppCard({ className = '' }: { className?: string 
 
   return (
     <section
-      className={`relative flex gap-4 rounded-3xl bg-white/[0.03] p-5 ring-1 ring-inset ring-white/[0.08] backdrop-blur-2xl ${className}`}
+      className={`relative flex gap-4 np-card p-5 ${className}`}
     >
       <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white/[0.07] text-zinc-100">
         <DeviceMobile size={22} weight="fill" />

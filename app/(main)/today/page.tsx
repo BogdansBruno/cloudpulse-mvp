@@ -24,8 +24,9 @@
 // for real athletes, so their screen never shows such numbers.
 
 import Link from 'next/link';
-import { useEffect, useMemo, useState, type ReactElement } from 'react';
+import { useEffect, useMemo, useState, type ReactElement, type ReactNode } from 'react';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
+import type { Lang } from '@/lib/i18n/translations';
 import { baselineDelta, loadIndex, targetLoadRange, usualDailyLoad } from '@/lib/load-index';
 import { todayUtc } from '@/lib/checkin-streak';
 import SafetyShield, { type PassState } from '@/components/SafetyShield';
@@ -412,6 +413,12 @@ export default function TodayPage(): ReactElement {
   );
   const eveningNode = <EveningHero lang={lang} demoWake={isDemo ? DEMO_SLEEP.bedtime.to : null} windDown={windDown} />;
 
+  // Above the fold: two primary cards only. 1) the readiness arc with its traffic light and next step;
+  // 2) the one signal that matters (overload if there is one, otherwise the changed plan; both hide themselves
+  // when they have nothing to say). Everything else sits below, or in "More details".
+  const strainOn = !!day?.strainSignal && day.strainSignal.level !== 'none';
+  const phaseHero = phase === 'afternoon' ? afternoonNode : phase === 'evening' ? eveningNode : null;
+
   return (
     <div className="mx-auto w-full max-w-xl px-3 pb-8 pt-4 md:px-8 md:pt-8">
       {strain && <Aura mode="strain" />}
@@ -419,61 +426,83 @@ export default function TodayPage(): ReactElement {
       <div id="safety-pass">
         <SafetyShield inline onStatus={setPass} />
       </div>
-      {zone !== null && <PlanAdjustCard className="mb-4" />}
-      <StrainSignalCard lang={lang} signal={day?.strainSignal ?? null} className="mb-4" />
-      <DeviceStatus lang={lang} demo={isDemo} history={history} today={today} />
-      <CalibrationBanner lang={lang} history={history} />
-      {!isDemo && <CheckinBanner lang={lang} showNeeds className="mb-4" />}
-
-      <MetricChips
-        label={cc.chips.label}
-        href="/vitals"
-        chips={[
-          { key: 'readiness', label: tc.rings.readiness, value: readiness, icon: 'sprout', theme: 'readiness' },
-          { key: 'sleep', label: tc.rings.sleep, value: sleep, icon: 'moon', theme: 'sleep' },
-          { key: 'load', label: tc.rings.load, value: load, icon: 'bolt', theme: 'activity' },
-          { key: 'wellness', label: cc.chips.wellness, value: wellness, unit: '%', icon: 'heart', theme: 'stress' },
-        ]}
-      />
 
       <PhaseSwitch lang={lang} phase={phase} auto={autoPhase} onPick={setPhaseOverride} />
 
-      {/* the hero of the hour first; the coach / return-to-play messages always stay right under it */}
-      {phase === 'morning' && (
-        <div className="mt-4">
-          {heroNode}
-          {coachNode}
-          {whyNode}
-          {tagNode}
+      {/* primary card 1 */}
+      <div className="mt-4">{heroNode}</div>
+
+      {/* primary card 2 */}
+      {strainOn ? (
+        <StrainSignalCard lang={lang} signal={day?.strainSignal ?? null} className="mt-4" />
+      ) : (
+        zone !== null && <PlanAdjustCard className="mt-4" />
+      )}
+
+      {/* below the fold */}
+      {!isDemo && <CheckinBanner lang={lang} showNeeds className="mt-4" />}
+      {strainOn && zone !== null && <PlanAdjustCard className="mt-4" />}
+      {phaseHero && <div className="mt-4">{phaseHero}</div>}
+      {coachNode}
+      {tagNode}
+      {phase === 'evening' ? (
+        <>
+          {sleepNode}
+          {heartNode}
+          {loadNode}
+        </>
+      ) : phase === 'afternoon' ? (
+        <>
+          {loadNode}
+          {heartNode}
+          {sleepNode}
+        </>
+      ) : (
+        <>
           {heartNode}
           {sleepNode}
           {loadNode}
-        </div>
+        </>
       )}
-      {phase === 'afternoon' && (
-        <div className="mt-4">
-          {afternoonNode}
-          {coachNode}
-          {loadNode}
-          {tagNode}
-          <div className="mt-4">{heroNode}</div>
-          {whyNode}
-          {heartNode}
-          {sleepNode}
-        </div>
-      )}
-      {phase === 'evening' && (
-        <div className="mt-4">
-          {eveningNode}
-          {coachNode}
-          {sleepNode}
-          {heartNode}
-          {tagNode}
-          {loadNode}
-          <div className="mt-4">{heroNode}</div>
-          {whyNode}
-        </div>
-      )}
+
+      <MoreDetails lang={lang}>
+        <DeviceStatus lang={lang} demo={isDemo} history={history} today={today} />
+        <CalibrationBanner lang={lang} history={history} />
+        <MetricChips
+          label={cc.chips.label}
+          href="/vitals"
+          chips={[
+            { key: 'readiness', label: tc.rings.readiness, value: readiness, icon: 'sprout', theme: 'readiness' },
+            { key: 'sleep', label: tc.rings.sleep, value: sleep, icon: 'moon', theme: 'sleep' },
+            { key: 'load', label: tc.rings.load, value: load, icon: 'bolt', theme: 'activity' },
+            { key: 'wellness', label: cc.chips.wellness, value: wellness, unit: '%', icon: 'heart', theme: 'stress' },
+          ]}
+        />
+        {whyNode}
+      </MoreDetails>
     </div>
+  );
+}
+
+const MORE_LABEL: Record<Lang, { open: string; hint: string }> = {
+  en: { open: 'More details', hint: 'Device status, score breakdown, other numbers' },
+  lv: { open: 'Vairāk informācijas', hint: 'Ierīces statuss, rādītāja sastāvs, citi skaitļi' },
+  ru: { open: 'Подробнее', hint: 'Статус устройства, из чего сложился балл, другие цифры' },
+};
+
+// Secondary widgets, closed by default. Native <details>: keyboard and screen-reader friendly, no state to keep.
+function MoreDetails({ lang, children }: { lang: Lang; children: ReactNode }): ReactElement {
+  const m = MORE_LABEL[lang];
+  return (
+    <details className="group mt-4">
+      <summary className="np-card flex min-h-14 cursor-pointer list-none items-center gap-3 px-4 py-3 [&::-webkit-details-marker]:hidden">
+        <span className="min-w-0 flex-1">
+          <span className="block text-sm font-semibold text-np-text">{m.open}</span>
+          <span className="mt-0.5 block truncate text-xs text-np-text-3">{m.hint}</span>
+        </span>
+        <Icon name="chevR" size={18} className="shrink-0 text-white/75 transition-transform group-open:rotate-90" />
+      </summary>
+      <div className="mt-4 space-y-4">{children}</div>
+    </details>
   );
 }

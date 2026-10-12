@@ -112,7 +112,7 @@ export default function AdminPage() {
         </div>
 
         {/* Kill switch */}
-        <div className="rounded-3xl border border-white/10 bg-white/[0.04] backdrop-blur-2xl p-6">
+        <div className="np-card p-6">
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               <div
@@ -143,7 +143,7 @@ export default function AdminPage() {
         </div>
 
         {/* Ban list */}
-        <div className="rounded-3xl border border-white/10 bg-white/[0.04] backdrop-blur-2xl p-6">
+        <div className="np-card p-6">
           <p className="text-sm font-medium text-white mb-4">{t.admin.banListTitle}</p>
 
           <form onSubmit={handleBan} className="flex flex-col sm:flex-row gap-2 mb-4">

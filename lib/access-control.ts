@@ -1,7 +1,6 @@
 // Owner-controlled access gate.
 //
-// Two independent levers, both readable/writable through normal Supabase
-// RLS (no service-role key, no API route needed):
+// Two independent levers (supabase/sql/17_hardening.sql):
 //   1. `app_control` — a single row kill switch. When `lockdown` is true,
 //      every page under app/(main) is closed to everyone except the
 //      email(s) in ADMIN_EMAILS.
@@ -9,9 +8,11 @@
 //      user is signed out and shown a blocked screen, regardless of the
 //      lockdown flag.
 //
-// Both tables are publicly READABLE (so the check works the instant a
-// session loads) but only WRITABLE by an admin email, enforced by RLS
-// policies in supabase/access-control.sql — never trust the client alone.
+// Both tables are readable and writable ONLY by the owner. Everyone else asks
+// the database about themselves through my_access_status(), and the data
+// tables carry a restrictive RLS policy (is_blocked()), so a ban is enforced
+// by the server, not by this screen. API routes also check it (see
+// lib/server-access.ts).
 import { supabase } from '@/lib/supabase';
 
 // Comma-separated list of owner emails. Set in .env.local for local dev
@@ -37,14 +38,25 @@ export type AccessStatus =
 export async function checkAccess(email: string | null | undefined): Promise<AccessStatus> {
   // Owners are never blocked by their own switch.
   if (isAdminEmail(email)) return { blocked: false };
+  if (!email) return { blocked: false };
 
+  // Server-side answer (supabase/sql/17): the database decides from the
+  // caller's own token. The ban list itself is no longer readable by anyone
+  // but the owner, and the same rule is enforced by RLS on the data tables,
+  // so hiding this screen in devtools gives a banned user nothing.
+  const { data, error } = await supabase.rpc('my_access_status');
+  if (!error && data && typeof data === 'object') {
+    const s = data as { blocked?: boolean; reason?: string; ban_reason?: string | null };
+    if (s.blocked && s.reason === 'banned') return { blocked: true, reason: 'banned', banReason: s.ban_reason ?? null };
+    if (s.blocked) return { blocked: true, reason: 'lockdown' };
+    return { blocked: false };
+  }
+
+  // Fallback while SQL 17 is not applied yet: the old table reads.
   const [{ data: control }, banResult] = await Promise.all([
     supabase.from('app_control').select('lockdown').eq('id', 1).maybeSingle(),
-    email
-      ? supabase.from('banned_users').select('reason').eq('email', email.toLowerCase()).maybeSingle()
-      : Promise.resolve({ data: null }),
+    supabase.from('banned_users').select('reason').eq('email', email.toLowerCase()).maybeSingle(),
   ]);
-
   if (banResult.data) {
     return { blocked: true, reason: 'banned', banReason: banResult.data.reason ?? null };
   }

@@ -46,7 +46,7 @@ export default function ScoutCvPage() {
   const card = 'rounded-3xl bg-white/[0.03] p-5 ring-1 ring-inset ring-white/[0.08] print:bg-white print:ring-zinc-300';
 
   return (
-    <main className="flex min-h-dvh flex-col items-center bg-[#07080A] px-4 pb-[calc(env(safe-area-inset-bottom)+2rem)] pt-[calc(env(safe-area-inset-top)+2rem)] print:bg-white">
+    <main className="flex min-h-dvh flex-col items-center bg-[#0B0D11] px-4 pb-[calc(env(safe-area-inset-bottom)+2rem)] pt-[calc(env(safe-area-inset-top)+2rem)] print:bg-white">
       <div className="w-full max-w-2xl">
         <header className="mb-6 flex items-center justify-between print:hidden">
           <span className="inline-flex items-center gap-2 text-[15px] font-semibold text-white">

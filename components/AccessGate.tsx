@@ -60,7 +60,7 @@ export default function AccessGate({ children }: { children: ReactNode }) {
   if (status.blocked) {
     const banned = status.reason === 'banned';
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#07080A] px-4">
+      <div className="min-h-screen flex items-center justify-center bg-[#0B0D11] px-4">
         <div
           className="absolute inset-0 pointer-events-none"
           style={{

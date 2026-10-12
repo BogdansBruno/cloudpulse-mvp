@@ -68,7 +68,7 @@ function DemoPicker() {
   ];
 
   return (
-    <main className="relative flex min-h-dvh flex-col items-center overflow-x-clip bg-[#07080A] px-4 pb-[calc(env(safe-area-inset-bottom)+2rem)] pt-[calc(env(safe-area-inset-top)+2rem)]">
+    <main className="relative flex min-h-dvh flex-col items-center overflow-x-clip bg-[#0B0D11] px-4 pb-[calc(env(safe-area-inset-bottom)+2rem)] pt-[calc(env(safe-area-inset-top)+2rem)]">
       <div className="pointer-events-none absolute -top-40 left-1/2 h-[520px] w-[520px] -translate-x-1/2 rounded-full bg-[#FF9500]/[0.06] blur-[140px]" />
 
       <div className="relative w-full max-w-2xl">
@@ -130,7 +130,7 @@ function DemoPicker() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ type: 'spring', bounce: 0, duration: 0.45, delay: reduce ? 0 : 0.05 * (i + 1) }}
                 whileTap={reduce ? undefined : { scale: 0.98 }}
-                className="group flex flex-col rounded-3xl bg-white/[0.03] p-5 text-left ring-1 ring-inset ring-white/[0.08] backdrop-blur-2xl transition-colors hover:bg-white/[0.06] disabled:cursor-not-allowed disabled:opacity-50"
+                className="np-card group flex flex-col p-5 text-left transition-colors hover:bg-white/[0.03] disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <span
                   className="flex h-11 w-11 items-center justify-center rounded-2xl"

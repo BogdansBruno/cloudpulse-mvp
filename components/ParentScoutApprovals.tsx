@@ -47,7 +47,7 @@ export default function ParentScoutApprovals({ fallbackName }: { fallbackName: s
         return (
           <section
             key={s.id}
-            className={`rounded-3xl bg-white/[0.03] p-5 ring-1 ring-inset backdrop-blur-2xl ${st === 'active' ? 'ring-white/[0.08]' : 'ring-[#FFCC00]/30'}`}
+            className={`np-card p-5 ${st === 'active' ? '' : 'ring-1 ring-inset ring-[#FFC53D]/30'}`}
           >
             <h3 className="inline-flex items-center gap-2 text-sm font-semibold text-zinc-100">
               <IdentificationCard size={16} weight="fill" className="text-[#32ADE6]" />

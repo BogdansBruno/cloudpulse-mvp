@@ -78,7 +78,7 @@ export default function TeamMembershipCard() {
   if (rows === null) return null;
 
   return (
-    <section className="mt-3 rounded-3xl bg-white/[0.03] p-5 ring-1 ring-inset ring-white/[0.08] backdrop-blur-2xl">
+    <section className="mt-3 np-card p-5">
       <h2 className="mb-3 flex items-center gap-2 text-base font-semibold tracking-[-0.01em] text-zinc-50">
         <UsersThree size={18} weight="fill" className="text-zinc-400" />
         {inv.cardTitle}

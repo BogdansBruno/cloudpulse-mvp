@@ -15,13 +15,13 @@ export default function AuthShell({ children }: { children: ReactNode }) {
   const reduce = useReducedMotion();
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[#050505] flex items-center justify-center px-4 pb-[calc(env(safe-area-inset-bottom)+3rem)] pt-[calc(env(safe-area-inset-top)+3rem)]">
+    <div className="relative min-h-screen overflow-hidden bg-[#0B0D11] flex items-center justify-center px-4 pb-[calc(env(safe-area-inset-bottom)+3rem)] pt-[calc(env(safe-area-inset-top)+3rem)]">
       <div className="absolute inset-0 bg-grid-dots opacity-40" />
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
           background:
-            'radial-gradient(ellipse 60% 50% at 50% 40%, rgba(255,149,0,0.10), transparent 60%), radial-gradient(ellipse 40% 40% at 70% 70%, rgba(0,240,255,0.06), transparent 60%)',
+            'radial-gradient(ellipse 60% 50% at 50% 40%, rgba(184,242,60,0.09), transparent 60%), radial-gradient(ellipse 40% 40% at 70% 70%, rgba(142,140,255,0.07), transparent 60%)',
         }}
       />
 
@@ -37,14 +37,19 @@ export default function AuthShell({ children }: { children: ReactNode }) {
             <span className="text-white font-semibold tracking-tight text-lg">Lotus</span>
           </Link>
           <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-[11px] font-medium text-zinc-400">
-            <LockSimple size={11} weight="fill" className="text-[#32ADE6]" />
+            <LockSimple size={11} weight="fill" className="text-[#B8F23C]" />
             {t.auth.encrypted} · {t.auth.brandTag}
           </span>
         </div>
 
-        <div className="rounded-3xl border border-white/10 bg-zinc-900/40 backdrop-blur-2xl shadow-2xl shadow-black/50 p-7 sm:p-8">
+        <div className="np-card p-7 shadow-2xl shadow-black/50 sm:p-8">
           {children}
         </div>
+        <p className="mt-5 text-center text-[11px] text-zinc-500">
+          <Link href="/privacy" className="underline decoration-white/20 underline-offset-2 hover:text-zinc-300">
+            {t.auth.privacyLink}
+          </Link>
+        </p>
       </motion.div>
     </div>
   );

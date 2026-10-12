@@ -17,6 +17,7 @@ import { useAccount, useOnline } from '@/components/np/useAccount';
 import { useNotices } from '@/components/np/notices';
 import { useMode, type Mode } from '@/components/np/useMode';
 import { MODE } from '@/components/np/modeCopy';
+import DeleteDataPanel from '@/components/DeleteDataPanel';
 
 export default function SettingsPage() {
   const { lang, setLang, t } = useLanguage();
@@ -110,6 +111,15 @@ export default function SettingsPage() {
           <p className="np-caption mt-4">{sc.languageHint}</p>
         </Card>
       )}
+
+      <Link href="/privacy" className="np-btn-glass mt-4 flex h-14 w-full items-center justify-center gap-2.5 rounded-full text-sm font-semibold">
+        <Icon name="shield" size={18} />
+        {t.auth.privacyLink}
+      </Link>
+
+      <div className="mt-4">
+        <DeleteDataPanel />
+      </div>
 
       {isAdmin && (
         <Link href={NAV_HREF.admin} className="np-btn-glass mt-4 flex h-14 w-full items-center justify-center gap-2.5 rounded-full text-sm font-semibold">

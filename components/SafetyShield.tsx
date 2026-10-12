@@ -114,7 +114,7 @@ export default function SafetyShield({
             margin: 1,
             width: 240,
             errorCorrectionLevel: 'M',
-            color: { dark: '#07080A', light: '#FFFFFF' },
+            color: { dark: '#0B0D11', light: '#FFFFFF' },
           });
           if (!cancelled) setQr(dataUrl);
         } else {

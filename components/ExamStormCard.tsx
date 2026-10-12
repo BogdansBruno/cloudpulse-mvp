@@ -32,7 +32,7 @@ export default function ExamStormCard({ athletes, today }: { athletes: readonly 
   };
 
   return (
-    <section className="rounded-3xl bg-white/[0.03] p-5 ring-1 ring-inset ring-white/[0.08] backdrop-blur-2xl">
+    <section className="np-card p-5">
       <h2 className="inline-flex items-center gap-2 text-base font-semibold tracking-[-0.01em] text-zinc-50">
         <CloudLightning size={18} weight="fill" style={{ color: storm.storms.length > 0 ? HUB.amber : '#C3C5C7' }} />
         {s.title}

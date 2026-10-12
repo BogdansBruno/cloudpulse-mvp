@@ -21,6 +21,9 @@ import type { Icon } from '@phosphor-icons/react';
 import { supabase } from '@/lib/supabase';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
 import DatePicker, { formatDisplayDate } from '@/components/DatePicker';
+import { GuardianBox } from '@/components/GuardianConsent';
+import { AGE_BRACKETS, ageToBracket, bracketToAge, needsGuardianConfirmation, recordGuardianConfirmation } from '@/lib/guardian';
+import { GUARDIAN } from '@/lib/privacy-copy';
 
 type SportKey = 'football' | 'basketball' | 'athletics' | 'swimming' | 'gym' | 'other';
 
@@ -35,7 +38,7 @@ const SPORTS: { key: SportKey; value: string; icon: Icon }[] = [
   { key: 'other', value: 'Other', icon: DotsThree },
 ];
 
-const AGES = ['13-15', '16-18'];
+const AGES = AGE_BRACKETS;
 const TOTAL_STEPS = 3;
 const SPRING = { type: 'spring', bounce: 0, duration: 0.35 } as const;
 
@@ -50,7 +53,7 @@ const FADE = { enter: { opacity: 0 }, center: { opacity: 1 }, exit: { opacity: 0
 function tileClass(selected: boolean) {
   return `relative flex flex-col items-start gap-3 rounded-2xl p-4 text-left ring-1 ring-inset transition-[background-color,box-shadow] duration-200 ${
     selected
-      ? 'bg-[#D9A400]/[0.08] ring-[#D9A400]/70 shadow-[0_0_0_1px_rgba(255,149,0,0.25),0_12px_32px_-12px_rgba(255,149,0,0.45)]'
+      ? 'bg-[#B8F23C]/[0.08] ring-[#B8F23C]/70 shadow-[0_0_0_1px_rgba(184,242,60,0.25),0_12px_32px_-12px_rgba(184,242,60,0.45)]'
       : 'bg-white/[0.03] ring-white/[0.08] hover:bg-white/[0.06] hover:ring-white/20'
   }`;
 }
@@ -103,9 +106,9 @@ function DateList({
           {dates.map((d) => (
             <span
               key={d}
-              className="inline-flex items-center gap-1.5 rounded-full bg-[#D9A400]/[0.08] py-1.5 pl-3 pr-1.5 text-xs font-medium text-zinc-100 ring-1 ring-inset ring-[#D9A400]/20"
+              className="inline-flex items-center gap-1.5 rounded-full bg-[#B8F23C]/[0.08] py-1.5 pl-3 pr-1.5 text-xs font-medium text-zinc-100 ring-1 ring-inset ring-[#B8F23C]/20"
             >
-              <IconCmp size={12} weight="fill" className="text-[#FFCC00]" />
+              <IconCmp size={12} weight="fill" className="text-[#B8F23C]" />
               {formatDisplayDate(d, lang)}
               <button
                 type="button"
@@ -125,12 +128,14 @@ function DateList({
 
 export default function OnboardingPage() {
   const router = useRouter();
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const o = t.onboarding;
+  const g = GUARDIAN[lang];
   const reduce = useReducedMotion();
   const [step, setStep] = useState(1);
   const [dir, setDir] = useState(1);
   const [age, setAge] = useState('');
+  const [guardianOk, setGuardianOk] = useState(false);
   const [sport, setSport] = useState('');
   const [matchDates, setMatchDates] = useState<string[]>([]);
   const [examDates, setExamDates] = useState<string[]>([]);
@@ -154,7 +159,7 @@ export default function OnboardingPage() {
         };
         if (cancelled || !profile) return;
         if (typeof profile.age === 'number') {
-          const bracket = AGES.find((a) => Number(a.split('-')[0]) === profile.age);
+          const bracket = ageToBracket(profile.age);
           if (bracket) setAge((cur) => cur || bracket);
         }
         if (profile.sport && SPORTS.some((s) => s.value === profile.sport)) {
@@ -208,7 +213,7 @@ export default function OnboardingPage() {
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
         body: JSON.stringify({
-          age: age ? Number(age.split('-')[0]) : undefined, // lower bound of the bracket
+          age: age ? bracketToAge(age) : undefined, // lower bound of the bracket
           sport,
           matchDates,
           examDates,
@@ -220,6 +225,12 @@ export default function OnboardingPage() {
         throw new Error(body?.content || o.errSave);
       }
 
+      // A parent or guardian tick-box (minors only) is stored on the profile
+      // after it exists. If the database has no column yet this is a no-op.
+      if (guardianOk && needsGuardianConfirmation(age ? bracketToAge(age) : null)) {
+        await recordGuardianConfirmation().catch(() => false);
+      }
+
       router.push('/checkin');
     } catch (err) {
       setError(err instanceof Error ? err.message : o.errGeneric);
@@ -229,8 +240,8 @@ export default function OnboardingPage() {
   };
 
   return (
-    <div className="relative min-h-[calc(100dvh-4.5rem)] shrink-0 overflow-x-clip bg-[#07080A] px-4 py-8 md:py-14">
-      <div className="pointer-events-none absolute -top-40 left-1/2 h-[480px] w-[480px] -translate-x-1/2 rounded-full bg-[#D9A400]/[0.05] blur-[140px]" />
+    <div className="relative min-h-[calc(100dvh-4.5rem)] shrink-0 overflow-x-clip bg-[#0B0D11] px-4 py-8 md:py-14">
+      <div className="pointer-events-none absolute -top-40 left-1/2 h-[480px] w-[480px] -translate-x-1/2 rounded-full bg-[#B8F23C]/[0.05] blur-[140px]" />
 
       <div className="relative mx-auto max-w-md">
         {/* Step progress: the steps really are a sequence */}
@@ -243,7 +254,7 @@ export default function OnboardingPage() {
             {Array.from({ length: TOTAL_STEPS }, (_, i) => (
               <div key={i} className="h-1 flex-1 overflow-hidden rounded-full bg-white/[0.08]">
                 <motion.div
-                  className="h-full rounded-full bg-white"
+                  className="h-full rounded-full bg-[#B8F23C]"
                   initial={false}
                   animate={{ width: i < step ? '100%' : '0%' }}
                   transition={reduce ? { duration: 0 } : SPRING}
@@ -253,7 +264,7 @@ export default function OnboardingPage() {
           </div>
         </div>
 
-        <div className="overflow-hidden rounded-[28px] bg-zinc-900/50 p-6 ring-1 ring-inset ring-white/10 backdrop-blur-2xl md:p-7">
+        <div className="np-card overflow-hidden p-6 md:p-7">
           <AnimatePresence mode="wait" initial={false} custom={dir}>
             <motion.div
               key={step}
@@ -267,7 +278,7 @@ export default function OnboardingPage() {
               {step === 1 && (
                 <>
                   <h1 className="mb-6 text-[26px] font-semibold leading-[1.15] tracking-[-0.03em] text-zinc-50">{o.ageQ}</h1>
-                  <div className="grid grid-cols-2 gap-3" role="radiogroup" aria-label={o.ageQ}>
+                  <div className="grid grid-cols-3 gap-2.5" role="radiogroup" aria-label={o.ageQ}>
                     {AGES.map((option) => {
                       const selected = age === option;
                       return (
@@ -281,8 +292,8 @@ export default function OnboardingPage() {
                           className={`${tileClass(selected)} py-6`}
                         >
                           <span
-                            className={`font-mono text-4xl font-light tabular-nums tracking-[-0.04em] ${
-                              selected ? 'text-[#FFCC00]' : 'text-zinc-50'
+                            className={`whitespace-nowrap font-mono text-xl font-light tabular-nums tracking-[-0.04em] ${
+                              selected ? 'text-[#B8F23C]' : 'text-zinc-50'
                             }`}
                           >
                             {option}
@@ -292,6 +303,13 @@ export default function OnboardingPage() {
                       );
                     })}
                   </div>
+                  <p className="mt-3 text-xs text-zinc-500">{g.under13}</p>
+                  {age && needsGuardianConfirmation(bracketToAge(age)) && (
+                    <div className="mt-5 space-y-2">
+                      <p className="text-sm leading-relaxed text-zinc-400">{g.body}</p>
+                      <GuardianBox checked={guardianOk} onChange={setGuardianOk} />
+                    </div>
+                  )}
                 </>
               )}
 
@@ -376,7 +394,7 @@ export default function OnboardingPage() {
               onClick={handleNext}
               disabled={loading}
               whileTap={reduce || loading ? undefined : { scale: 0.97 }}
-              className="inline-flex h-14 flex-1 items-center justify-center gap-2 rounded-2xl bg-white text-base font-semibold text-zinc-950 shadow-[0_0_30px_-6px_rgba(255,149,0,0.45),inset_0_1px_0_rgba(255,255,255,0.45)] transition-opacity disabled:opacity-60"
+              className="inline-flex h-14 flex-1 items-center justify-center gap-2 rounded-2xl bg-[#B8F23C] text-base font-semibold text-zinc-950 shadow-[0_0_30px_-6px_rgba(184,242,60,0.45),inset_0_1px_0_rgba(255,255,255,0.45)] transition-opacity disabled:opacity-60"
             >
               {loading ? o.saving : step === TOTAL_STEPS ? o.start : o.next}
             </motion.button>

@@ -13,6 +13,7 @@ import { useLanguage } from '@/lib/i18n/LanguageContext';
 import type { Lang } from '@/lib/i18n/translations';
 import { SCHOOL } from '@/lib/school-copy';
 import { cleanAthleteLabel, isValidInviteCode, normalizeInviteCode } from '@/lib/invite';
+import GuardianGate, { useSharingLock } from '@/components/GuardianConsent';
 
 type Member = {
   id: string;
@@ -49,6 +50,7 @@ export default function SchoolAccessCard() {
   const [joining, setJoining] = useState(false);
   const [saving, setSaving] = useState<string | null>(null);
   const [message, setMessage] = useState<{ tone: 'ok' | 'err'; text: string } | null>(null);
+  const lock = useSharingLock();
 
   const load = useCallback(async () => {
     const { data, error } = await supabase.rpc('my_schools');
@@ -140,7 +142,7 @@ export default function SchoolAccessCard() {
           role="switch"
           aria-checked={on}
           aria-label={`${title}: ${m.school}`}
-          disabled={saving === key}
+          disabled={saving === key || (lock.locked && !on)}
           onClick={() => toggle(m, flag)}
           className={`relative mt-0.5 h-7 w-12 shrink-0 rounded-full transition-colors duration-200 disabled:opacity-60 ${on ? 'bg-[#B8F23C]' : 'bg-white/[0.12]'}`}
         >
@@ -151,13 +153,15 @@ export default function SchoolAccessCard() {
   };
 
   return (
-    <section className="mt-3 rounded-3xl bg-white/[0.03] p-5 ring-1 ring-inset ring-white/[0.08] backdrop-blur-2xl" aria-labelledby="school-card">
+    <section className="mt-3 np-card p-5" aria-labelledby="school-card">
       <h2 id="school-card" className="mb-2 flex items-center gap-2 text-base font-semibold tracking-[-0.01em] text-zinc-50">
         <GraduationCap size={18} weight="fill" className="text-zinc-400" />
         {c.title}
       </h2>
 
       {members.length === 0 && <p className="mb-4 text-sm leading-relaxed text-zinc-400">{c.intro}</p>}
+
+      {lock.locked && <GuardianGate onUnlocked={lock.unlock} />}
 
       {members.length > 0 && (
         <ul className="mb-5 space-y-5">
@@ -208,7 +212,7 @@ export default function SchoolAccessCard() {
           maxLength={40}
           className="h-11 min-w-0 sm:flex-1 rounded-2xl border border-white/10 bg-white/[0.05] px-4 text-sm text-white placeholder:text-white/40 focus:border-[#B8F23C]/60 focus:outline-none"
         />
-        <button type="submit" disabled={joining} className="np-btn-glass inline-flex h-11 shrink-0 items-center justify-center rounded-full px-5 text-sm font-semibold disabled:opacity-50">
+        <button type="submit" disabled={joining || lock.locked} className="np-btn-glass inline-flex h-11 shrink-0 items-center justify-center rounded-full px-5 text-sm font-semibold disabled:opacity-50">
           {joining ? c.joining : c.join}
         </button>
       </form>

@@ -95,7 +95,7 @@ export default function TeamTripsCard({ today }: { today: string }) {
     'w-full rounded-xl bg-white/[0.05] px-3 py-2 text-sm text-zinc-50 placeholder-zinc-500 ring-1 ring-inset ring-white/10 focus:outline-none focus:ring-[#32ADE6]/50 [color-scheme:dark]';
 
   return (
-    <section className="rounded-3xl bg-white/[0.03] p-5 ring-1 ring-inset ring-white/[0.08] backdrop-blur-2xl">
+    <section className="np-card p-5">
       <h2 className="inline-flex items-center gap-2 text-base font-semibold tracking-[-0.01em] text-zinc-50">
         <Bus size={18} weight="fill" className="text-zinc-300" />
         {t.coachTitle}
@@ -103,7 +103,7 @@ export default function TeamTripsCard({ today }: { today: string }) {
       <p className="mt-0.5 text-xs text-zinc-400">{t.coachSubtitle}</p>
 
       {active && (
-        <div className="mt-4 flex gap-3 rounded-2xl bg-[#FFCC00]/[0.08] p-3 ring-1 ring-inset ring-[#FFCC00]/30">
+        <div className="mt-4 flex gap-3 rounded-2xl bg-[#FFC53D]/[0.08] p-3 ring-1 ring-inset ring-[#FFC53D]/30">
           <Moon size={18} weight="fill" className="mt-0.5 shrink-0" style={{ color: HUB.amber }} />
           <div>
             <p className="text-sm font-semibold text-zinc-100">

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getUserFromToken, createUserScopedClient } from '@/lib/supabase-server';
+import { blockedResponse } from '@/lib/server-access';
 import { addDays } from '@/lib/checkin-streak';
 import { activeTravel, parseTrips } from '@/lib/travel';
 import { isTravelNoteConfigured, signTravelNote, travelNoteId, verifyTravelNote } from '@/lib/travel-note';
@@ -19,6 +20,8 @@ export async function POST(req: Request) {
     const token = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null;
     const user = await getUserFromToken(token);
     if (!user) return NextResponse.json({ error: 'Not signed in' }, { status: 401 });
+    const blocked = await blockedResponse(token);
+    if (blocked) return blocked;
     if (!isTravelNoteConfigured()) return NextResponse.json({ status: 'unavailable' });
 
     const today = todayIso();

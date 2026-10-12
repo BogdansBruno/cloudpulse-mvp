@@ -15,13 +15,14 @@ import { supabase } from '@/lib/supabase';
 //
 // Changes are bundled (700 ms) so one check-in — which also rewrites the
 // computed columns — causes one refresh, not three. If Realtime is not
-// connected, the screen checks every 30 s instead, and always when the tab
-// comes back to the front.
+// connected, or the tables are not readable by the coach (supabase/sql/18),
+// the screen checks every 20 s instead, and always when the tab comes back to
+// the front.
 // ---------------------------------------------------------------------------
 
 const TABLES = ['checkins', 'profiles', 'rtp_followups'] as const;
 const DEBOUNCE_MS = 700;
-const POLL_MS = 30_000;
+const POLL_MS = 20_000;
 
 /** The athlete a changed row belongs to, whatever the table calls it. */
 export function rowAthleteId(table: string, row: Record<string, unknown> | null | undefined): string | null {
@@ -45,7 +46,6 @@ export function useTeamLive(athleteIds: readonly string[], onChange: (changed: R
     if (!hasTeam) return;
     let pending = new Set<string>();
     let timer: number | null = null;
-    let live = false;
 
     const flush = () => {
       timer = null;
@@ -68,12 +68,13 @@ export function useTeamLive(athleteIds: readonly string[], onChange: (changed: R
         queue(rowAthleteId(table, row));
       });
     }
-    channel.subscribe((status) => {
-      live = status === 'SUBSCRIBED';
-    });
+    channel.subscribe();
 
+    // The coach no longer reads the athletes' tables directly (supabase/sql/18),
+    // so Realtime may stay connected yet deliver no row events. Refresh on a
+    // timer regardless; a Realtime event only makes it faster.
     const poll = window.setInterval(() => {
-      if (!live && document.visibilityState === 'visible') cbRef.current('all');
+      if (document.visibilityState === 'visible') cbRef.current('all');
     }, POLL_MS);
     const onVisible = () => {
       if (document.visibilityState === 'visible') cbRef.current('all');

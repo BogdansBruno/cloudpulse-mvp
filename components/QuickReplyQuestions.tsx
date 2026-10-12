@@ -176,7 +176,7 @@ export default function QuickReplyQuestions({
                     whileTap={reduce ? undefined : { scale: 0.96 }}
                     className={`group flex flex-col items-start gap-3 rounded-2xl p-3.5 text-left ring-1 ring-inset transition-colors ${
                       selected
-                        ? 'bg-[#32ADE6]/10 ring-[#32ADE6]/60 shadow-[0_0_0_1px_rgba(255,149,0,0.25),0_10px_30px_-10px_rgba(255,149,0,0.45)]'
+                        ? 'bg-[#32ADE6]/10 ring-[#32ADE6]/60 shadow-[0_0_0_1px_rgba(50,173,230,0.25),0_10px_30px_-10px_rgba(50,173,230,0.45)]'
                         : 'bg-white/[0.03] ring-white/[0.08] hover:bg-white/[0.06] hover:ring-white/20'
                     }`}
                   >

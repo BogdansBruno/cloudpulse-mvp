@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { callClaudeAgent, type ChatTurn, type CoachMode, type ReadinessContext } from '@/lib/claude-agent';
 import { getUserFromToken } from '@/lib/supabase-server';
+import { blockedResponse } from '@/lib/server-access';
 import { getTodayReadiness } from '@/lib/get-today-readiness';
 
 export const runtime = 'nodejs';
@@ -55,6 +56,8 @@ export async function POST(req: Request) {
         { status: 401 }
       );
     }
+    const blocked = await blockedResponse(token);
+    if (blocked) return blocked;
 
     // 2. Rate limit per user.
     const limit = rateLimit(currentUser.id);

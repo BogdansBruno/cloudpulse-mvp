@@ -32,7 +32,7 @@ type Team = {
   invite_active: boolean;
 };
 
-const QR_OPTIONS = { margin: 1, errorCorrectionLevel: 'M' as const, color: { dark: '#07080A', light: '#FFFFFF' } };
+const QR_OPTIONS = { margin: 1, errorCorrectionLevel: 'M' as const, color: { dark: '#0B0D11', light: '#FFFFFF' } };
 
 export default function TeamInvitePanel() {
   const { t } = useLanguage();
@@ -168,7 +168,7 @@ export default function TeamInvitePanel() {
 
   if (teams === null) return null;
 
-  const card = 'rounded-3xl bg-white/[0.03] p-5 ring-1 ring-inset ring-white/[0.08] backdrop-blur-2xl';
+  const card = 'np-card p-5';
   const ghostBtn =
     'inline-flex items-center gap-1.5 rounded-full bg-white/[0.04] px-3 py-1.5 text-xs font-medium text-zinc-200 ring-1 ring-inset ring-white/10 transition-colors hover:bg-white/[0.08] disabled:opacity-50';
 
@@ -325,7 +325,7 @@ export default function TeamInvitePanel() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: reduce ? 0 : 0.2 }}
-            className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-5 bg-[#07080A]/95 p-6 backdrop-blur-xl"
+            className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-5 bg-[#0B0D11]/95 p-6 backdrop-blur-xl"
             onClick={() => setFullscreen(null)}
             role="dialog"
             aria-modal="true"

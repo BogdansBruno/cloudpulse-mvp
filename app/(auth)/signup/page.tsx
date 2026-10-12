@@ -17,8 +17,14 @@ function readNext(): string | null {
   return safeNextPath(new URLSearchParams(window.location.search).get('next'));
 }
 
+const CONSENT_NOTE = {
+  en: 'By creating an account you accept how Lotus handles data, including health check-in answers.',
+  lv: 'Izveidojot kontu, tu piekrīti, kā Lotus apstrādā datus, tostarp veselības pārbaužu atbildes.',
+  ru: 'Создавая аккаунт, ты принимаешь, как Lotus обращается с данными, включая ответы чек-ина о здоровье.',
+} as const;
+
 export default function SignupPage() {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -108,7 +114,7 @@ export default function SignupPage() {
           </div>
         )}
         {success && (
-          <div className="flex items-start gap-2 rounded-xl bg-[#FF9500]/10 border border-[#FF9500]/20 px-3 py-2.5 text-xs text-[#FF9500]">
+          <div className="flex items-start gap-2 rounded-xl bg-[#B8F23C]/10 border border-[#B8F23C]/25 px-3 py-2.5 text-xs text-[#B8F23C]">
             <CheckCircle size={14} className="shrink-0 mt-0.5" />
             <span>{success}</span>
           </div>
@@ -118,12 +124,17 @@ export default function SignupPage() {
           type="submit"
           disabled={loading}
           whileTap={{ scale: 0.98 }}
-          className="w-full flex items-center justify-center gap-2 rounded-xl py-3 text-sm font-bold text-black disabled:opacity-60 shadow-[0_0_24px_rgba(255,149,0,0.25)]"
-          style={{ background: 'linear-gradient(135deg, #FF9500 0%, #00F0FF 100%)' }}
+          className="w-full flex items-center justify-center gap-2 rounded-xl bg-[#B8F23C] py-3 text-sm font-bold text-zinc-950 disabled:opacity-60 shadow-[0_0_24px_-4px_rgba(184,242,60,0.4)]"
         >
           {loading ? t.auth.creatingAccount : t.auth.signUp}
           {!loading && <ArrowRight size={16} weight="bold" />}
         </motion.button>
+        <p className="text-center text-[11px] leading-relaxed text-zinc-500">
+          {CONSENT_NOTE[lang]}{' '}
+          <Link href="/privacy" className="text-zinc-300 underline decoration-white/20 underline-offset-2">
+            {t.auth.privacyLink}
+          </Link>
+        </p>
       </form>
 
       <div className="flex items-center gap-3 my-6">
@@ -153,7 +164,7 @@ export default function SignupPage() {
         {t.auth.haveAccount}{' '}
         <Link
           href={next ? `/login?next=${encodeURIComponent(next)}` : '/login'}
-          className="text-[#FF9500] hover:brightness-110 font-medium"
+          className="text-[#B8F23C] hover:brightness-110 font-medium"
         >
           {t.auth.signIn}
         </Link>

@@ -54,24 +54,21 @@ export function useWarRoom(fallbackLabel: (shortId: string) => string): WarRoomS
           setState({ kind: 'ok', cards: [], today });
           return;
         }
+        // Computed fields only, through database functions (supabase/sql/17).
         const [prof, chk] = await Promise.all([
-          supabase.from('profiles').select('id, exam_dates').in('id', athleteIds),
-          supabase
-            .from('checkins')
-            .select('user_id, readiness_score, zone, acwr, is_pain_blocked, pain_zone')
-            .in('user_id', athleteIds)
-            .eq('date', today),
+          supabase.rpc('coach_team_profiles'),
+          supabase.rpc('coach_team_checkins', { p_since: today, p_until: today }),
         ]);
         if (prof.error) throw prof.error;
         if (chk.error) throw chk.error;
-        const examById = new Map(((prof.data ?? []) as ProfileRow[]).map((p) => [p.id, p.exam_dates ?? []]));
+        const examById = new Map(((Array.isArray(prof.data) ? prof.data : []) as ProfileRow[]).map((p) => [p.id, p.exam_dates ?? []]));
         const players: WarPlayer[] = members.map((m) => ({
           id: m.athlete_id,
           label: m.athlete_label?.trim() || m.team_name?.trim() || fallbackLabel(m.athlete_id.slice(0, 8)),
           examDates: examById.get(m.athlete_id) ?? [],
         }));
         const map = new Map<string, RosterCheckin>();
-        for (const r of (chk.data ?? []) as CheckinRow[]) {
+        for (const r of (Array.isArray(chk.data) ? chk.data : []) as CheckinRow[]) {
           map.set(r.user_id, {
             score: r.readiness_score,
             zone: r.zone,

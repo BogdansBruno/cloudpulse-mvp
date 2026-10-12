@@ -67,7 +67,7 @@ function PassCheck() {
       : '#A1A1AA';
 
   return (
-    <main className="flex min-h-dvh flex-col items-center bg-[#07080A] px-4 pb-[calc(env(safe-area-inset-bottom)+2rem)] pt-[calc(env(safe-area-inset-top)+2rem)]">
+    <main className="flex min-h-dvh flex-col items-center bg-[#0B0D11] px-4 pb-[calc(env(safe-area-inset-bottom)+2rem)] pt-[calc(env(safe-area-inset-top)+2rem)]">
       <div className="w-full max-w-md">
         <header className="mb-6 flex items-center justify-between">
           <span className="inline-flex items-center gap-2 text-[15px] font-semibold text-white">
@@ -157,7 +157,7 @@ function PassCheck() {
 export default function PassPage() {
   // useSearchParams needs a Suspense boundary for static prerendering.
   return (
-    <Suspense fallback={<main className="min-h-dvh bg-[#07080A]" />}>
+    <Suspense fallback={<main className="min-h-dvh bg-[#0B0D11]" />}>
       <PassCheck />
     </Suspense>
   );

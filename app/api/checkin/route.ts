@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getUserFromToken, createUserScopedClient } from '@/lib/supabase-server';
+import { blockedResponse } from '@/lib/server-access';
 import { loadDevStore, saveDevStore } from '@/lib/dev-store';
 import {
   calculateReadiness,
@@ -66,6 +67,8 @@ export async function POST(req: Request) {
         { status: 401 }
       );
     }
+    const blocked = await blockedResponse(token);
+    if (blocked) return blocked;
 
     const body = await req.json().catch(() => ({}));
     // Offline check-ins (lib/offline-queue.ts) arrive later with the day they
@@ -238,6 +241,8 @@ export async function GET(req: Request) {
     if (!user && !devMode) {
       return NextResponse.json({ error: 'Not signed in' }, { status: 401 });
     }
+    const blocked = await blockedResponse(token);
+    if (blocked) return blocked;
 
     const url = new URL(req.url);
     const daysParam = Number(url.searchParams.get('days') ?? '30');

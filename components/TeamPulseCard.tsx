@@ -70,7 +70,7 @@ export default function TeamPulseCard({
   ];
 
   return (
-    <section className="rounded-3xl bg-white/[0.03] p-5 ring-1 ring-inset ring-white/[0.08] backdrop-blur-2xl">
+    <section className="np-card p-5">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h2 className="inline-flex items-center gap-2 text-base font-semibold tracking-[-0.01em] text-zinc-50">

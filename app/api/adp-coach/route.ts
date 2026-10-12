@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getUserFromToken, createUserScopedClient } from '@/lib/supabase-server';
+import { blockedResponse } from '@/lib/server-access';
 import { getTodayReadiness } from '@/lib/get-today-readiness';
 import { addDays } from '@/lib/checkin-streak';
 import {
@@ -49,6 +50,8 @@ export async function POST(req: Request) {
     if (!user && !devMode) {
       return NextResponse.json({ error: 'Not signed in' }, { status: 401 });
     }
+    const blocked = await blockedResponse(token);
+    if (blocked) return blocked;
 
     const body = await req.json().catch(() => ({}));
     const lang: AdpLang = body?.lang === 'lv' || body?.lang === 'en' ? body.lang : 'ru';

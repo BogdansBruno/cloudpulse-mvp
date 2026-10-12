@@ -229,7 +229,7 @@ export default function CoachAlertsCard({
   if (loadFailed) return null; // table not there yet (SQL not run) — the rest of /coach still works
 
   return (
-    <section className="rounded-3xl bg-white/[0.03] p-5 ring-1 ring-inset ring-white/[0.08] backdrop-blur-2xl">
+    <section className="np-card p-5">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h2 className="text-base font-semibold tracking-[-0.01em] text-zinc-50">{a.title}</h2>

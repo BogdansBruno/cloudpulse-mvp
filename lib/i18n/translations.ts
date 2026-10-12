@@ -153,6 +153,7 @@ type Dict = {
   auth: {
     brandTag: string;
     encrypted: string;
+    privacyLink: string;
     signInTitle: string;
     signInSubtitle: string;
     signUpTitle: string;
@@ -770,8 +771,9 @@ export const translations: Record<Lang, Dict> = {
       min: 'мин',
     },
     auth: {
-      brandTag: 'Performance Auth',
-      encrypted: '256-bit шифрование',
+      brandTag: 'Supabase Auth',
+      encrypted: 'Безопасный вход',
+      privacyLink: 'Приватность и данные',
       signInTitle: 'С возвращением',
       signInSubtitle: 'Войди, чтобы продолжить тренировки',
       signUpTitle: 'Создать аккаунт',
@@ -1439,8 +1441,9 @@ export const translations: Record<Lang, Dict> = {
       min: 'min',
     },
     auth: {
-      brandTag: 'Performance Auth',
-      encrypted: '256-bitu šifrēšana',
+      brandTag: 'Supabase Auth',
+      encrypted: 'Droša pieteikšanās',
+      privacyLink: 'Privātums un dati',
       signInTitle: 'Ar atgriešanos',
       signInSubtitle: 'Pieslēdzies, lai turpinātu treniņus',
       signUpTitle: 'Izveidot kontu',
@@ -2095,8 +2098,9 @@ export const translations: Record<Lang, Dict> = {
       min: 'min',
     },
     auth: {
-      brandTag: 'Performance Auth',
-      encrypted: '256-bit encrypted',
+      brandTag: 'Supabase Auth',
+      encrypted: 'Secure sign-in',
+      privacyLink: 'Privacy and data',
       signInTitle: 'Welcome back',
       signInSubtitle: 'Sign in to keep training',
       signUpTitle: 'Create your account',

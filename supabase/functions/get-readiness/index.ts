@@ -251,52 +251,68 @@ Deno.serve(async (req) => {
     const url = new URL(req.url);
     const requestedUserId = url.searchParams.get('athlete_id') ?? callerId;
 
-    if (requestedUserId !== callerId) {
-      const { data: link } = await supabase
-        .from('team_members')
-        .select('id')
-        .eq('coach_id', callerId)
-        .eq('athlete_id', requestedUserId)
-        .maybeSingle();
-      if (!link) {
-        return new Response(JSON.stringify({ error: 'Forbidden' }), {
-          status: 403,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
-      }
-    }
-
     const today = isoDate(new Date());
-    const windowStart = isoDate(new Date(Date.now() - 28 * DAY_MS));
 
     // sessions_log без верхней границы даты естественно захватит и будущие
     // матчи — но матчи мы всё равно берём не отсюда, а из profiles.match_dates
     // (см. ниже), как и compute_readiness() в схеме БД.
-    const [{ data: sessionRows, error: sessionsErr }, { data: checkinRows, error: checkinsErr }, { data: profileRow, error: profileErr }] =
-      await Promise.all([
-        supabase
-          .from('sessions_log')
-          .select('date, rpe, duration_minutes')
-          .eq('user_id', requestedUserId)
-          .gte('date', windowStart),
+    //
+    // Свои данные спортсмен читает напрямую (политики "own ..."). Данные
+    // спортсмена из команды тренер получает ТОЛЬКО через функцию
+    // coach_athlete_inputs (supabase/sql/17): она сама проверяет team_members,
+    // отдаёт ровно то, что нужно формуле, и не требует прямого доступа тренера
+    // к таблицам (supabase/sql/18).
+    const sessionsSince = isoDate(new Date(Date.now() - 28 * DAY_MS));
+    const checkinsSince = isoDate(new Date(Date.now() - 21 * DAY_MS));
+    let sessionRows: { date: string; rpe: number; duration_minutes: number }[] = [];
+    let checkinRows: {
+      date: string;
+      sleep_quality: number;
+      stress: number;
+      fatigue: number;
+      soreness: number;
+      pain_flag: boolean;
+      pain_zone: string | null;
+    }[] = [];
+    let profileRow: { exam_dates?: string[] | null; match_dates?: string[] | null } | null = null;
+
+    if (requestedUserId === callerId) {
+      const [s, c, p] = await Promise.all([
+        supabase.from('sessions_log').select('date, rpe, duration_minutes').eq('user_id', requestedUserId).gte('date', sessionsSince),
         supabase
           .from('checkins')
           .select('date, sleep_quality, stress, fatigue, soreness, pain_flag, pain_zone')
           .eq('user_id', requestedUserId)
-          .gte('date', isoDate(new Date(Date.now() - 21 * DAY_MS))),
-        supabase
-          .from('profiles')
-          .select('exam_dates, match_dates')
-          .eq('id', requestedUserId)
-          .maybeSingle(),
+          .gte('date', checkinsSince),
+        supabase.from('profiles').select('exam_dates, match_dates').eq('id', requestedUserId).maybeSingle(),
       ]);
-
-    if (sessionsErr || checkinsErr || profileErr) {
-      console.error('[get-readiness] db error:', sessionsErr ?? checkinsErr ?? profileErr);
-      return new Response(JSON.stringify({ error: 'Database error' }), {
-        status: 502,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      if (s.error || c.error || p.error) {
+        console.error('[get-readiness] db error:', s.error ?? c.error ?? p.error);
+        return new Response(JSON.stringify({ error: 'Database error' }), {
+          status: 502,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      sessionRows = s.data ?? [];
+      checkinRows = c.data ?? [];
+      profileRow = p.data;
+    } else {
+      const { data: inputs, error: inputsErr } = await supabase.rpc('coach_athlete_inputs', {
+        p_athlete: requestedUserId,
+        p_sessions_since: sessionsSince,
+        p_checkins_since: checkinsSince,
       });
+      if (inputsErr) {
+        const forbidden = inputsErr.code === '42501';
+        if (!forbidden) console.error('[get-readiness] rpc error:', inputsErr);
+        return new Response(JSON.stringify({ error: forbidden ? 'Forbidden' : 'Database error' }), {
+          status: forbidden ? 403 : 502,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      sessionRows = inputs?.sessions ?? [];
+      checkinRows = inputs?.checkins ?? [];
+      profileRow = inputs?.profile ?? null;
     }
 
     const sessions: SessionEntry[] = (sessionRows ?? []).map((r) => ({
