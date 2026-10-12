@@ -13,7 +13,10 @@
 // athlete_id по-прежнему никогда не берётся из тела запроса — только из
 // проверенного JWT (auth.getUser()) или, для тренера, через team_members.
 
-import { createClient } from 'npm:@supabase/supabase-js@2';
+// Без импортов: Supabase сейчас не может собрать функцию, подключающую npm-пакеты
+// (деплой падает с internal error). Поэтому вместо supabase-js — маленький
+// REST-клиент на fetch. Поведение то же: запросы идут с JWT вызывающего,
+// RLS и функции из sql/17 работают как раньше.
 
 // ---- Типы, идентичные lib/readiness-engine.ts ------------------------------
 type SessionEntry = { date: string; rpe: number; durationMinutes: number };
@@ -221,6 +224,40 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+const SB_URL = Deno.env.get('SUPABASE_URL')!;
+const SB_ANON = Deno.env.get('SUPABASE_ANON_KEY')!;
+
+type RestResult<T> = { data: T | null; error: { code: string; message: string } | null };
+
+async function rest<T>(
+  authHeader: string,
+  path: string,
+  init?: { method?: string; body?: unknown }
+): Promise<RestResult<T>> {
+  try {
+    const res = await fetch(SB_URL + path, {
+      method: init?.method ?? 'GET',
+      headers: { apikey: SB_ANON, Authorization: authHeader, 'Content-Type': 'application/json' },
+      body: init?.body === undefined ? undefined : JSON.stringify(init.body),
+    });
+    const text = await res.text();
+    let json: any = null;
+    try {
+      json = text ? JSON.parse(text) : null;
+    } catch {
+      json = null;
+    }
+    if (!res.ok) {
+      return { data: null, error: { code: String(json?.code ?? res.status), message: String(json?.message ?? text.slice(0, 200)) } };
+    }
+    return { data: json as T, error: null };
+  } catch (e) {
+    return { data: null, error: { code: 'network', message: String(e) } };
+  }
+}
+
+const enc = encodeURIComponent;
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
 
@@ -233,20 +270,14 @@ Deno.serve(async (req) => {
       });
     }
 
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_ANON_KEY')!,
-      { global: { headers: { Authorization: authHeader } } }
-    );
-
-    const { data: userData, error: userError } = await supabase.auth.getUser();
-    if (userError || !userData.user) {
+    const { data: userData, error: userError } = await rest<{ id?: string }>(authHeader, '/auth/v1/user');
+    if (userError || !userData?.id) {
       return new Response(JSON.stringify({ error: 'Not authenticated' }), {
         status: 401,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
-    const callerId = userData.user.id;
+    const callerId = userData.id;
 
     const url = new URL(req.url);
     const requestedUserId = url.searchParams.get('athlete_id') ?? callerId;
@@ -277,14 +308,21 @@ Deno.serve(async (req) => {
     let profileRow: { exam_dates?: string[] | null; match_dates?: string[] | null } | null = null;
 
     if (requestedUserId === callerId) {
+      const uid = enc(requestedUserId);
       const [s, c, p] = await Promise.all([
-        supabase.from('sessions_log').select('date, rpe, duration_minutes').eq('user_id', requestedUserId).gte('date', sessionsSince),
-        supabase
-          .from('checkins')
-          .select('date, sleep_quality, stress, fatigue, soreness, pain_flag, pain_zone')
-          .eq('user_id', requestedUserId)
-          .gte('date', checkinsSince),
-        supabase.from('profiles').select('exam_dates, match_dates').eq('id', requestedUserId).maybeSingle(),
+        rest<typeof sessionRows>(
+          authHeader,
+          '/rest/v1/sessions_log?select=date,rpe,duration_minutes&user_id=eq.' + uid + '&date=gte.' + enc(sessionsSince)
+        ),
+        rest<typeof checkinRows>(
+          authHeader,
+          '/rest/v1/checkins?select=date,sleep_quality,stress,fatigue,soreness,pain_flag,pain_zone&user_id=eq.' +
+            uid + '&date=gte.' + enc(checkinsSince)
+        ),
+        rest<NonNullable<typeof profileRow>[]>(
+          authHeader,
+          '/rest/v1/profiles?select=exam_dates,match_dates&id=eq.' + uid + '&limit=1'
+        ),
       ]);
       if (s.error || c.error || p.error) {
         console.error('[get-readiness] db error:', s.error ?? c.error ?? p.error);
@@ -295,12 +333,15 @@ Deno.serve(async (req) => {
       }
       sessionRows = s.data ?? [];
       checkinRows = c.data ?? [];
-      profileRow = p.data;
+      profileRow = p.data?.[0] ?? null;
     } else {
-      const { data: inputs, error: inputsErr } = await supabase.rpc('coach_athlete_inputs', {
-        p_athlete: requestedUserId,
-        p_sessions_since: sessionsSince,
-        p_checkins_since: checkinsSince,
+      const { data: inputs, error: inputsErr } = await rest<{
+        sessions?: typeof sessionRows;
+        checkins?: typeof checkinRows;
+        profile?: typeof profileRow;
+      }>(authHeader, '/rest/v1/rpc/coach_athlete_inputs', {
+        method: 'POST',
+        body: { p_athlete: requestedUserId, p_sessions_since: sessionsSince, p_checkins_since: checkinsSince },
       });
       if (inputsErr) {
         const forbidden = inputsErr.code === '42501';
