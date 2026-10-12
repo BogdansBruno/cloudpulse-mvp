@@ -305,8 +305,7 @@ export default function OnboardingPage() {
                   </div>
                   <p className="mt-3 text-xs text-zinc-500">{g.under13}</p>
                   {age && needsGuardianConfirmation(bracketToAge(age)) && (
-                    <div className="mt-5 space-y-2">
-                      <p className="text-sm leading-relaxed text-zinc-400">{g.body}</p>
+                    <div className="mt-5">
                       <GuardianBox checked={guardianOk} onChange={setGuardianOk} />
                     </div>
                   )}

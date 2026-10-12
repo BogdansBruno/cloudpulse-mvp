@@ -235,6 +235,10 @@ export type GuardianCopy = {
   confirmNow: string;
   saveFailed: string;
   under13: string;
+  /** (i) button and the slide-up sheet with the details */
+  moreLabel: string;
+  close: string;
+  points: string[];
 };
 
 export const GUARDIAN: Record<Lang, GuardianCopy> = {
@@ -248,6 +252,14 @@ export const GUARDIAN: Record<Lang, GuardianCopy> = {
     confirmNow: 'Confirm',
     saveFailed: 'Could not save the confirmation. Try again.',
     under13: 'Lotus is for ages 13 and over.',
+    moreLabel: 'What this tick means',
+    close: 'Close',
+    points: [
+      'Without the tick you use Lotus on your own as usual. Nothing is shared.',
+      'With it, you may choose to let a parent or the school see your status colour (green, yellow, red) and, if you allow it, your calendar. Never your check-in answers.',
+      'You can switch sharing off at any time in Settings.',
+      'The tick is a confirmation from you, not an identity check.',
+    ],
   },
   lv: {
     title: 'Vecāks vai aizbildnis',
@@ -259,6 +271,14 @@ export const GUARDIAN: Record<Lang, GuardianCopy> = {
     confirmNow: 'Apstiprināt',
     saveFailed: 'Neizdevās saglabāt apstiprinājumu. Mēģini vēlreiz.',
     under13: 'Lotus paredzēts no 13 gadu vecuma.',
+    moreLabel: 'Ko nozīmē šī atzīme',
+    close: 'Aizvērt',
+    points: [
+      'Bez atzīmes tu lieto Lotus pats, kā ierasts. Nekas netiek kopīgots.',
+      'Ar to tu vari ļaut vecākam vai skolai redzēt sava statusa krāsu (zaļa, dzeltena, sarkana) un, ja atļauj, savu kalendāru. Nekad ne tavas atbildes.',
+      'Kopīgošanu vari jebkurā brīdī izslēgt iestatījumos.',
+      'Atzīme ir tavs apstiprinājums, nevis identitātes pārbaude.',
+    ],
   },
   ru: {
     title: 'Родитель или опекун',
@@ -270,6 +290,14 @@ export const GUARDIAN: Record<Lang, GuardianCopy> = {
     confirmNow: 'Подтвердить',
     saveFailed: 'Не удалось сохранить подтверждение. Попробуй ещё раз.',
     under13: 'Lotus для тех, кому 13 лет и больше.',
+    moreLabel: 'Что значит эта галочка',
+    close: 'Закрыть',
+    points: [
+      'Без галочки ты пользуешься Lotus сам, как обычно. Никто ничего не видит.',
+      'С ней ты можешь разрешить родителю или школе видеть цвет твоего статуса (зелёный, жёлтый, красный) и, если разрешишь, календарь. Твои ответы — никогда.',
+      'Доступ можно выключить в любой момент в настройках.',
+      'Галочка — твоё подтверждение, а не проверка личности.',
+    ],
   },
 };
 

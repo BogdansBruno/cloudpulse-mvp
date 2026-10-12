@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft } from '@phosphor-icons/react';
+import { ArrowLeft, CaretDown } from '@phosphor-icons/react';
 import { LotusMark } from '@/components/np/Lotus';
 import DeleteDataPanel from '@/components/DeleteDataPanel';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
@@ -64,9 +64,13 @@ export default function PrivacyPage() {
         <p className="mb-6 text-[15px] leading-relaxed text-zinc-300">{c.lead}</p>
 
         <div className="space-y-3">
-          {c.sections.map((s) => (
-            <section key={s.h} className="np-card p-5">
-              <h2 className="mb-3 text-base font-semibold tracking-[-0.01em] text-zinc-50">{s.h}</h2>
+          {c.sections.map((s, i) => (
+            <details key={s.h} open={i === 0} className="np-card group">
+              <summary className="flex min-h-14 cursor-pointer list-none items-center justify-between gap-3 px-5 py-4 [&::-webkit-details-marker]:hidden">
+                <h2 className="min-w-0 break-words text-base font-semibold tracking-[-0.01em] text-zinc-50">{s.h}</h2>
+                <CaretDown size={18} aria-hidden className="shrink-0 text-zinc-400 transition-transform duration-200 group-open:rotate-180" />
+              </summary>
+              <div className="px-5 pb-5">
               {s.ul && (
                 <ul className="space-y-2.5 text-sm leading-relaxed text-zinc-300">
                   {s.ul.map((li) => (
@@ -82,7 +86,8 @@ export default function PrivacyPage() {
                   {para}
                 </p>
               ))}
-            </section>
+              </div>
+            </details>
           ))}
 
           <DeleteDataPanel langOverride={lang} />

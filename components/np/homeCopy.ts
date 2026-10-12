@@ -13,7 +13,7 @@ export type HomeCopy = {
     coach: string;
     health: string;
     /** short dock labels (four tabs must fit a 320 px phone) */
-    tab: { coach: string; calendar: string };
+    tab: { coach: string; calendar: string; team: string };
     plus: string;
     menu: string;
     menuClose: string;
@@ -180,7 +180,7 @@ export const HOME: Record<Lang, HomeCopy> = {
       vitals: 'Метрики',
       coach: 'ИИ-Тренер',
       health: 'Здоровье',
-      tab: { coach: 'Тренер', calendar: 'Календарь' },
+      tab: { coach: 'Тренер', calendar: 'Календарь', team: 'Команда' },
       plus: 'Новый чек-ин',
       menu: 'Меню',
       menuClose: 'Закрыть меню',
@@ -293,7 +293,7 @@ export const HOME: Record<Lang, HomeCopy> = {
       today: 'Šodien',
       vitals: 'Rādītāji',
       coach: 'MI treneris',
-      tab: { coach: 'Treneris', calendar: 'Kalendārs' },
+      tab: { coach: 'Treneris', calendar: 'Kalendārs', team: 'Komanda' },
       health: 'Veselība',
       plus: 'Jauns ieraksts',
       menu: 'Izvēlne',
@@ -407,7 +407,7 @@ export const HOME: Record<Lang, HomeCopy> = {
       today: 'Today',
       vitals: 'Vitals',
       coach: 'AI Coach',
-      tab: { coach: 'Coach', calendar: 'Calendar' },
+      tab: { coach: 'Coach', calendar: 'Calendar', team: 'Team' },
       health: 'My Health',
       plus: 'New check-in',
       menu: 'Menu',

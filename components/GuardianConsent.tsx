@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { ShieldCheck, WarningOctagon } from '@phosphor-icons/react';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
 import { GUARDIAN } from '@/lib/privacy-copy';
+import { SheetButton } from '@/components/np/BottomSheet';
 import { readGuardianStatus, recordGuardianConfirmation, sharingLocked, type GuardianStatus } from '@/lib/guardian';
 
 // Tick-box for a parent or guardian. Two uses:
@@ -62,15 +63,26 @@ export function GuardianBox({
         onChange={(e) => onChange(e.target.checked)}
         className="mt-0.5 h-5 w-5 shrink-0 accent-[#B8F23C]"
       />
-      <span className="min-w-0 text-sm leading-relaxed text-zinc-200">
+      <span className="min-w-0 flex-1 text-sm leading-relaxed text-zinc-200">
         <span className="mb-1 flex items-center gap-1.5 font-medium text-zinc-50">
           <ShieldCheck size={16} weight="fill" className="text-[#B8F23C]" />
-          {g.title}
+          <span className="min-w-0 flex-1">{g.title}</span>
+          <SheetButton title={g.title} label={g.moreLabel} closeLabel={g.close}>
+            <p className="text-[15px] leading-relaxed text-white/85">{g.body}</p>
+            <ul className="mt-4 space-y-3 rounded-2xl border border-white/[0.06] bg-white/[0.03] px-4 py-3">
+              {g.points.map((pt) => (
+                <li key={pt} className="flex gap-2.5 text-[14px] leading-relaxed text-white/80">
+                  <span aria-hidden className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[#B8F23C]" />
+                  <span className="min-w-0">{pt}</span>
+                </li>
+              ))}
+            </ul>
+            <Link href="/privacy" className="mt-4 inline-flex min-h-11 items-center text-sm text-zinc-300 underline decoration-white/20 underline-offset-2">
+              {g.privacyLink}
+            </Link>
+          </SheetButton>
         </span>
-        {g.checkbox}{' '}
-        <Link href="/privacy" className="text-zinc-400 underline decoration-white/20 underline-offset-2 hover:text-zinc-200">
-          {g.privacyLink}
-        </Link>
+        {g.checkbox}
       </span>
     </label>
   );
@@ -100,7 +112,7 @@ export default function GuardianGate({ onUnlocked }: { onUnlocked: () => void })
 
   return (
     <div className="mb-4 space-y-2">
-      <p className="text-sm leading-relaxed text-zinc-400">{g.lockedHint}</p>
+      <p className="text-xs leading-relaxed text-zinc-400">{g.lockedHint}</p>
       <GuardianBox checked={checked} onChange={onTick} disabled={saving} />
       {failed && (
         <p className="inline-flex items-center gap-1.5 text-xs text-zinc-200">

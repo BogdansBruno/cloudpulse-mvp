@@ -212,7 +212,9 @@ export default function AppShell({ children }: { children: ReactNode }): ReactEl
   }
 
   const home = role === 'parent' ? NAV_HREF.parent : role === 'school' ? NAV_HREF.school : NAV_HREF.today;
-  const tabLabel = (id: NavId): string => (id === 'chat' ? hc.nav.tab.coach : id === 'calendar' ? hc.nav.tab.calendar : label(id));
+  // A coach has both the team view and the AI coach on the dock: the team tab says "Team" so two tabs never read "Coach".
+  const tabLabel = (id: NavId): string =>
+    id === 'chat' ? hc.nav.tab.coach : id === 'calendar' ? hc.nav.tab.calendar : id === 'coach' ? hc.nav.tab.team : label(id);
   const tabs: TabItem[] = tabIds(role).map((id) => ({
     key: id,
     label: tabLabel(id),
