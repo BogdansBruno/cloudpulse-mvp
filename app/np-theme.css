@@ -849,8 +849,29 @@ body {
   overscroll-behavior-y: none;
 }
 html {
-  touch-action: manipulation;
+  /* pan only: no pinch-zoom and no double-tap zoom (iOS 13+ honours this, unlike user-scalable=no) */
+  touch-action: pan-x pan-y;
   -webkit-text-size-adjust: 100%;
+}
+/* The page can never be wider than the screen. `clip` (not `hidden`) on purpose: it does not turn <body> into a scroll
+   container, so sticky bars and the viewport scroll keep working. */
+html,
+body {
+  max-width: 100%;
+  overflow-x: clip;
+}
+/* Phones and tablets: no scrollbars at all (inner lists still scroll). Desktop keeps its bars. */
+@media (hover: none) and (pointer: coarse) {
+  * {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  *::-webkit-scrollbar {
+    display: none;
+    width: 0;
+    height: 0;
+    background: transparent;
+  }
 }
 html[data-kb] [data-kb-hide] {
   display: none;

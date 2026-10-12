@@ -4,6 +4,7 @@ import "./globals.css";
 import Providers from "@/components/Providers";
 import ServiceWorkerRegister from "@/components/ServiceWorkerRegister";
 import UpdateBanner from "@/components/UpdateBanner";
+import PreventZoom from "@/components/PreventZoom";
 import { THEME_INIT_SCRIPT } from "@/lib/theme/theme-shared";
 
 const geistSans = Geist({
@@ -48,6 +49,9 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
+  // Android and desktop honour these; iPhone ignores them, so components/PreventZoom.tsx and `touch-action` do the work there.
+  maximumScale: 1,
+  userScalable: false,
   // Android Chrome: the keyboard shrinks the page (and the chat box with it) instead of covering it. iOS is handled by components/ViewportKeyboard.tsx.
   interactiveWidget: "resizes-content",
 };
@@ -69,6 +73,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <Providers>
           {children}
           <UpdateBanner />
+          <PreventZoom />
         </Providers>
         <ServiceWorkerRegister />
       </body>
